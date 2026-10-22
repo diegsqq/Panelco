@@ -10,16 +10,16 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         :root {
-            --p3-navy: #009040;
-            --p3-navy-2: #006030;
-            --p3-blue: #00a040;
+            --p3-navy: #00CC33;
+            --p3-navy-2: #007A24;
+            --p3-blue: #2ED656;
             --p3-yellow: #ffffff;
             --p3-yellow-dark: #e6f3ea;
             --p3-bg: #f2f7f3;
             --p3-card-border: #d5e8db;
         }
         body { background: var(--p3-bg); font-family: "Segoe UI", system-ui, -apple-system, sans-serif; }
-        .p3-sidebar { background: linear-gradient(180deg, var(--p3-navy) 0%, var(--p3-navy-2) 100%); min-height: 100vh; }
+        .p3-sidebar { background: linear-gradient(180deg, var(--p3-navy) 0%, var(--p3-navy-2) 100%); min-height: 100vh; max-height: 100vh; position: sticky; top: 0; overflow-y: auto; }
         .p3-sidebar .nav-link { color: #d3e9dc; border-radius: .75rem; padding: .5rem .5rem .5rem 1rem; font-weight: 500; display: flex; align-items: center; gap: 1rem; transition: background-color .25s ease, color .25s ease; }
         .p3-sidebar .nav-link:hover { background: rgba(255,255,255,.12); color: #fff; }
         .p3-sidebar .nav-link:hover .nav-ico { background: rgba(255,255,255,.28); }
@@ -45,12 +45,25 @@
         .status-failed { background: #f8d7da; color: #721c24; }
         main { animation: p3-fade .3s ease; }
         @keyframes p3-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-        .form-control:focus, .form-select:focus, .btn:focus-visible, a:focus-visible { box-shadow: 0 0 0 .25rem rgba(0,144,64,.25); outline: none; }
+        .form-control:focus, .form-select:focus, .btn:focus-visible, a:focus-visible { box-shadow: 0 0 0 .25rem rgba(0,204,51,.25); outline: none; }
+        .form-select.p3-chosen { color: var(--p3-navy); font-weight: 600; background-color: #f0f9f3; }
+        .p3-dept-pill { border: 1px solid #d5e8db; color: var(--p3-navy); background: #fff; border-radius: 2rem; font-weight: 500; padding: .35rem .9rem; transition: all .15s ease; }
+        .p3-dept-pill:hover { background: #e6f3ea; }
+        .p3-dept-pill:has(input:checked) { background: var(--p3-navy); border-color: var(--p3-navy); color: #fff; box-shadow: 0 2px 6px rgba(0,204,51,.3); }
+        .p3-logout { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.3); color: #fff; border-radius: .75rem; font-weight: 600; padding: .6rem 1rem; letter-spacing: .3px; transition: all .18s ease; }
+        .p3-logout:hover, .p3-logout:focus { background: #fff; color: #c0392b; border-color: #fff; box-shadow: 0 6px 16px rgba(0,0,0,.3); transform: translateY(-1px); }
+        .p3-logout:active { transform: none; }
+        .p3-modal { position: relative; border: none; border-radius: 1.25rem; overflow: hidden; box-shadow: 0 20px 50px rgba(0,110,34,.25); }
+        .p3-modal .btn-close { position: absolute; top: .75rem; right: .75rem; opacity: .5; }
+        .p3-meow { display: block; margin: 0 auto; filter: drop-shadow(0 6px 12px rgba(0,110,34,.25)); }
+        @keyframes p3-meow-bob { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-7px) rotate(2deg); } }
+        .p3-modal-actions { display: flex; gap: .75rem; padding: 1rem 1.25rem 1.25rem; margin-top: 1.25rem; border-top: 1px solid var(--p3-card-border); }
+        .p3-modal .btn { border-radius: .7rem; font-weight: 600; padding: .55rem 1rem; }
         .lift { transition: transform .18s ease, box-shadow .18s ease; }
-        .lift:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,98,48,.12); }
+        .lift:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,110,34,.12); }
         .avatar { width: 32px; height: 32px; flex: 0 0 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; }
-        .avatar-user { background: #009040; color: #fff; }
-        .avatar-ai { background: #fff; color: #009040; border: 2px solid #009040; }
+        .avatar-user { background: #00CC33; color: #fff; }
+        .avatar-ai { background: #fff; color: #00CC33; border: 2px solid #00CC33; }
         .msg-in { animation: p3-msg .25s ease; }
         @keyframes p3-msg { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
         .chat-scroll { max-height: calc(100vh - 320px); min-height: 240px; overflow-y: auto; }
@@ -81,35 +94,49 @@
                 <a class="nav-link {{ request()->routeIs('documents.upload') ? 'active' : '' }}" href="{{ route('documents.upload') }}"><span class="nav-ico"><i class="bi bi-cloud-arrow-up-fill"></i></span>Upload Documents</a>
                 <a class="nav-link {{ request()->routeIs('documents.library') ? 'active' : '' }}" href="{{ route('documents.library') }}"><span class="nav-ico"><i class="bi bi-folder-fill"></i></span>Document Library</a>
                 <a class="nav-link {{ request()->routeIs('chat.*') ? 'active' : '' }}" href="{{ route('chat.index') }}"><span class="nav-ico"><i class="bi bi-lightning-charge-fill"></i></span>AI Chat</a>
-                <a class="nav-link {{ request()->routeIs('queue.*') ? 'active' : '' }}" href="{{ route('queue.index') }}"><span class="nav-ico"><i class="bi bi-layers-fill"></i></span>Processing Queue</a>
-                <a class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}" href="{{ route('settings.index') }}"><span class="nav-ico"><i class="bi bi-gear-fill"></i></span>Settings</a>
-                @can('admin')
-                <div class="mt-2 px-2"><small style="color:#9ed2ae">ADMINISTRATION</small></div>
-                <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}"><span class="nav-ico"><i class="bi bi-people-fill"></i></span>User Management</a>
-                <a class="nav-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}" href="{{ route('admin.categories.index') }}"><span class="nav-ico"><i class="bi bi-tags-fill"></i></span>Categories</a>
-                <a class="nav-link {{ request()->routeIs('admin.departments.*') ? 'active' : '' }}" href="{{ route('admin.departments.index') }}"><span class="nav-ico"><i class="bi bi-diagram-3-fill"></i></span>Departments</a>
-                <a class="nav-link {{ request()->routeIs('admin.audit-logs.*') ? 'active' : '' }}" href="{{ route('admin.audit-logs.index') }}"><span class="nav-ico"><i class="bi bi-journal-text"></i></span>Audit Logs</a>
-                @endcan
+                @php $settingsOpen = request()->routeIs('settings.*') || request()->routeIs('admin.*'); @endphp
+                <a class="nav-link {{ $settingsOpen ? 'active' : '' }}" data-bs-toggle="collapse" href="#settingsMenu" role="button" aria-expanded="{{ $settingsOpen ? 'true' : 'false' }}"><span class="nav-ico"><i class="bi bi-gear-fill"></i></span>Settings<i class="bi bi-chevron-down ms-auto small"></i></a>
+                <div class="collapse {{ $settingsOpen ? 'show' : '' }} ps-3" id="settingsMenu">
+                    <a class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}" href="{{ route('settings.index') }}"><span class="nav-ico"><i class="bi bi-sliders"></i></span>General</a>
+                    @can('admin')
+                    <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}"><span class="nav-ico"><i class="bi bi-people-fill"></i></span>User Management</a>
+                    <a class="nav-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}" href="{{ route('admin.categories.index') }}"><span class="nav-ico"><i class="bi bi-tags-fill"></i></span>Categories</a>
+                    <a class="nav-link {{ request()->routeIs('admin.departments.*') ? 'active' : '' }}" href="{{ route('admin.departments.index') }}"><span class="nav-ico"><i class="bi bi-diagram-3-fill"></i></span>Departments</a>
+                    @endcan
+                </div>
             </nav>
-            <div class="mt-3 p-2 rounded" style="background:rgba(255,255,255,.08)">
-                <div class="text-white fw-semibold small">{{ Auth::user()->name }}</div>
-                <div class="small text-capitalize" style="color:#9ed2ae">{{ str_replace('_',' ',Auth::user()->role) }}</div>
-                <a class="small text-white" href="{{ route('logout') }}" onclick="event.preventDefault();document.getElementById('logout-form').submit();"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
+            <div class="mt-3">
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
+                <button type="button" class="btn w-100 p3-logout justify-content-center" data-bs-toggle="modal" data-bs-target="#logoutModal" title="Logout"><i class="bi bi-power me-2"></i>Logout</button>
             </div>
         </aside>
+        <div class="modal fade" id="logoutModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered" style="max-width:380px;width:calc(100% - 2rem)">
+                <div class="modal-content p3-modal">
+                    <div class="text-center pt-4 px-4">
+                        <div class="p3-meow"><img src="{{ asset('images/meow.gif') }}" alt="meow" style="width:110px;height:110px;object-fit:contain"></div>
+                        <h5 class="fw-bold mt-3 mb-0">Leaving so soon?</h5>
+                        <p class="text-muted mb-0 mt-2" style="font-size:.85rem">You can always log back in anytime. Your documents will be waiting.</p>
+                    </div>
+                    <div class="p3-modal-actions">
+                        <button type="button" class="btn btn-outline-secondary px-4 flex-fill" data-bs-dismiss="modal">Stay</button>
+                        <button type="submit" form="logout-form" class="btn btn-p3 px-4 flex-fill">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="col-md-9 col-lg-10 p-0">
             <div class="p3-topbar px-3 px-md-4 py-2 d-flex justify-content-between align-items-center sticky-top">
                 <div class="d-flex align-items-center gap-2">
                     <button class="btn btn-sm d-md-none" id="sidebarToggle" aria-label="Open menu" style="border:1px solid #d5e8db"><i class="bi bi-list"></i></button>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <span class="badge text-capitalize" style="background:#e6f3ea;color:var(--p3-navy)">{{ str_replace('_',' ',Auth::user()->role) }}</span>
                     <i class="bi bi-shield-lock text-success" title="Private storage · authorized access only"></i>
+                    <span class="fw-semibold" style="font-size:.82rem;color:#007A24">{{ \App\Models\User::roleLabel(auth()->user()->role) }}</span>
                 </div>
             </div>
-            <main class="p-3 p-md-4">
-                @if (session('status'))<div class="alert alert-success alert-dismissible fade show" role="alert" id="flashOk">{{ session('status') }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>@endif
+            <main class="p-3">
+                @if (session('status'))<div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 py-3 shadow-sm" role="alert" id="flashOk" style="border:1px solid #c3e6cb;border-radius:.75rem"><span class="stat-icon" style="width:34px;height:34px;background:#d4edda;color:#155724"><i class="bi bi-check-circle-fill"></i></span><span class="fw-semibold text-success">{{ session('status') }}</span><button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button></div>@endif
                 @if ($errors->any())<div class="alert alert-danger alert-dismissible fade show" role="alert"><ul class="mb-0">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>@endif
                 @yield('content')
             </main>
@@ -167,6 +194,15 @@
     if (ok) setTimeout(function () {
         try { bootstrap.Alert.getOrCreateInstance(ok).close(); } catch (e) { ok.remove(); }
     }, 5000);
+})();
+(function () {
+    function mark(sel) {
+        sel.classList.toggle('p3-chosen', !!sel.value);
+    }
+    document.querySelectorAll('.form-select').forEach(function (s) {
+        mark(s);
+        s.addEventListener('change', function () { mark(s); });
+    });
 })();
 (function () {
     var sidebar = document.getElementById('p3Sidebar');

@@ -8,9 +8,9 @@
 <div class="container py-5"><div class="row justify-content-center"><div class="col-md-6">
 <div class="card p-5 text-center" style="border-radius:1rem;border:1px solid #d5e8db">
 <img src="{{ asset('images/logo.png') }}" alt="PANELCO III" class="mb-3" style="height:72px">
-<h1 class="display-4 fw-bold" style="color:#009040">@yield('code')</h1>
+<h1 class="display-4 fw-bold" style="color:#00CC33">@yield('code')</h1>
 <p class="text-muted">@yield('message')</p>
-<a href="{{ url('/dashboard') }}" class="btn mt-2" style="background:#009040;color:#fff">Back to Dashboard</a>
+<a href="{{ url('/dashboard') }}" class="btn mt-2" style="background:#00CC33;color:#fff">Back to Dashboard</a>
 </div></div></div></div>
 </body>
 </html>

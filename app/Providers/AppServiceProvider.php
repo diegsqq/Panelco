@@ -26,6 +26,24 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $settings = \App\Models\Setting::allSettings();
+
+        if (! empty($settings['app_name'])) {
+            config(['app.name' => $settings['app_name']]);
+        }
+        if (! empty($settings['ai_model'])) {
+            config(['smartdocs.ai.model' => $settings['ai_model']]);
+        }
+        if (! empty($settings['upload_max_kb'])) {
+            config(['smartdocs.upload.max_kb' => (int) $settings['upload_max_kb']]);
+        }
+        if (! empty($settings['allowed_extensions'])) {
+            $exts = array_values(array_filter(array_map('trim', explode(',', $settings['allowed_extensions']))));
+            if ($exts !== []) {
+                config(['smartdocs.upload.allowed_extensions' => $exts]);
+            }
+        }
+
         Gate::policy(Document::class, DocumentPolicy::class);
 
         Gate::define('admin', fn (User $user) => $user->isAdmin());

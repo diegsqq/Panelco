@@ -22,8 +22,9 @@ class UserController extends Controller
     public function index(): View
     {
         $users = User::with(['department', 'departments'])->latest()->paginate(15);
+        $departments = Department::orderBy('name')->get();
 
-        return view('admin.users.index', compact('users'));
+        return view('admin.users.index', compact('users', 'departments'));
     }
 
     public function create(): View
@@ -126,6 +127,6 @@ class UserController extends Controller
             'metadata' => [],
         ]);
 
-        return redirect()->route('admin.users.index')->with('status', 'User deleted.');
+        return redirect()->route('admin.users.index')->with('status', 'User deleted successfully.');
     }
 }

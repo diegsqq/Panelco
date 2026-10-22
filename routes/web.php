@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return auth()->check()
         ? redirect()->route('home')
-        : view('welcome');
+        : redirect()->route('login');
 });
 
 Auth::routes(['register' => false]);
@@ -34,12 +34,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/chat/{conversation}', [App\Http\Controllers\ChatController::class, 'show'])->name('chat.show');
     Route::post('/chat/{conversation}', [App\Http\Controllers\ChatController::class, 'askMessage'])->name('chat.ask');
     Route::delete('/chat/{conversation}', [App\Http\Controllers\ChatController::class, 'destroy'])->name('chat.destroy');
-    Route::view('/settings', 'placeholders.settings')->name('settings.index');
+    Route::get('/settings', [App\Http\Controllers\SettingsController::class, 'index'])->name('settings.index');
+    Route::put('/settings', [App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update');
 });
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('users', UserController::class)->except(['show']);
     Route::resource('departments', DepartmentController::class)->except(['show']);
     Route::resource('categories', DocumentCategoryController::class)->except(['show']);
+    Route::post('categories/ai-keywords', [DocumentCategoryController::class, 'aiKeywords'])->name('categories.ai-keywords');
     Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
 });

@@ -21,6 +21,17 @@ class User extends Authenticatable
 
     public const ROLES = [self::ROLE_ADMIN, self::ROLE_MANAGER, self::ROLE_EMPLOYEE];
 
+    /** Display label for a role (admin shows as "System Administrator"). */
+    public static function roleLabel(?string $role): string
+    {
+        return match ($role) {
+            self::ROLE_ADMIN => 'System Administrator',
+            self::ROLE_MANAGER => 'Document Manager',
+            self::ROLE_EMPLOYEE => 'Employee',
+            default => str_replace('_', ' ', (string) $role),
+        };
+    }
+
     /**
      * The attributes that are mass assignable.
      *

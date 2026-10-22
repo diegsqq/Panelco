@@ -2,7 +2,7 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
 <h4 class="mb-0">Departments</h4>
-<a href="{{ route('admin.departments.create') }}" class="btn" style="background:#009040;color:#fff">New Department</a>
+<a href="{{ route('admin.departments.create') }}" class="btn" style="background:#00CC33;color:#fff">New Department</a>
 </div>
 <div class="card card-p3 p-0 overflow-hidden">
 <table class="table mb-0">
