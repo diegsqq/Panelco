@@ -19,14 +19,7 @@
 <dt class="col-sm-4">Keywords</dt><dd class="col-sm-8">@if($document->keywords)@foreach(array_filter(array_map('trim', explode(',', $document->keywords))) as $kw)<span class="badge me-1 mb-1" style="background:#e6f3ea;color:#00743F">{{ $kw }}</span>@endforeach@else<span class="text-muted">—</span>@endif</dd>
 @if ($document->processing_error)<dt class="col-sm-4">Error</dt><dd class="col-sm-8 text-danger">{{ $document->processing_error }}</dd>@endif
 </dl>
-@can('approve', $document)
-<hr>
-<form method="POST" action="{{ route('documents.approve', $document) }}" class="row g-2 align-items-end">
-@csrf
-<div class="col-md-7"><label class="form-label small fw-semibold" for="category_id">Approve classification</label><select id="category_id" name="category_id" class="form-select form-select-sm">@foreach($categories as $c)<option value="{{ $c->id }}" {{ (int) old('category_id', $document->suggested_category_id ?? $document->category_id) === (int) $c->id ? 'selected' : '' }}>{{ $c->name }}</option>@endforeach</select></div>
-<div class="col-md-5"><button class="btn btn-sm w-100" style="background:#00A868;color:#fff">Approve classification</button></div>
-</form>
-@endcan
+
 </div>
 <div class="card card-p3 p-4 mt-3 p3-summary @if($summaryCheck !== null && $summaryCheck['verified']) is-verified @elseif($summaryCheck !== null && $summaryCheck['unsupported']) is-warn @endif">
 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -136,8 +129,11 @@
 <div class="modal-dialog modal-xl modal-dialog-centered">
 <div class="modal-content p3-modal d-flex flex-column" style="height:88vh">
 <div class="d-flex justify-content-between align-items-center px-3 py-2" style="border-bottom:1px solid var(--p3-card-border)">
-<span class="fw-bold text-truncate" style="max-width:80%"><i class="bi bi-eye-fill me-1" style="color:#00A868"></i>{{ $document->original_filename }}</span>
+<span class="fw-bold text-truncate" style="max-width:70%"><i class="bi bi-eye-fill me-1" style="color:#00A868"></i>{{ $document->original_filename }}</span>
+<div class="d-flex align-items-center gap-2">
+<button type="button" class="btn btn-sm btn-outline-success" id="viewerPrintBtn"><i class="bi bi-printer me-1"></i>Print</button>
 <span class="badge" style="background:#e6f3ea;color:#1F7A2B">View only</span>
+</div>
 </div>
 <div id="viewerBody" class="flex-grow-1" style="overflow:auto;background:#f1f5f3;min-height:0;text-align:center">
 <span class="text-muted small"><i class="bi bi-hour2"></i> Loading…</span>
@@ -153,38 +149,49 @@
     var objectUrl = null;
     var pendingPrint = false;
 
+    function printHtml(html) {
+        var iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+        var doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(html);
+        doc.close();
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+        setTimeout(function () { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 1000);
+    }
     function printNow() {
         var iframe = body.querySelector('iframe');
         if (iframe) {
-            try { iframe.contentWindow.focus(); iframe.contentWindow.print(); pendingPrint = false; return; } catch (e) { /* fall through */ }
+            try {
+                if (iframe.contentDocument) iframe.contentDocument.title = docTitle;
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+                pendingPrint = false;
+                return;
+            } catch (e) { /* fall through */ }
         }
         var img = body.querySelector('img');
         if (img) {
-            var w = window.open('', '_blank');
-            if (w) {
-                w.document.write('<html><head><title>Print</title></head><body style="margin:0;text-align:center"><img src="' + img.src + '" style="max-width:100%"></body></html>');
-                w.document.close(); w.focus(); w.print();
-            }
+            printHtml('<html><head><title>' + docTitle + '</title><style>@page{margin:0}body{margin:1.5cm;font-family:system-ui,sans-serif;text-align:center}</style></head><body><img src="' + img.src + '" style="max-width:100%"></body></html>');
             pendingPrint = false;
             return;
         }
         var docx = body.querySelector('.p3-docx');
         if (docx) {
-            var w = window.open('', '_blank');
-            if (w) {
-                w.document.write('<html><head><title>Print</title><style>body{font-family:system-ui,sans-serif;padding:2rem;line-height:1.5}</style></head><body>' + docx.innerHTML + '</body></html>');
-                w.document.close(); w.focus(); w.print();
-            }
+            printHtml('<html><head><title>' + docTitle + '</title><style>@page{margin:0}body{margin:1.5cm;font-family:system-ui,sans-serif;line-height:1.5}</style></head><body>' + docx.innerHTML + '</body></html>');
             pendingPrint = false;
             return;
         }
         var pre = body.querySelector('pre');
         if (pre) {
-            var w = window.open('', '_blank');
-            if (w) {
-                w.document.write('<html><head><title>Print</title><style>body{font-family:monospace;padding:2rem;white-space:pre-wrap}</style></head><body><pre>' + pre.textContent.replace(/</g, '&lt;') + '</pre></body></html>');
-                w.document.close(); w.focus(); w.print();
-            }
+            printHtml('<html><head><title>' + docTitle + '</title><style>@page{margin:0}body{margin:1.5cm;font-family:monospace;white-space:pre-wrap}</style></head><body><pre>' + pre.textContent.replace(/</g, '&lt;') + '</pre></body></html>');
             pendingPrint = false;
             return;
         }
@@ -193,6 +200,7 @@
     }
 
     var printBtn = document.getElementById('printDocBtn');
+    var viewerPrintBtn = document.getElementById('viewerPrintBtn');
     var docTitle = @json($document->original_filename);
     if (printBtn) {
         printBtn.addEventListener('click', function () {
@@ -203,6 +211,9 @@
                 bootstrap.Modal.getOrCreateInstance(modal).show();
             }
         });
+    }
+    if (viewerPrintBtn) {
+        viewerPrintBtn.addEventListener('click', function () { printNow(); });
     }
 
     // Best-effort view-only hardening: no right-click menu, no text
