@@ -24,8 +24,8 @@
     @keyframes up-fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 </style>
 
-<div class="row justify-content-center">
-<div class="col-lg-9">
+<div class="row">
+<div class="col-12">
 
     <div class="d-flex align-items-center gap-3 mb-3">
         <span class="stat-icon" style="background:#e6f3ea;color:#00A868;width:52px;height:52px;font-size:1.4rem"><i class="bi bi-cloud-arrow-up-fill"></i></span>
@@ -50,7 +50,7 @@
                     <div class="up-idle-icon"><i class="bi bi-cloud-arrow-up"></i></div>
                     <div class="fw-semibold mt-3">Drag &amp; drop your file here</div>
                     <small class="text-muted">or <span style="color:#00743F;text-decoration:underline">browse from your computer</span></small>
-                    <div class="mt-2"><small class="text-muted">PDF · DOCX · TXT · PNG · JPEG — up to 20 MB</small></div>
+                    <div class="mt-2"><small class="text-muted">PDF · DOCX · TXT · PNG · JPEG — up to {{ number_format(config('smartdocs.upload.max_kb', 51200) / 1024, 0) }} MB</small></div>
                 </div>
                 <div id="zoneFile" class="d-none text-start px-1">
                     <div class="up-file-tile">
@@ -70,6 +70,7 @@
             <div class="up-progress mt-2" id="upProgress"><div class="up-progress-bar"></div></div>
 
             <input id="file" name="file" type="file" class="d-none @error('file') is-invalid @enderror" accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" required>
+            <input type="hidden" name="file_last_modified" id="fileLastModified" value="">
             @error('file')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
             <div class="form-text mt-2" id="suggestNote"></div>
         </div>
@@ -157,7 +158,7 @@
         jpg:  ['bi-file-earmark-image-fill', '#00A868', '#e6f3ea'],
         jpeg: ['bi-file-earmark-image-fill', '#00A868', '#e6f3ea']
     };
-    var MAX_BYTES = {{ (int) config('smartdocs.upload.max_kb', 20480) * 1024 }};
+    var MAX_BYTES = {{ (int) config('smartdocs.upload.max_kb', 51200) * 1024 }};
     var suggestUrl = @json(route('documents.suggest'));
     var csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     var req = null;
@@ -204,6 +205,7 @@
     function resetZone() {
         if (req) { req.abort(); req = null; }
         input.value = '';
+        document.getElementById('fileLastModified').value = '';
         idle.classList.remove('d-none');
         fileBox.classList.add('d-none');
         zone.classList.remove('filled');
@@ -244,6 +246,7 @@
         var mySeq = ++seq;
         var fd = new FormData();
         fd.append('file', file);
+        if (file.lastModified) fd.append('file_last_modified', String(file.lastModified));
 
         analyzing.classList.remove('d-none');
         progress.classList.add('on');
@@ -281,6 +284,7 @@
             dt.items.add(file);
             return dt.files;
         })();
+        document.getElementById('fileLastModified').value = file.lastModified ? String(file.lastModified) : '';
         showFile(file);
         analyze(file);
     }

@@ -73,7 +73,7 @@
 <div class="row g-3">
 <div class="col-md-4">
 <label class="form-label">Max Upload (KB)</label>
-<input name="upload_max_kb" type="number" min="1024" step="1024" class="form-control" value="{{ old('upload_max_kb', $val('upload_max_kb', '20480')) }}" {{ $isAdmin ? 'required' : 'disabled' }}>
+<input name="upload_max_kb" type="number" min="1024" step="1024" class="form-control" value="{{ old('upload_max_kb', $val('upload_max_kb', '51200')) }}" {{ $isAdmin ? 'required' : 'disabled' }}>
 </div>
 <div class="col-md-8">
 <label class="form-label">Allowed Extensions <span class="text-muted small">(comma-separated)</span></label>

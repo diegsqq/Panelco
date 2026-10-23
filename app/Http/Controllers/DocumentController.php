@@ -33,6 +33,7 @@ class DocumentController extends Controller
             'title' => ['nullable', 'string', 'max:255'],
             'category_id' => ['nullable', 'exists:document_categories,id'],
             'document_date' => ['nullable', 'date'],
+            'file_last_modified' => ['nullable', 'integer', 'min:1'],
         ];
     }
 
@@ -99,6 +100,7 @@ class DocumentController extends Controller
     {
         $request->validate([
             'file' => ['required', 'file', 'mimes:' . implode(',', config('smartdocs.upload.allowed_extensions')), 'max:' . config('smartdocs.upload.max_kb', self::MAX_KB)],
+            'file_last_modified' => ['nullable', 'integer', 'min:1'],
         ]);
 
         /** @var \Illuminate\Http\UploadedFile $file */
@@ -108,7 +110,9 @@ class DocumentController extends Controller
             return response()->json(['message' => 'Unsupported file type.'], 422);
         }
 
-        return response()->json($suggester->suggest($file));
+        $clientTs = $request->filled('file_last_modified') ? (int) $request->input('file_last_modified') : null;
+
+        return response()->json($suggester->suggest($file, $clientTs));
     }
 
     public function store(Request $request): RedirectResponse
@@ -126,14 +130,15 @@ class DocumentController extends Controller
 
         $document = Document::create([
             'uploaded_by' => $request->user()->id,
-            'title' => $data['title'] ?: pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+            'title' => ($data['title'] ?? '') ?: pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
             'original_filename' => $file->getClientOriginalName(),
             'storage_path' => $path,
             'mime_type' => $file->getMimeType(),
             'file_size' => $file->getSize(),
             'department_id' => $request->user()->department_id,
             'category_id' => $data['category_id'] ?? null,
-            'document_date' => $data['document_date'] ?? null,
+            'document_date' => $data['document_date']
+                ?? app(UploadSuggester::class)->creationDate($file, $data['file_last_modified'] ?? null),
             'processing_status' => 'pending',
         ]);
 

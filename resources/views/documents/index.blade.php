@@ -34,5 +34,4 @@ $icon = str_contains($mime, 'pdf') ? ['bi-file-earmark-pdf-fill', '#dc3545'] : (
 <div class="p-5 text-center"><i class="bi bi-inbox fs-2 text-muted"></i><p class="fw-semibold mt-2 mb-2">No documents found.</p><a href="{{ route('documents.upload') }}" class="btn btn-sm" style="background:#00A868;color:#fff">Upload a document</a></div>
 @endforelse
 </div>
-<div class="mt-3">{{ $documents->links() }}</div>
 @endsection

@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Models\Document;
 use App\Models\User;
 use App\Services\UploadSuggester;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class UploadSuggestTest extends TestCase
@@ -73,6 +76,88 @@ class UploadSuggestTest extends TestCase
             ->assertJsonPath('document_date', null)
             ->assertJsonPath('category_id', null)
             ->assertJsonPath('title', 'Quarterly Report');
+    }
+
+    public function test_suggest_uses_file_date_when_text_has_no_date(): void
+    {
+        $this->seed();
+        $emp = User::where('email', 'employee@panelco3.local')->first();
+        $hint = strtotime('2025-03-04') * 1000; // browser sends milliseconds
+
+        $res = $this->actingAs($emp)->postJson(route('documents.suggest'), [
+            'file' => UploadedFile::fake()->createWithContent('notes.txt', 'Some notes with no stated date inside.'),
+            'file_last_modified' => $hint,
+        ]);
+
+        $res->assertOk()->assertJsonPath('document_date', '2025-03-04');
+    }
+
+    public function test_suggest_file_date_beats_date_found_in_text(): void
+    {
+        $this->seed();
+        $emp = User::where('email', 'employee@panelco3.local')->first();
+        $hint = strtotime('2025-03-04') * 1000;
+
+        $res = $this->actingAs($emp)->postJson(route('documents.suggest'), [
+            'file' => UploadedFile::fake()->createWithContent('memo.txt', "Memorandum\nDated January 15, 2024\nBody text here."),
+            'file_last_modified' => $hint,
+        ]);
+
+        $res->assertOk()->assertJsonPath('document_date', '2025-03-04');
+    }
+
+    public function test_store_saves_file_date_when_document_date_left_empty(): void
+    {
+        $this->seed();
+        Storage::fake('private');
+        Queue::fake();
+        $emp = User::where('email', 'employee@panelco3.local')->first();
+        $hint = strtotime('2025-03-04') * 1000;
+
+        $this->actingAs($emp)->post(route('documents.store'), [
+            'file' => UploadedFile::fake()->createWithContent('plain.txt', 'No date in this text at all.'),
+            'file_last_modified' => $hint,
+        ])->assertRedirect(route('documents.library'));
+
+        $doc = Document::where('original_filename', 'plain.txt')->first();
+        $this->assertNotNull($doc);
+        $this->assertEquals('2025-03-04', substr((string) $doc->document_date, 0, 10));
+    }
+
+    public function test_store_keeps_explicit_document_date_over_file_date(): void
+    {
+        $this->seed();
+        Storage::fake('private');
+        Queue::fake();
+        $emp = User::where('email', 'employee@panelco3.local')->first();
+        $hint = strtotime('2025-03-04') * 1000;
+
+        $this->actingAs($emp)->post(route('documents.store'), [
+            'file' => UploadedFile::fake()->createWithContent('plain2.txt', 'No date in this text at all.'),
+            'file_last_modified' => $hint,
+            'document_date' => '2024-01-15',
+        ])->assertRedirect(route('documents.library'));
+
+        $doc = Document::where('original_filename', 'plain2.txt')->first();
+        $this->assertEquals('2024-01-15', substr((string) $doc->document_date, 0, 10));
+    }
+
+    public function test_docx_metadata_creation_date_read_without_client_hint(): void
+    {
+        $tmp = tempnam(sys_get_temp_dir(), 'doc') . '.docx';
+        $zip = new \ZipArchive();
+        $zip->open($tmp, \ZipArchive::CREATE);
+        $zip->addFromString('docProps/core.xml', '<?xml version="1.0"?><cp:coreProperties xmlns:cp="x" xmlns:dcterms="y"><dcterms:created xsi:type="dcterms:W3CDTF">2024-06-10T08:30:00Z</dcterms:created></cp:coreProperties>');
+        $zip->close();
+
+        $file = new \Illuminate\Http\UploadedFile($tmp, 'report.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', null, true);
+
+        try {
+            $date = app(\App\Services\UploadSuggester::class)->creationDate($file);
+            $this->assertEquals('2024-06-10', $date);
+        } finally {
+            @unlink($tmp);
+        }
     }
 
     public function test_suggest_rejects_disallowed_mime(): void

@@ -28,21 +28,23 @@
 </form>
 @endcan
 </div>
-<div class="card card-p3 p-4 mt-3">
-<h6 class="fw-bold">Summary
-@if($summaryCheck !== null)
-    @if($summaryCheck['verified'])
-        <span class="badge sum-verified" style="background:#d4edda;color:#155724" title="Every figure in this summary was found in the document text"><i class="bi bi-patch-check-fill me-1"></i>verified</span>
-    @elseif($summaryCheck['unsupported'])
-        <span class="badge sum-unverified" style="background:#fff3cd;color:#856404" title="Some figures in this summary were not found in the document text"><i class="bi bi-patch-question-fill me-1"></i>unverified</span>
-    @else
-        <span class="badge sum-unverified" style="background:#f1f3f5;color:#6c757d" title="This summary has no figures to check against the document text"><i class="bi bi-patch-question-fill me-1"></i>no figures to check</span>
-    @endif
-@endif
-</h6>@if($document->summary)
-<p class="mb-0">{{ $document->summary }}</p>
+<div class="card card-p3 p-4 mt-3 p3-summary @if($summaryCheck !== null && $summaryCheck['verified']) is-verified @elseif($summaryCheck !== null && $summaryCheck['unsupported']) is-warn @endif">
+<div class="d-flex justify-content-between align-items-center mb-2">
+<h6 class="fw-bold mb-0"><i class="bi bi-journal-text me-1" style="color:#00A868"></i>Summary</h6>
+</div>
+@if($document->summary)
+@php
+    // Highlight monetary amounts, percentages, and decimal figures so the
+    // numbers pop out of the prose.
+    $summaryHtml = preg_replace(
+        '/(₱\s?[\d,]+(?:\.\d+)?|\b\d[\d,]*(?:\.\d+)?\s?%|\b\d{1,3}(?:,\d{3})+(?:\.\d+)?|\b\d+\.\d+\b)/u',
+        '<span class="p3-fig">$1</span>',
+        e($document->summary)
+    );
+@endphp
+<p class="mb-0 p3-summary-text">{!! $summaryHtml !!}</p>
 @if($summaryCheck !== null && ! $summaryCheck['verified'] && $summaryCheck['unsupported'])
-<div class="small mt-2 p-2 rounded" style="background:#fff3cd;color:#856404"><i class="bi bi-exclamation-triangle-fill me-1"></i>Not found in the document text: <strong>{{ implode(', ', $summaryCheck['unsupported']) }}</strong></div>
+<div class="small mt-3 p-2 rounded" style="background:#fff3cd;color:#856404"><i class="bi bi-exclamation-triangle-fill me-1"></i>Not found in the document text: <strong>{{ implode(', ', $summaryCheck['unsupported']) }}</strong></div>
 @endif
 @elseif($document->processing_status === 'completed')
 <p class="mb-0 text-muted">No summary available.</p>
@@ -156,9 +158,45 @@
         if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
     }
 
+    var DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+    // mammoth.js converts DOCX to HTML in the browser; loaded lazily the
+    // first time a .docx is opened so other documents never pay for it.
+    function loadMammoth() {
+        if (window.mammoth) return Promise.resolve();
+        return new Promise(function (resolve, reject) {
+            var s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js';
+            s.onload = resolve;
+            s.onerror = function () { reject(new Error('mammoth failed to load')); };
+            document.head.appendChild(s);
+        });
+    }
+
+    function renderDocx(blob) {
+        body.innerHTML = '<span class="text-muted small"><i class="bi bi-hour2"></i> Rendering document…</span>';
+        blob.arrayBuffer()
+            .then(function (buffer) { return loadMammoth().then(function () { return buffer; }); })
+            .then(function (buffer) { return mammoth.convertToHtml({ arrayBuffer: buffer }); })
+            .then(function (result) {
+                body.innerHTML = '<div class="p3-docx" style="user-select:none">' + result.value + '</div>';
+            })
+            .catch(function () {
+                body.innerHTML = '<div class="text-center small text-muted p-4">'
+                    + '<i class="bi bi-file-earmark-x fs-1 d-block mb-2"></i>'
+                    + 'Could not render this DOCX in the browser. '
+                    + 'Use <strong>Download</strong> to open it in Word.</div>';
+            });
+    }
+
     function render(blob) {
-        objectUrl = URL.createObjectURL(blob);
         var mime = (blob.type || '').toLowerCase();
+        var name = (@json($document->original_filename) || '').toLowerCase();
+        var isDocx = mime === DOCX_MIME || name.slice(-5) === '.docx';
+
+        if (isDocx) { renderDocx(blob); return; }
+
+        objectUrl = URL.createObjectURL(blob);
         var html;
         if (mime === 'application/pdf') {
             // toolbar=0 hides the PDF viewer's own download/print controls

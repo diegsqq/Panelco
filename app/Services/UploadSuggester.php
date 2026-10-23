@@ -33,13 +33,15 @@ class UploadSuggester
 
     /**
      * @return array{title: string, category_id: ?int, document_date: ?string, text_found: bool}
+     *
+     * @param  ?int  $clientTimestamp  file.lastModified from the browser (ms).
      */
-    public function suggest(UploadedFile $file): array
+    public function suggest(UploadedFile $file, ?int $clientTimestamp = null): array
     {
         $result = [
             'title' => $this->titleFromFilename($file->getClientOriginalName()),
             'category_id' => null,
-            'document_date' => null,
+            'document_date' => $this->creationDate($file, $clientTimestamp),
             'text_found' => false,
         ];
 
@@ -58,9 +60,88 @@ class UploadSuggester
         $result['text_found'] = true;
         $result['title'] = $this->titleFromText($text) ?? $result['title'];
         $result['category_id'] = $this->recommender->suggest($text)['category_id'] ?? null;
-        $result['document_date'] = $this->detectDate($text);
+        $result['document_date'] = $result['document_date'] ?? $this->detectDate($text);
 
         return $result;
+    }
+
+    /**
+     * Date the file itself was created: embedded metadata first
+     * (DOCX core.xml, PDF CreationDate), then the browser's
+     * file.lastModified. Y-m-d or null.
+     */
+    public function creationDate(UploadedFile $file, ?int $clientTimestamp = null): ?string
+    {
+        $path = (string) $file->getRealPath();
+        $ext = strtolower((string) $file->getClientOriginalExtension());
+
+        $fromMeta = match ($ext) {
+            'docx' => $this->docxCreatedAt($path),
+            'pdf' => $this->pdfCreatedAt($path),
+            default => null,
+        };
+
+        if ($fromMeta !== null
+            && preg_match('/^(\d{4})-(\d{2})-(\d{2})/', $fromMeta, $m)
+            && $this->valid((int) $m[1], (int) $m[2], (int) $m[3])) {
+            return sprintf('%04d-%02d-%02d', (int) $m[1], (int) $m[2], (int) $m[3]);
+        }
+
+        if ($clientTimestamp !== null && $clientTimestamp > 0) {
+            // Browsers report milliseconds; accept seconds too.
+            $ts = $clientTimestamp > 10_000_000_000 ? intdiv($clientTimestamp, 1000) : $clientTimestamp;
+            if ($ts > 0) {
+                $year = (int) date('Y', $ts);
+                $month = (int) date('n', $ts);
+                $day = (int) date('j', $ts);
+                if ($this->valid($year, $month, $day)) {
+                    return sprintf('%04d-%02d-%02d', $year, $month, $day);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function docxCreatedAt(string $path): ?string
+    {
+        if ($path === '' || ! is_file($path)) {
+            return null;
+        }
+
+        $zip = new \ZipArchive();
+        if ($zip->open($path) !== true) {
+            return null;
+        }
+        $xml = $zip->getFromName('docProps/core.xml');
+        $zip->close();
+
+        if (! is_string($xml)) {
+            return null;
+        }
+
+        return preg_match('/<dcterms:created[^>]*>\s*([^<\s]+)/', $xml, $m) ? trim($m[1]) : null;
+    }
+
+    private function pdfCreatedAt(string $path): ?string
+    {
+        if ($path === '' || ! is_file($path)) {
+            return null;
+        }
+
+        $raw = @file_get_contents($path);
+        if ($raw === false) {
+            return null;
+        }
+
+        if (preg_match('/\/CreationDate\s*\(D:(\d{4})(\d{2})(\d{2})/', $raw, $m)) {
+            return "{$m[1]}-{$m[2]}-{$m[3]}";
+        }
+        if (preg_match('/<xmp:CreateDate>\s*(\d{4}-\d{2}-\d{2})/', $raw, $m)) {
+            return $m[1];
+        }
+
+        return null;
     }
 
     private function titleFromFilename(string $filename): string

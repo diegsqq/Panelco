@@ -86,6 +86,24 @@
         .p3-result { display: inline-block; padding: .18rem .6rem; border-radius: .5rem; background: var(--p3-navy); color: #fff; font-weight: 700; font-size: .8rem; white-space: nowrap; }
         .p3-formula { display: inline-block; background: #f1f5f3; border: 1px dashed #c9dcd0; color: #33503f; border-radius: .45rem; padding: .12rem .5rem; font-size: .76rem; white-space: nowrap; }
         .p3-cell-interp { color: #4b5a52; max-width: 26rem; }
+        /* View-only DOCX rendering (mammoth.js output) */
+        .p3-docx { background: #fff; width: 100%; min-height: 100%; padding: 2.5rem 3rem; color: #2b3a32; font-size: .88rem; line-height: 1.7; }
+        .p3-docx > * { max-width: 52rem; margin-left: auto; margin-right: auto; }
+        .p3-docx h1, .p3-docx h2, .p3-docx h3, .p3-docx h4 { font-weight: 700; color: #17362a; margin-top: 1.4rem; }
+        .p3-docx h1 { font-size: 1.4rem; }
+        .p3-docx h2 { font-size: 1.2rem; }
+        .p3-docx h3 { font-size: 1.05rem; }
+        .p3-docx p { margin-bottom: .7rem; }
+        .p3-docx table { width: 100%; border-collapse: collapse; margin: 1rem auto; font-size: .8rem; }
+        .p3-docx td, .p3-docx th { border: 1px solid #d5e8db; padding: .45rem .6rem; vertical-align: top; }
+        .p3-docx tr:nth-child(odd) td { background: #fbfefc; }
+        /* Summary card */
+        .p3-summary { position: relative; overflow: hidden; }
+        .p3-summary::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: linear-gradient(180deg, #c9dcd0, #e9f3ec); }
+        .p3-summary.is-verified::before { background: linear-gradient(180deg, #00A868, #7ed99f); }
+        .p3-summary.is-warn::before { background: linear-gradient(180deg, #f0ad4e, #ffe3ae); }
+        .p3-summary-text { color: #33443b; line-height: 1.85; text-align: justify; }
+        .p3-fig { background: #e6f3ea; color: #00743F; font-weight: 700; padding: .05rem .38rem; border-radius: .4rem; font-size: .88em; white-space: nowrap; }
         mark { background: #fff3b0; padding: 0 .1em; border-radius: .2em; }
         @media (max-width: 767.98px) {
             .p3-sidebar { position: fixed; z-index: 1045; top: 0; left: 0; bottom: 0; width: 280px; min-height: auto; transform: translateX(-105%); transition: transform .3s ease; display: flex !important; }
