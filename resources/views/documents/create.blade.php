@@ -27,16 +27,18 @@
 <div class="row">
 <div class="col-12">
 
-    <div class="d-flex align-items-center gap-3 mb-3">
-        <span class="stat-icon" style="background:#e6f3ea;color:#00A868;width:52px;height:52px;font-size:1.4rem"><i class="bi bi-cloud-arrow-up-fill"></i></span>
-        <div>
-            <h4 class="fw-bold mb-0">Upload a document</h4>
-            <small class="text-muted">Title, category, and date are suggested automatically — edit anything before uploading.</small>
-        </div>
-    </div>
-
     <form method="POST" action="{{ route('documents.store') }}" enctype="multipart/form-data" id="uploadForm">
         @csrf
+    <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+        <div class="d-flex align-items-center gap-3">
+            <span class="stat-icon" style="background:#e6f3ea;color:#00A868;width:52px;height:52px;font-size:1.4rem"><i class="bi bi-cloud-arrow-up-fill"></i></span>
+            <div>
+                <h4 class="fw-bold mb-0">Upload a document</h4>
+                <small class="text-muted">Title, category, and date are suggested automatically — edit anything before uploading.</small>
+            </div>
+        </div>
+        <button class="btn btn-p3 px-4" id="submitBtn" type="submit"><i class="bi bi-cloud-upload me-1"></i>Upload &amp; Queue</button>
+    </div>
 
         {{-- Step 1: file picker --}}
         <div class="card card-p3 p-4">
@@ -69,7 +71,7 @@
             </div>
             <div class="up-progress mt-2" id="upProgress"><div class="up-progress-bar"></div></div>
 
-            <input id="file" name="file" type="file" class="d-none @error('file') is-invalid @enderror" accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" required>
+            <input id="file" name="file[]" type="file" class="d-none @error('file') is-invalid @enderror" accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" multiple required>
             <input type="hidden" name="file_last_modified" id="fileLastModified" value="">
             @error('file')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
             <div class="form-text mt-2" id="suggestNote"></div>
@@ -114,16 +116,6 @@
             </div>
         </div>
 
-        {{-- Actions --}}
-        <div class="card card-p3 p-3 mt-3">
-            <div class="d-flex flex-wrap align-items-center gap-2">
-                <div class="alert small mb-0 flex-grow-1 py-2" style="background:#e6f3ea;color:#00743F;border:none">
-                    <i class="bi bi-shield-lock me-1"></i>Private storage · classification needs approval.
-                </div>
-                <a href="{{ route('documents.library') }}" class="btn btn-link text-decoration-none">Cancel</a>
-                <button class="btn btn-p3 px-4" id="submitBtn"><i class="bi bi-cloud-upload me-1"></i>Upload &amp; Queue</button>
-            </div>
-        </div>
     </form>
 
 </div>
@@ -291,7 +283,13 @@
 
     zone.addEventListener('click', function (e) { if (e.target !== removeBtn && !removeBtn.contains(e.target)) input.click(); });
     zone.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } });
-    input.addEventListener('change', function () { accept(input.files[0]); });
+    input.addEventListener('change', function () {
+        if (!input.files.length) return;
+        accept(input.files[0]);
+        if (input.files.length > 1) {
+            fileMeta.textContent += ' · +' + (input.files.length - 1) + ' more file(s)';
+        }
+    });
     removeBtn.addEventListener('click', function (e) { e.stopPropagation(); resetZone(); });
 
     ['dragenter', 'dragover'].forEach(function (ev) {
@@ -300,7 +298,13 @@
     ['dragleave', 'drop'].forEach(function (ev) {
         zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.remove('dragging'); });
     });
-    zone.addEventListener('drop', function (e) { if (e.dataTransfer.files.length) accept(e.dataTransfer.files[0]); });
+    zone.addEventListener('drop', function (e) {
+        if (!e.dataTransfer.files.length) return;
+        var dt = new DataTransfer();
+        Array.from(e.dataTransfer.files).forEach(function (f) { dt.items.add(f); });
+        input.files = dt.files;
+        input.dispatchEvent(new Event('change'));
+    });
 
     form.addEventListener('submit', function () {
         if (!input.files.length) return;

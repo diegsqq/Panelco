@@ -117,43 +117,70 @@ class DocumentController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate($this->uploadRules());
+        $allowedMimes = config('smartdocs.upload.allowed_mimes', self::ALLOWED_MIMES);
+        $maxKb = (int) config('smartdocs.upload.max_kb', self::MAX_KB);
 
-        /** @var \Illuminate\Http\UploadedFile $file */
-        $file = $data['file'];
+        $uploaded = $request->file('file') ?? $request->file('files');
+        if ($uploaded === null) {
+            return back()->withErrors(['file' => 'Please choose at least one file.'])->withInput();
+        }
+        $files = is_array($uploaded) ? $uploaded : [$uploaded];
 
-        if (! in_array($file->getMimeType(), config('smartdocs.upload.allowed_mimes', self::ALLOWED_MIMES), true)) {
-            return back()->withErrors(['file' => 'Unsupported file type. Allowed: PDF, DOCX, TXT, PNG, JPEG.'])->withInput();
+        $title = trim((string) $request->input('title', ''));
+        $categoryId = $request->input('category_id') ?: null;
+        $documentDate = $request->input('document_date') ?: null;
+        $fileLastModified = $request->input('file_last_modified');
+
+        $single = count($files) === 1;
+
+        foreach ($files as $file) {
+            if (! in_array($file->getMimeType(), $allowedMimes, true)) {
+                return back()->withErrors(['file' => 'Unsupported file type for ' . $file->getClientOriginalName() . '. Allowed: PDF, DOCX, TXT, PNG, JPEG.'])->withInput();
+            }
+            if ($file->getSize() > $maxKb * 1024) {
+                return back()->withErrors(['file' => $file->getClientOriginalName() . ' exceeds the ' . number_format($maxKb / 1024, 0) . ' MB limit.'])->withInput();
+            }
         }
 
-        $path = $file->store('documents/' . now()->format('Y/m'), 'private');
+        $count = 0;
+        foreach ($files as $file) {
+            $path = $file->store('documents/' . now()->format('Y/m'), 'private');
 
-        $document = Document::create([
-            'uploaded_by' => $request->user()->id,
-            'title' => ($data['title'] ?? '') ?: pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
-            'original_filename' => $file->getClientOriginalName(),
-            'storage_path' => $path,
-            'mime_type' => $file->getMimeType(),
-            'file_size' => $file->getSize(),
-            'department_id' => $request->user()->department_id,
-            'category_id' => $data['category_id'] ?? null,
-            'document_date' => $data['document_date']
-                ?? app(UploadSuggester::class)->creationDate($file, $data['file_last_modified'] ?? null),
-            'processing_status' => 'pending',
-        ]);
+            $docTitle = $single && $title !== ''
+                ? $title
+                : pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
 
-        ProcessDocument::dispatch($document->id);
+            $document = Document::create([
+                'uploaded_by' => $request->user()->id,
+                'title' => $docTitle,
+                'original_filename' => $file->getClientOriginalName(),
+                'storage_path' => $path,
+                'mime_type' => $file->getMimeType(),
+                'file_size' => $file->getSize(),
+                'department_id' => $request->user()->department_id,
+                'category_id' => $categoryId,
+                'document_date' => $documentDate
+                    ?? ($single ? app(UploadSuggester::class)->creationDate($file, $fileLastModified) : null),
+                'processing_status' => 'pending',
+            ]);
 
-        AuditLog::create([
-            'user_id' => $request->user()->id,
-            'action' => 'document.uploaded',
-            'entity_type' => Document::class,
-            'entity_id' => $document->id,
-            'metadata' => ['filename' => $document->original_filename, 'size' => $document->file_size],
-        ]);
+            ProcessDocument::dispatch($document->id);
+
+            AuditLog::create([
+                'user_id' => $request->user()->id,
+                'action' => 'document.uploaded',
+                'entity_type' => Document::class,
+                'entity_id' => $document->id,
+                'metadata' => ['filename' => $file->getClientOriginalName(), 'size' => $file->getSize()],
+            ]);
+
+            $count++;
+        }
 
         return redirect()->route('documents.library')
-            ->with('status', 'Document uploaded and queued for processing.');
+            ->with('status', $count === 1
+                ? 'Document uploaded and queued for processing.'
+                : $count . ' documents uploaded and queued for processing.');
     }
 
     public function show(Document $document): View
