@@ -65,24 +65,9 @@ class DocumentController extends Controller
     {
         $query = $this->visibleToUser($request);
 
-        if ($q = trim((string) $request->get('q', ''))) {
-            $query->where(function ($w) use ($q) {
-                $w->where('title', 'like', "%{$q}%")
-                    ->orWhere('original_filename', 'like', "%{$q}%")
-                    ->orWhere('document_type', 'like', "%{$q}%");
-            });
-        }
-        if ($request->filled('category')) {
-            $query->where('category_id', $request->get('category'));
-        }
-        if ($request->filled('status')) {
-            $query->where('processing_status', $request->get('status'));
-        }
-
         $documents = $query->paginate(12)->withQueryString();
-        $categories = DocumentCategory::orderBy('name')->get();
 
-        return view('documents.index', compact('documents', 'categories'));
+        return view('documents.index', compact('documents'));
     }
 
     public function create(): View

@@ -4,14 +4,7 @@
 <div><h3 class="fw-bold mb-0">Document Library</h3></div>
 <a href="{{ route('documents.upload') }}" class="btn" style="background:#00A868;border-color:#00A868;color:#fff;font-weight:600"><i class="bi bi-cloud-upload me-1"></i>Upload</a>
 </div>
-<div class="card card-p3 p-3 mb-3">
-<form method="GET" action="{{ route('documents.library') }}" class="row g-2">
-<div class="col-md-5"><input name="q" class="form-control" value="{{ request('q') }}" placeholder="Search title, filename, type…"></div>
-<div class="col-md-3"><select name="category" class="form-select"><option value="">All categories</option>@foreach ($categories as $c)<option value="{{ $c->id }}" {{ (string) request('category') === (string) $c->id ? 'selected' : '' }}>{{ $c->name }}</option>@endforeach</select></div>
-<div class="col-md-2"><select name="status" class="form-select"><option value="">All states</option>@foreach (['pending','processing','completed','failed'] as $s)<option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>{{ $s }}</option>@endforeach</select></div>
-<div class="col-md-2 d-grid"><button class="btn btn-outline-success">Filter</button></div>
-</form>
-</div>
+
 <div class="card card-p3 p-0 overflow-hidden">
 @forelse ($documents as $doc)
 @php
@@ -25,9 +18,6 @@ $icon = str_contains($mime, 'pdf') ? ['bi-file-earmark-pdf-fill', '#dc3545'] : (
 <a href="{{ route('documents.show', $doc) }}" class="fw-semibold text-decoration-none stretched-link" style="color:#00743F">{{ $doc->title ?? $doc->original_filename }}</a>
 <div><small class="text-muted">@if($doc->title && $doc->title !== pathinfo($doc->original_filename, PATHINFO_FILENAME)){{ $doc->original_filename }} · @endif{{ number_format($doc->file_size / 1024, 1) }} KB · {{ $doc->category?->name ?? $doc->suggestedCategory?->name ?? 'Uncategorized' }} · {{ $doc->created_at->diffForHumans() }}</small></div>
 </div>
-</div>
-<div class="d-flex align-items-center gap-2">
-@unless($doc->processing_status === 'completed')<span class="badge status-{{ $doc->processing_status }}">{{ $doc->processing_status }}</span>@endunless
 </div>
 </div>
 @empty
