@@ -1,6 +1,5 @@
 @extends('layouts.app')
 @section('content')
-<a href="{{ route('documents.library') }}" class="small text-decoration-none" style="color:#00A868">&larr; Back to library</a>
 <div class="row g-3 mt-1">
 <div class="col-lg-8">
 <div class="card card-p3 p-4">
@@ -16,7 +15,7 @@
 <dt class="col-sm-4"><i class="bi bi-calendar me-1" style="color:#00A868"></i>Document date</dt><dd class="col-sm-8">{{ $document->document_date?->format('Y-m-d') ?? '—' }}</dd>
 <dt class="col-sm-4"><i class="bi bi-cloud-upload me-1" style="color:#00A868"></i>Uploaded</dt><dd class="col-sm-8">{{ $document->created_at->format('M d, Y') }} by {{ $document->uploader?->name ?? '—' }}</dd>
 <dt class="col-sm-4"><i class="bi bi-check-circle me-1" style="color:#00A868"></i>Approved</dt><dd class="col-sm-8">{{ $document->approved_at ? $document->approved_at->format('M d, Y') . ' by ' . ($document->approver?->name ?? '—') : '—' }}</dd>
-<dt class="col-sm-4"><i class="bi bi-key me-1" style="color:#00A868"></i>Keywords</dt><dd class="col-sm-8">@if($document->keywords)@foreach(array_filter(array_map('trim', explode(',', $document->keywords))) as $kw)<span class="badge me-1 mb-1" style="background:#e6f3ea;color:#00743F">{{ $kw }}</span>@endforeach@else<span class="text-muted">—</span>@endif</dd>
+<dt class="col-sm-4"><i class="bi bi-key me-1" style="color:#00A868"></i>Keywords</dt><dd class="col-sm-8">@if($document->keywords)@foreach(array_filter(array_map('trim', explode(',', $document->keywords))) as $kw)<span class="badge me-1 mb-1" style="background:#e6f3ea;color:#00743F">{{ $kw }}</span>@endforeach@endif</dd>
 @if ($document->processing_error)<dt class="col-sm-4"><i class="bi bi-exclamation-triangle me-1" style="color:#dc3545"></i>Error</dt><dd class="col-sm-8 text-danger">{{ $document->processing_error }}</dd>@endif
 </dl>
 </div>
@@ -51,7 +50,7 @@
 <p class="mb-0 text-muted">Still processing.</p>
 @endif
 </div>
-@if($highlightedHtml || count($tables))
+@if(count($tables))
 <div class="card card-p3 p-4 mt-3" id="cited-text">
 <h6 class="fw-bold">Document text</h6>
 @if(count($tables))
@@ -77,12 +76,8 @@
 </table>
 </div>
 @endforeach
-<details class="mt-3">
-<summary class="small" style="cursor:pointer;color:#00743F">View raw extracted text</summary>
-<p class="small mt-2 mb-0" style="white-space:pre-wrap">{!! $highlightedHtml !!}</p>
-</details>
+
 @else
-<p class="small" style="white-space:pre-wrap">{!! $highlightedHtml !!}</p>
 @endif
 </div>
 @endif
@@ -103,7 +98,7 @@
 @if ($document->processing_status === 'failed')
 @can('update', $document)<form method="POST" action="{{ route('documents.retry', $document) }}">@csrf<button class="btn btn-sm w-100" style="background:#00A868;color:#fff">Retry processing</button></form>@endcan
 @endif
-@can('delete', $document)<form method="POST" action="{{ route('documents.destroy', $document) }}" onsubmit="return confirm('are you sure u want to delete it?')">@csrf @method('DELETE')<button class="btn btn-outline-danger btn-sm w-100">Delete</button></form>@endcan
+@can('delete', $document)<form method="POST" action="{{ route('documents.destroy', $document) }}" id="deleteDocForm">@csrf @method('DELETE')<button type="button" class="btn btn-outline-danger btn-sm w-100" data-bs-toggle="modal" data-bs-target="#deleteDocModal"><i class="bi bi-trash me-1"></i>Delete</button></form>@endcan
 </div>
 </div>
 <div class="card card-p3 p-3">
@@ -136,6 +131,21 @@
 </div>
 <div id="viewerBody" class="flex-grow-1" style="overflow:auto;background:#f1f5f3;min-height:0;text-align:center">
 <span class="text-muted small"><i class="bi bi-hour2"></i> Loading…</span>
+</div>
+</div>
+</div>
+</div>
+<div class="modal fade" id="deleteDocModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal-dialog modal-dialog-centered" style="max-width:420px;width:calc(100% - 2rem)">
+<div class="modal-content p3-modal">
+<div class="text-center pt-4 px-4">
+<div class="p3-meow"><img src="{{ asset('images/meow.gif') }}" alt="meow" style="width:90px;height:90px;object-fit:contain"></div>
+<h5 class="fw-bold mt-3 mb-0">Delete this document?</h5>
+<p class="text-muted mb-0 mt-2" style="font-size:.85rem">This permanently removes the file and its indexed passages. This action cannot be undone.</p>
+</div>
+<div class="p3-modal-actions">
+<button type="button" class="btn btn-outline-secondary px-4 flex-fill" data-bs-dismiss="modal">Cancel</button>
+<button type="button" class="btn btn-outline-danger px-4 flex-fill" id="confirmDeleteDocBtn"><i class="bi bi-trash me-1"></i>Delete</button>
 </div>
 </div>
 </div>
@@ -213,6 +223,13 @@
     }
     if (viewerPrintBtn) {
         viewerPrintBtn.addEventListener('click', function () { printNow(); });
+    }
+    var confirmDeleteBtn = document.getElementById('confirmDeleteDocBtn');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function () {
+            var f = document.getElementById('deleteDocForm');
+            if (f) f.submit();
+        });
     }
 
     // Best-effort view-only hardening: no right-click menu, no text

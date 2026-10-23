@@ -162,6 +162,9 @@
             <div class="p3-topbar px-3 px-md-4 py-2 d-flex justify-content-between align-items-center sticky-top">
                 <div class="d-flex align-items-center gap-2">
                     <button class="btn btn-sm d-md-none" id="sidebarToggle" aria-label="Open menu" style="border:1px solid #d5e8db"><i class="bi bi-list"></i></button>
+                    @if(request()->routeIs('documents.show'))
+                    <a href="{{ route('documents.library') }}" class="small text-decoration-none fw-semibold" style="color:#00A868"><i class="bi bi-arrow-left me-1"></i>Back to library</a>
+                    @endif
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-shield-lock text-success" title="Private storage · authorized access only"></i>
