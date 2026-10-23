@@ -31,6 +31,13 @@
 <div class="card card-p3 p-4 mt-3 p3-summary @if($summaryCheck !== null && $summaryCheck['verified']) is-verified @elseif($summaryCheck !== null && $summaryCheck['unsupported']) is-warn @endif">
 <div class="d-flex justify-content-between align-items-center mb-2">
 <h6 class="fw-bold mb-0"><i class="bi bi-journal-text me-1" style="color:#00A868"></i>Summary</h6>
+@if($summaryCheck !== null && $summaryCheck['verified'])
+<span class="badge" id="sum-verified" style="background:#d4edda;color:#155724"><i class="bi bi-patch-check-fill me-1"></i>verified</span>
+@elseif($summaryCheck !== null && count($summaryCheck['unsupported']) > 0)
+<span class="badge" id="sum-unverified" style="background:#fff3cd;color:#856404"><i class="bi bi-exclamation-triangle-fill me-1"></i>unverified</span>
+@elseif($summaryCheck !== null)
+<span class="badge" id="sum-nofigures" style="background:#e9ecef;color:#6c757d">no figures to check</span>
+@endif
 </div>
 @if($document->summary)
 @php
@@ -93,14 +100,6 @@
 <ul class="small mb-0 ps-4">@foreach($details as $d)<li class="mb-1">{{ $d }}</li>@endforeach</ul>
 </div>
 @endif
-<div class="card card-p3 p-4 mt-3">
-<h6 class="fw-bold"><i class="bi bi-lightning-charge-fill me-1" style="color:#00A868"></i>Ask Lightning about this document</h6>
-<div class="d-flex flex-wrap gap-2">
-<a class="btn btn-sm btn-outline-success" href="{{ route('chat.index', ['q' => 'Summarize ' . ($document->title ?? $document->original_filename)]) }}">Summarize it</a>
-<a class="btn btn-sm btn-outline-success" href="{{ route('chat.index', ['q' => 'What are the important details in ' . ($document->title ?? $document->original_filename) . '?']) }}">Important details</a>
-<a class="btn btn-sm btn-outline-success" href="{{ route('chat.index', ['q' => 'What corrective actions were recorded in ' . ($document->title ?? $document->original_filename) . '?']) }}">Corrective actions</a>
-</div>
-</div>
 </div>
 <div class="col-lg-4 d-flex flex-column gap-3">
 <div class="card card-p3 p-3">
@@ -118,6 +117,14 @@
 <h6 class="fw-bold">Processing</h6>
 @unless($document->processing_status === 'completed')<p class="small mb-1">Status: <strong>{{ $document->processing_status }}</strong></p>@endunless
 <p class="small text-muted mb-0">{{ $document->chunks->count() }} indexed passages.</p>
+</div>
+<div class="card card-p3 p-3">
+<h6 class="fw-bold"><i class="bi bi-lightning-charge-fill me-1" style="color:#00A868"></i>Ask Lightning about this document</h6>
+<div class="d-flex flex-wrap gap-2">
+<a class="btn btn-sm btn-outline-success" href="{{ route('chat.index', ['q' => 'Summarize ' . ($document->title ?? $document->original_filename)]) }}">Summarize it</a>
+<a class="btn btn-sm btn-outline-success" href="{{ route('chat.index', ['q' => 'What are the important details in ' . ($document->title ?? $document->original_filename) . '?']) }}">Important details</a>
+<a class="btn btn-sm btn-outline-success" href="{{ route('chat.index', ['q' => 'What corrective actions were recorded in ' . ($document->title ?? $document->original_filename) . '?']) }}">Corrective actions</a>
+</div>
 </div>
 </div>
 </div>
