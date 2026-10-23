@@ -19,7 +19,6 @@
 <dt class="col-sm-4">Keywords</dt><dd class="col-sm-8">@if($document->keywords)@foreach(array_filter(array_map('trim', explode(',', $document->keywords))) as $kw)<span class="badge me-1 mb-1" style="background:#e6f3ea;color:#00743F">{{ $kw }}</span>@endforeach@else<span class="text-muted">—</span>@endif</dd>
 @if ($document->processing_error)<dt class="col-sm-4">Error</dt><dd class="col-sm-8 text-danger">{{ $document->processing_error }}</dd>@endif
 </dl>
-
 </div>
 <div class="card card-p3 p-4 mt-3 p3-summary @if($summaryCheck !== null && $summaryCheck['verified']) is-verified @elseif($summaryCheck !== null && $summaryCheck['unsupported']) is-warn @endif">
 <div class="d-flex justify-content-between align-items-center mb-2">
