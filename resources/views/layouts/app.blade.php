@@ -78,11 +78,8 @@
         .table-p3 tbody tr:nth-child(odd) { background: #fbfefc; }
         .table-p3 tbody tr:hover { background: #eef9f1; }
         .p3-cat-pill { display: inline-block; padding: .2rem .65rem; border-radius: 2rem; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; background: #e6f3ea; color: #1F7A2B; border: 1px solid #cde9d6; }
-        .p3-cat-leverage { background: #e8f0fe; color: #1a4fa0; border-color: #cadcfc; }
-        .p3-cat-profitability { background: #fef4e6; color: #9a6108; border-color: #f8e2bf; }
-        .p3-cat-investment { background: #f3e9fd; color: #6b2fae; border-color: #e2cdf7; }
-        .p3-cat-efficiency { background: #e4f7f7; color: #0e6b6b; border-color: #c4ebeb; }
-        .p3-cat-market { background: #fdeaf1; color: #a82060; border-color: #f8ccd9; }
+        /* Leverage, profitability, investment, efficiency, and market use the
+           same color as the default (liquidity) pill. */
         .p3-result { display: inline-block; padding: .18rem .6rem; border-radius: .5rem; background: var(--p3-navy); color: #fff; font-weight: 700; font-size: .8rem; white-space: nowrap; }
         .p3-formula { display: inline-block; background: #f1f5f3; border: 1px dashed #c9dcd0; color: #33503f; border-radius: .45rem; padding: .12rem .5rem; font-size: .76rem; white-space: nowrap; }
         .p3-cell-interp { color: #4b5a52; max-width: 26rem; }
@@ -121,7 +118,7 @@
             <div class="d-flex align-items-center gap-2 mb-1 px-1">
                 <img src="{{ asset('images/logo.png') }}" alt="PANELCO III" style="width:58px;height:58px;object-fit:contain">
                 <div class="text-white lh-sm">
-                    <div class="fw-bold fs-5">SmartDocs AI</div>
+                    <div class="fw-bold fs-3">SmartDocs AI</div>
                 </div>
             </div>
             <nav class="nav flex-column gap-1 flex-grow-1" id="p3Nav">
