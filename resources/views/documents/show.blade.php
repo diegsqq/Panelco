@@ -10,8 +10,8 @@
 </div>
 <hr>
 <dl class="row small mb-0">
-<dt class="col-sm-4">Type</dt><dd class="col-sm-8">{{ $document->document_type ?? '—' }}</dd>
-<dt class="col-sm-4">Category</dt><dd class="col-sm-8">{{ $document->category?->name ?? $document->suggestedCategory?->name ?? '—' }}@if(!$document->category && $document->suggestedCategory) <span class="text-muted">suggested{{ $document->classification_confidence !== null ? ' · ' . round($document->classification_confidence * 100) . '%' : '' }}</span>@endif</dd>
+<dt class="col-sm-4"><i class="bi bi-file-earmark me-1" style="color:#00A868"></i>Type</dt><dd class="col-sm-8">{{ $document->document_type ?? '—' }}</dd>
+<dt class="col-sm-4"><i class="bi bi-tags me-1" style="color:#00A868"></i>Category</dt><dd class="col-sm-8">{{ $document->category?->name ?? $document->suggestedCategory?->name ?? '—' }}@if(!$document->category && $document->suggestedCategory) <span class="text-muted">suggested{{ $document->classification_confidence !== null ? ' · ' . round($document->classification_confidence * 100) . '%' : '' }}</span>@endif</dd>
 <dt class="col-sm-4">Department</dt><dd class="col-sm-8">{{ $document->department?->name ?? '—' }}</dd>
 <dt class="col-sm-4">Document date</dt><dd class="col-sm-8">{{ $document->document_date?->format('Y-m-d') ?? '—' }}</dd>
 <dt class="col-sm-4">Uploaded</dt><dd class="col-sm-8">{{ $document->created_at->format('M d, Y') }} by {{ $document->uploader?->name ?? '—' }}</dd>
@@ -103,7 +103,7 @@
 @if ($document->processing_status === 'failed')
 @can('update', $document)<form method="POST" action="{{ route('documents.retry', $document) }}">@csrf<button class="btn btn-sm w-100" style="background:#00A868;color:#fff">Retry processing</button></form>@endcan
 @endif
-@can('delete', $document)<form method="POST" action="{{ route('documents.destroy', $document) }}" onsubmit="return confirm('Delete this document?')">@csrf @method('DELETE')<button class="btn btn-outline-danger btn-sm w-100">Delete</button></form>@endcan
+@can('delete', $document)<form method="POST" action="{{ route('documents.destroy', $document) }}" onsubmit="return confirm('are you sure u want to delete it?')">@csrf @method('DELETE')<button class="btn btn-outline-danger btn-sm w-100">Delete</button></form>@endcan
 </div>
 </div>
 <div class="card card-p3 p-3">
