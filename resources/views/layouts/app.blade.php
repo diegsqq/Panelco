@@ -77,7 +77,7 @@
         .table-p3 tbody tr { border-top: 1px solid #e9f3ec; }
         .table-p3 tbody tr:nth-child(odd) { background: #fbfefc; }
         .table-p3 tbody tr:hover { background: #eef9f1; }
-        .p3-cat-pill { display: inline-block; padding: .2rem .65rem; border-radius: 2rem; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; background: #e6f3ea; color: #1F7A2B; border: 1px solid #cde9d6; }
+        .p3-cat-pill { display: inline-block; padding: .2rem .65rem; border-radius: 2rem; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; background: #e6f3ea; color: #1F7A2B; border: 1px solid #cde9d6; min-width: 7.5rem; text-align: center; box-sizing: border-box; }
         /* Leverage, profitability, investment, efficiency, and market use the
            same color as the default (liquidity) pill. */
         .p3-result { display: inline-block; padding: .18rem .6rem; border-radius: .5rem; background: var(--p3-navy); color: #fff; font-weight: 700; font-size: .8rem; white-space: nowrap; }
