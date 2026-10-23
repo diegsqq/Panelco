@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-vh-100 d-flex" style="background:linear-gradient(135deg,#00CC33 0%,#007A24 55%,#2ED656 100%)">
+<div class="min-vh-100 d-flex" style="background:linear-gradient(135deg,#00A868 0%,#00743F 55%,#1DBF7D 100%)">
     <div class="container align-self-center py-5">
         <div class="row g-0 shadow overflow-hidden mx-auto" style="max-width:960px;border-radius:1rem">
             <div class="col-md-6 p-4 p-md-5 text-white d-flex flex-column align-items-center justify-content-center text-center" style="background:rgba(0,0,0,.25)">
@@ -16,7 +16,7 @@
                 <div class="mt-4 small" style="color:#9ed2ae"><i class="bi bi-shield-lock me-1"></i>Authorized access only</div>
             </div>
             <div class="col-md-6 p-4 p-md-5 bg-white">
-                <h5 class="fw-bold mt-2" style="color:#00CC33">Employee Login</h5>
+                <h5 class="fw-bold mt-2" style="color:#00A868">Employee Login</h5>
                 <p class="text-muted small">Need access? Contact your administrator.</p>
                 <form method="POST" action="{{ route('login') }}">
                     @csrf
@@ -37,7 +37,7 @@
                         <div class="form-check"><input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}><label class="form-check-label small" for="remember">Remember Me</label></div>
                         @if (Route::has('password.request'))<a class="small" href="{{ route('password.request') }}">Forgot password?</a>@endif
                     </div>
-                    <button type="submit" class="btn w-100" style="background:#00CC33;border-color:#00CC33;color:#fff;font-weight:600">Login to SmartDocs</button>
+                    <button type="submit" class="btn w-100" style="background:#00A868;border-color:#00A868;color:#fff;font-weight:600">Login to SmartDocs</button>
                 </form>
                 <script>
                 (function () {

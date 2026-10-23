@@ -56,7 +56,7 @@
 <input name="ai_max_tokens" type="number" min="64" max="8192" class="form-control" value="{{ old('ai_max_tokens', $val('ai_max_tokens', '1024')) }}" {{ $isAdmin ? 'required' : 'disabled' }}>
 </div>
 <div class="col-12 d-flex flex-wrap gap-3 pt-1">
-<label class="btn btn-sm p3-dept-pill"><input type="checkbox" name="ai_chat_enabled" class="d-none" value="1" {{ $on('ai_chat_enabled') ? 'checked' : '' }} {{ $isAdmin ? '' : 'disabled' }}><i class="bi bi-chat-dots me-1"></i>AI Chat</label>
+<label class="btn btn-sm p3-dept-pill"><input type="checkbox" name="ai_chat_enabled" class="d-none" value="1" {{ $on('ai_chat_enabled') ? 'checked' : '' }} {{ $isAdmin ? '' : 'disabled' }}><i class="bi bi-chat-dots me-1"></i>Lightning</label>
 <label class="btn btn-sm p3-dept-pill"><input type="checkbox" name="ai_autofill_enabled" class="d-none" value="1" {{ $on('ai_autofill_enabled') ? 'checked' : '' }} {{ $isAdmin ? '' : 'disabled' }}><i class="bi bi-magic me-1"></i>Upload Autofill</label>
 <label class="btn btn-sm p3-dept-pill"><input type="checkbox" name="ai_suggest_enabled" class="d-none" value="1" {{ $on('ai_suggest_enabled') ? 'checked' : '' }} {{ $isAdmin ? '' : 'disabled' }}><i class="bi bi-tags me-1"></i>Category Suggestions</label>
 </div>

@@ -2,7 +2,7 @@
 @section('content')
 <div class="row justify-content-center">
 <div class="col-lg-8">
-<div class="card card-p3 p-4 mb-3" style="background:linear-gradient(135deg,#00CC33,#007A24)">
+<div class="card card-p3 p-4 mb-3" style="background:linear-gradient(135deg,#00A868,#00743F)">
 <div class="d-flex align-items-center gap-2 mb-3">
 <span class="d-inline-flex align-items-center justify-content-center" style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.2);color:#fff;font-size:1.2rem"><i class="bi bi-lightning-charge-fill"></i></span>
 <h4 class="fw-bold text-white mb-0">Lightning</h4>
@@ -11,7 +11,7 @@
 @csrf
 <div class="input-group">
 <input name="question" class="form-control" maxlength="2000" required placeholder="Ask about your documents…" value="{{ request('q') }}" aria-label="Ask about your documents">
-<button class="btn" style="background:#fff;color:#007A24;font-weight:700">Send</button>
+<button class="btn" style="background:#fff;color:#00743F;font-weight:700">Send</button>
 </div>
 </form>
 <div class="d-flex flex-wrap gap-2 mt-3">
@@ -39,7 +39,7 @@
 <div class="p-3 border-bottom fw-bold">Your conversations</div>
 @forelse ($conversations as $c)
 <div class="d-flex justify-content-between align-items-center border-bottom p-3">
-<a href="{{ route('chat.show', $c) }}" class="fw-semibold text-decoration-none" style="color:#007A24">{{ $c->title }}</a>
+<a href="{{ route('chat.show', $c) }}" class="fw-semibold text-decoration-none" style="color:#00743F">{{ $c->title }}</a>
 <small class="text-muted">{{ $c->created_at->diffForHumans() }}</small>
 </div>
 @empty

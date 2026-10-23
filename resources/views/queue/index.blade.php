@@ -12,10 +12,10 @@
 <div class="card card-p3 p-0 overflow-hidden">
 @forelse ($items as $doc)
 <div class="d-flex justify-content-between align-items-center border-bottom p-3 src-card position-relative">
-<div><a href="{{ route('documents.show', $doc) }}" class="fw-semibold text-decoration-none stretched-link" style="color:#007A24">{{ $doc->title ?? $doc->original_filename }}</a><div><small class="text-muted">uploaded {{ $doc->created_at->diffForHumans() }}@if($doc->processing_error) · <span class="text-danger">{{ $doc->processing_error }}</span>@endif</small></div></div>
+<div><a href="{{ route('documents.show', $doc) }}" class="fw-semibold text-decoration-none stretched-link" style="color:#00743F">{{ $doc->title ?? $doc->original_filename }}</a><div><small class="text-muted">uploaded {{ $doc->created_at->diffForHumans() }}@if($doc->processing_error) · <span class="text-danger">{{ $doc->processing_error }}</span>@endif</small></div></div>
 <div class="d-flex align-items-center gap-2">
 <span class="badge status-{{ $doc->processing_status }}">{{ $doc->processing_status }}</span>
-@if ($doc->processing_status === 'failed')<form method="POST" action="{{ route('documents.retry', $doc) }}" style="position:relative;z-index:1">@csrf<button class="btn btn-sm" style="background:#00CC33;color:#fff">Retry</button></form>@endif
+@if ($doc->processing_status === 'failed')<form method="POST" action="{{ route('documents.retry', $doc) }}" style="position:relative;z-index:1">@csrf<button class="btn btn-sm" style="background:#00A868;color:#fff">Retry</button></form>@endif
 </div>
 </div>
 @empty

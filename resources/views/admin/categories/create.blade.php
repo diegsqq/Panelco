@@ -24,7 +24,7 @@
     <div class="form-text" id="aiKwMsg">Matching is case-insensitive substring search over extracted text.</div>
 </div>
 <div class="d-flex gap-2">
-    <button class="btn px-4" style="background:#00CC33;color:#fff"><i class="bi bi-check-lg me-1"></i>Save</button>
+    <button class="btn px-4" style="background:#00A868;color:#fff"><i class="bi bi-check-lg me-1"></i>Save</button>
     <a href="{{ route('admin.categories.index') }}" class="btn btn-outline-secondary">Cancel</a>
 </div>
 </form>

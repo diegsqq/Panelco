@@ -6,6 +6,8 @@ use App\Jobs\ProcessDocument;
 use App\Models\AuditLog;
 use App\Models\Document;
 use App\Models\DocumentCategory;
+use App\Services\UploadSuggester;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -89,6 +91,26 @@ class DocumentController extends Controller
         return view('documents.create', compact('categories'));
     }
 
+    /**
+     * AJAX: reads the selected file and proposes editable title, category,
+     * and document date before the user actually uploads.
+     */
+    public function suggest(Request $request, UploadSuggester $suggester): JsonResponse
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:' . implode(',', config('smartdocs.upload.allowed_extensions')), 'max:' . config('smartdocs.upload.max_kb', self::MAX_KB)],
+        ]);
+
+        /** @var \Illuminate\Http\UploadedFile $file */
+        $file = $request->file('file');
+
+        if (! in_array($file->getMimeType(), config('smartdocs.upload.allowed_mimes', self::ALLOWED_MIMES), true)) {
+            return response()->json(['message' => 'Unsupported file type.'], 422);
+        }
+
+        return response()->json($suggester->suggest($file));
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate($this->uploadRules());
@@ -153,7 +175,15 @@ class DocumentController extends Controller
             ? app(\App\Services\DetailExtractor::class)->extract($document->extracted_text)
             : [];
 
-        return view('documents.show', compact('document', 'categories', 'highlightedHtml', 'details'));
+        $tables = app(\App\Services\StructuredTableExtractor::class)->extract($document->extracted_text);
+
+        $summaryCheck = null;
+        if ($document->summary !== null && $document->extracted_text) {
+            $summaryCheck = app(\App\Services\SummaryVerifier::class)
+                ->verify($document->summary, $document->extracted_text);
+        }
+
+        return view('documents.show', compact('document', 'categories', 'highlightedHtml', 'details', 'tables', 'summaryCheck'));
     }
 
     public function download(Document $document): StreamedResponse
@@ -173,6 +203,31 @@ class DocumentController extends Controller
         ]);
 
         return Storage::disk('private')->download($document->storage_path, $document->original_filename);
+    }
+
+    public function view(Document $document): StreamedResponse
+    {
+        $this->authorize('download', $document);
+
+        if (! Storage::disk('private')->exists($document->storage_path)) {
+            abort(404, 'File not found in private storage.');
+        }
+
+        AuditLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'document.viewed',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+            'metadata' => ['filename' => $document->original_filename],
+        ]);
+
+        // Inline disposition: PDFs and images render in the browser tab.
+        return Storage::disk('private')->response(
+            $document->storage_path,
+            $document->original_filename,
+            [],
+            'inline'
+        );
     }
 
     public function retry(Document $document): RedirectResponse

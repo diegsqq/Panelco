@@ -10,9 +10,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         :root {
-            --p3-navy: #00CC33;
-            --p3-navy-2: #007A24;
-            --p3-blue: #2ED656;
+            --p3-navy: #00A868;
+            --p3-navy-2: #00743F;
+            --p3-blue: #1DBF7D;
             --p3-yellow: #ffffff;
             --p3-yellow-dark: #e6f3ea;
             --p3-bg: #f2f7f3;
@@ -45,30 +45,48 @@
         .status-failed { background: #f8d7da; color: #721c24; }
         main { animation: p3-fade .3s ease; }
         @keyframes p3-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-        .form-control:focus, .form-select:focus, .btn:focus-visible, a:focus-visible { box-shadow: 0 0 0 .25rem rgba(0,204,51,.25); outline: none; }
+        .form-control:focus, .form-select:focus, .btn:focus-visible, a:focus-visible { box-shadow: 0 0 0 .25rem rgba(0,168,104,.25); outline: none; }
         .form-select.p3-chosen { color: var(--p3-navy); font-weight: 600; background-color: #f0f9f3; }
         .p3-dept-pill { border: 1px solid #d5e8db; color: var(--p3-navy); background: #fff; border-radius: 2rem; font-weight: 500; padding: .35rem .9rem; transition: all .15s ease; }
         .p3-dept-pill:hover { background: #e6f3ea; }
-        .p3-dept-pill:has(input:checked) { background: var(--p3-navy); border-color: var(--p3-navy); color: #fff; box-shadow: 0 2px 6px rgba(0,204,51,.3); }
+        .p3-dept-pill:has(input:checked) { background: var(--p3-navy); border-color: var(--p3-navy); color: #fff; box-shadow: 0 2px 6px rgba(0,168,104,.3); }
         .p3-logout { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.3); color: #fff; border-radius: .75rem; font-weight: 600; padding: .6rem 1rem; letter-spacing: .3px; transition: all .18s ease; }
         .p3-logout:hover, .p3-logout:focus { background: #fff; color: #c0392b; border-color: #fff; box-shadow: 0 6px 16px rgba(0,0,0,.3); transform: translateY(-1px); }
         .p3-logout:active { transform: none; }
-        .p3-modal { position: relative; border: none; border-radius: 1.25rem; overflow: hidden; box-shadow: 0 20px 50px rgba(0,110,34,.25); }
+        .p3-modal { position: relative; border: none; border-radius: 1.25rem; overflow: hidden; box-shadow: 0 20px 50px rgba(0,100,60,.25); }
         .p3-modal .btn-close { position: absolute; top: .75rem; right: .75rem; opacity: .5; }
-        .p3-meow { display: block; margin: 0 auto; filter: drop-shadow(0 6px 12px rgba(0,110,34,.25)); }
+        .p3-meow { display: block; margin: 0 auto; filter: drop-shadow(0 6px 12px rgba(0,100,60,.25)); }
         @keyframes p3-meow-bob { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-7px) rotate(2deg); } }
         .p3-modal-actions { display: flex; gap: .75rem; padding: 1rem 1.25rem 1.25rem; margin-top: 1.25rem; border-top: 1px solid var(--p3-card-border); }
         .p3-modal .btn { border-radius: .7rem; font-weight: 600; padding: .55rem 1rem; }
         .lift { transition: transform .18s ease, box-shadow .18s ease; }
-        .lift:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,110,34,.12); }
+        .lift:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,100,60,.12); }
         .avatar { width: 32px; height: 32px; flex: 0 0 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; }
-        .avatar-user { background: #00CC33; color: #fff; }
-        .avatar-ai { background: #fff; color: #00CC33; border: 2px solid #00CC33; }
+        .avatar-user { background: #00A868; color: #fff; }
+        .avatar-ai { background: #fff; color: #00A868; border: 2px solid #00A868; }
         .msg-in { animation: p3-msg .25s ease; }
         @keyframes p3-msg { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
         .chat-scroll { max-height: calc(100vh - 320px); min-height: 240px; overflow-y: auto; }
         .src-card { transition: background-color .15s ease, transform .15s ease; }
         .src-card:hover { background: #e6f3ea; transform: translateX(3px); }
+        /* Extracted-table rendering */
+        .p3-table-wrap { border: 1px solid var(--p3-card-border); border-radius: .85rem; overflow: hidden; }
+        .table-p3 { --bs-table-striped-bg: #f6fbf7; margin-bottom: 0; }
+        .table-p3 thead th { background: linear-gradient(180deg, var(--p3-navy) 0%, var(--p3-navy-2) 100%); color: #fff; font-size: .72rem; text-transform: uppercase; letter-spacing: .5px; font-weight: 700; border: 0; padding: .65rem .85rem; white-space: nowrap; }
+        .table-p3 tbody td { font-size: .82rem; padding: .7rem .85rem; vertical-align: top; }
+        .table-p3 tbody tr { border-top: 1px solid #e9f3ec; }
+        .table-p3 tbody tr:nth-child(odd) { background: #fbfefc; }
+        .table-p3 tbody tr:hover { background: #eef9f1; }
+        .p3-cat-pill { display: inline-block; padding: .2rem .65rem; border-radius: 2rem; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; background: #e6f3ea; color: #1F7A2B; border: 1px solid #cde9d6; }
+        .p3-cat-leverage { background: #e8f0fe; color: #1a4fa0; border-color: #cadcfc; }
+        .p3-cat-profitability { background: #fef4e6; color: #9a6108; border-color: #f8e2bf; }
+        .p3-cat-investment { background: #f3e9fd; color: #6b2fae; border-color: #e2cdf7; }
+        .p3-cat-efficiency { background: #e4f7f7; color: #0e6b6b; border-color: #c4ebeb; }
+        .p3-cat-market { background: #fdeaf1; color: #a82060; border-color: #f8ccd9; }
+        .p3-result { display: inline-block; padding: .18rem .6rem; border-radius: .5rem; background: var(--p3-navy); color: #fff; font-weight: 700; font-size: .8rem; white-space: nowrap; }
+        .p3-formula { display: inline-block; background: #f1f5f3; border: 1px dashed #c9dcd0; color: #33503f; border-radius: .45rem; padding: .12rem .5rem; font-size: .76rem; white-space: nowrap; }
+        .p3-cell-interp { color: #4b5a52; max-width: 26rem; }
+        mark { background: #fff3b0; padding: 0 .1em; border-radius: .2em; }
         @media (max-width: 767.98px) {
             .p3-sidebar { position: fixed; z-index: 1045; top: 0; left: 0; bottom: 0; width: 280px; min-height: auto; transform: translateX(-105%); transition: transform .3s ease; display: flex !important; }
             .p3-sidebar.open { transform: none; box-shadow: 0 0 40px rgba(0,0,0,.35); }
@@ -93,7 +111,7 @@
                 <a class="nav-link {{ request()->routeIs('dashboard','home') ? 'active' : '' }}" href="{{ route('dashboard') }}"><span class="nav-ico"><i class="bi bi-grid-1x2-fill"></i></span>Dashboard</a>
                 <a class="nav-link {{ request()->routeIs('documents.upload') ? 'active' : '' }}" href="{{ route('documents.upload') }}"><span class="nav-ico"><i class="bi bi-cloud-arrow-up-fill"></i></span>Upload Documents</a>
                 <a class="nav-link {{ request()->routeIs('documents.library') ? 'active' : '' }}" href="{{ route('documents.library') }}"><span class="nav-ico"><i class="bi bi-folder-fill"></i></span>Document Library</a>
-                <a class="nav-link {{ request()->routeIs('chat.*') ? 'active' : '' }}" href="{{ route('chat.index') }}"><span class="nav-ico"><i class="bi bi-lightning-charge-fill"></i></span>AI Chat</a>
+                <a class="nav-link {{ request()->routeIs('chat.*') ? 'active' : '' }}" href="{{ route('chat.index') }}"><span class="nav-ico"><i class="bi bi-lightning-charge-fill"></i></span>Lightning</a>
                 @php $settingsOpen = request()->routeIs('settings.*') || request()->routeIs('admin.*'); @endphp
                 <a class="nav-link {{ $settingsOpen ? 'active' : '' }}" data-bs-toggle="collapse" href="#settingsMenu" role="button" aria-expanded="{{ $settingsOpen ? 'true' : 'false' }}"><span class="nav-ico"><i class="bi bi-gear-fill"></i></span>Settings<i class="bi bi-chevron-down ms-auto small"></i></a>
                 <div class="collapse {{ $settingsOpen ? 'show' : '' }} ps-3" id="settingsMenu">
@@ -132,7 +150,7 @@
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-shield-lock text-success" title="Private storage · authorized access only"></i>
-                    <span class="fw-semibold" style="font-size:.82rem;color:#007A24">{{ \App\Models\User::roleLabel(auth()->user()->role) }}</span>
+                    <span class="fw-semibold" style="font-size:.82rem;color:#00743F">{{ \App\Models\User::roleLabel(auth()->user()->role) }}</span>
                 </div>
             </div>
             <main class="p-3">

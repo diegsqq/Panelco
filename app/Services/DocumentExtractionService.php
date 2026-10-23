@@ -14,6 +14,25 @@ use Smalot\PdfParser\Parser as PdfParser;
 class DocumentExtractionService
 {
     /**
+     * Extracts straight from a not-yet-stored upload (pre-save suggestions).
+     *
+     * @throws ExtractionFailedException
+     */
+    public function extractFromUploadedFile(\Illuminate\Http\UploadedFile $file): string
+    {
+        $ext = strtolower((string) $file->getClientOriginalExtension());
+        $path = (string) $file->getRealPath();
+
+        return match ($ext) {
+            'pdf' => $this->fromPdf($path)['text'],
+            'docx' => $this->fromDocx($path)['text'],
+            'txt' => $this->fromText((string) file_get_contents($path)),
+            'png', 'jpg', 'jpeg' => $this->fromImage($path)['text'],
+            default => throw new ExtractionFailedException('Unsupported file type for text extraction.'),
+        };
+    }
+
+    /**
      * @return array{text: string, pages: array<int, string>}
      *
      * @throws ExtractionFailedException
