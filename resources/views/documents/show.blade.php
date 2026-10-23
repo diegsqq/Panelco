@@ -107,6 +107,7 @@
 <div class="d-grid gap-2">
 @can('download', $document)<button type="button" class="btn btn-sm w-100" style="background:#00A868;color:#fff" data-bs-toggle="modal" data-bs-target="#viewerModal"><i class="bi bi-eye-fill me-1"></i>View document</button>@endcan
 @can('download', $document)<a href="{{ route('documents.download', $document) }}" class="btn btn-outline-success btn-sm"><i class="bi bi-download me-1"></i>Download</a>@endcan
+@can('download', $document)<button type="button" class="btn btn-outline-success btn-sm w-100" id="printDocBtn"><i class="bi bi-printer me-1"></i>Print document</button>@endcan
 @if ($document->processing_status === 'failed')
 @can('update', $document)<form method="POST" action="{{ route('documents.retry', $document) }}">@csrf<button class="btn btn-sm w-100" style="background:#00A868;color:#fff">Retry processing</button></form>@endcan
 @endif
@@ -150,6 +151,59 @@
     if (!modal) return;
     var body = document.getElementById('viewerBody');
     var objectUrl = null;
+    var pendingPrint = false;
+
+    function printNow() {
+        var iframe = body.querySelector('iframe');
+        if (iframe) {
+            try { iframe.contentWindow.focus(); iframe.contentWindow.print(); pendingPrint = false; return; } catch (e) { /* fall through */ }
+        }
+        var img = body.querySelector('img');
+        if (img) {
+            var w = window.open('', '_blank');
+            if (w) {
+                w.document.write('<html><head><title>Print</title></head><body style="margin:0;text-align:center"><img src="' + img.src + '" style="max-width:100%"></body></html>');
+                w.document.close(); w.focus(); w.print();
+            }
+            pendingPrint = false;
+            return;
+        }
+        var docx = body.querySelector('.p3-docx');
+        if (docx) {
+            var w = window.open('', '_blank');
+            if (w) {
+                w.document.write('<html><head><title>Print</title><style>body{font-family:system-ui,sans-serif;padding:2rem;line-height:1.5}</style></head><body>' + docx.innerHTML + '</body></html>');
+                w.document.close(); w.focus(); w.print();
+            }
+            pendingPrint = false;
+            return;
+        }
+        var pre = body.querySelector('pre');
+        if (pre) {
+            var w = window.open('', '_blank');
+            if (w) {
+                w.document.write('<html><head><title>Print</title><style>body{font-family:monospace;padding:2rem;white-space:pre-wrap}</style></head><body><pre>' + pre.textContent.replace(/</g, '&lt;') + '</pre></body></html>');
+                w.document.close(); w.focus(); w.print();
+            }
+            pendingPrint = false;
+            return;
+        }
+        window.print();
+        pendingPrint = false;
+    }
+
+    var printBtn = document.getElementById('printDocBtn');
+    var docTitle = @json($document->original_filename);
+    if (printBtn) {
+        printBtn.addEventListener('click', function () {
+            if (modal.classList.contains('show')) {
+                printNow();
+            } else {
+                pendingPrint = true;
+                bootstrap.Modal.getOrCreateInstance(modal).show();
+            }
+        });
+    }
 
     // Best-effort view-only hardening: no right-click menu, no text
     // selection, no dragging inside the viewer.
@@ -187,6 +241,7 @@
             .then(function (buffer) { return mammoth.convertToHtml({ arrayBuffer: buffer }); })
             .then(function (result) {
                 body.innerHTML = '<div class="p3-docx" style="user-select:none;text-align:left">' + result.value + '</div>';
+                if (pendingPrint) setTimeout(printNow, 600);
             })
             .catch(function () {
                 body.innerHTML = '<div class="text-center small text-muted p-4">'
@@ -221,6 +276,11 @@
         if (html.indexOf('<pre') === 0) {
             blob.text().then(function (t) { body.querySelector('pre').textContent = t; });
         }
+        var iframe = body.querySelector('iframe');
+        if (iframe && pendingPrint) {
+            iframe.onload = function () { setTimeout(printNow, 400); };
+        }
+        if (pendingPrint) setTimeout(printNow, 1200);
     }
 
     modal.addEventListener('shown.bs.modal', function () {
