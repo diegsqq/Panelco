@@ -58,6 +58,19 @@ class ProcessDocument implements ShouldQueue
             'processing_error' => null,
         ];
 
+        // Fall back to the uploader's department when none was recorded.
+        if ($document->department_id === null && $document->uploaded_by !== null) {
+            $document->loadMissing('uploader');
+            if ($document->uploader?->department_id !== null) {
+                $updates['department_id'] = $document->uploader->department_id;
+            }
+        }
+
+        // Fall back to the processing date when no document date was detected.
+        if ($document->document_date === null) {
+            $updates['document_date'] = ($document->created_at ?? now())->toDateString();
+        }
+
         if ($ai->available()) {
             try {
                 $analysis = $ai->analyze($result['text']);
@@ -80,6 +93,12 @@ class ProcessDocument implements ShouldQueue
             }
         }
 
+        // Rule-based keyword fallback so documents still get useful keywords
+        // when no AI provider is configured.
+        if (! isset($updates['keywords']) || $updates['keywords'] === null || trim((string) $updates['keywords']) === '') {
+            $updates['keywords'] = $this->fallbackKeywords($result['text']);
+        }
+
         $document->update($updates);
         $this->audit($document, 'document.processed', ['chunks' => $document->chunks()->count()]);
     }
@@ -93,6 +112,22 @@ class ProcessDocument implements ShouldQueue
             'png', 'jpg', 'jpeg' => 'Image',
             default => null,
         };
+    }
+
+    private function fallbackKeywords(string $text): ?string
+    {
+        $stop = ['the', 'and', 'for', 'with', 'that', 'this', 'from', 'have', 'will', 'your', 'about', 'into', 'their', 'there', 'which', 'would', 'could', 'should', 'other', 'than', 'then', 'them', 'these', 'those', 'such', 'only', 'also', 'more', 'most', 'some', 'each', 'every', 'very', 'just', 'over', 'under', 'between', 'through', 'during', 'before', 'after', 'above', 'below', 'again', 'further', 'once', 'here', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 'can', 'will', 'just', 'don', 'should', 'now'];
+
+        preg_match_all('/\b[\p{L}]{4,}\b/u', mb_strtolower($text), $m);
+        $counts = array_count_values($m[0] ?? []);
+        foreach ($stop as $w) {
+            unset($counts[$w]);
+        }
+        arsort($counts);
+
+        $top = array_slice(array_keys($counts), 0, 6);
+
+        return empty($top) ? null : implode(', ', $top);
     }
 
     private function audit(Document $document, string $action, array $metadata): void

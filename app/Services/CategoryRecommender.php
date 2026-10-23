@@ -19,8 +19,18 @@ class CategoryRecommender
         $lower = mb_strtolower($text);
         $best = null;
 
+        // Built-in keyword boosts for common document families. These keep
+        // suggestions useful even when an admin has not configured keywords
+        // for a category yet (e.g. financial-ratio reports).
+        $builtIn = [
+            'Technical Reports' => 'technical,specification,analysis,findings,methodology,ratio,financial,liquidity,leverage,profitability,investment,efficiency,market,return,asset,current,debt,equity,quick',
+        ];
+
         foreach (DocumentCategory::all() as $category) {
             $keywords = array_filter(array_map('trim', explode(',', (string) $category->keywords)));
+            if (isset($builtIn[$category->name])) {
+                $keywords = array_merge($keywords, array_filter(array_map('trim', explode(',', $builtIn[$category->name]))));
+            }
             if (empty($keywords)) {
                 continue;
             }
