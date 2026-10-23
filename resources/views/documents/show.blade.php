@@ -138,7 +138,7 @@
 <span class="fw-bold text-truncate" style="max-width:80%"><i class="bi bi-eye-fill me-1" style="color:#00A868"></i>{{ $document->original_filename }}</span>
 <span class="badge" style="background:#e6f3ea;color:#1F7A2B">View only</span>
 </div>
-<div id="viewerBody" class="flex-grow-1 d-flex align-items-center justify-content-center" style="overflow:auto;background:#f1f5f3">
+<div id="viewerBody" class="flex-grow-1" style="overflow:auto;background:#f1f5f3;min-height:0;text-align:center">
 <span class="text-muted small"><i class="bi bi-hour2"></i> Loading…</span>
 </div>
 </div>
@@ -186,7 +186,7 @@
             .then(function (buffer) { return loadMammoth().then(function () { return buffer; }); })
             .then(function (buffer) { return mammoth.convertToHtml({ arrayBuffer: buffer }); })
             .then(function (result) {
-                body.innerHTML = '<div class="p3-docx" style="user-select:none">' + result.value + '</div>';
+                body.innerHTML = '<div class="p3-docx" style="user-select:none;text-align:left">' + result.value + '</div>';
             })
             .catch(function () {
                 body.innerHTML = '<div class="text-center small text-muted p-4">'
