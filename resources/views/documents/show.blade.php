@@ -34,13 +34,25 @@
 @php
     // Highlight monetary amounts, percentages, and decimal figures so the
     // numbers pop out of the prose.
-    $summaryHtml = preg_replace(
-        '/(₱\s?[\d,]+(?:\.\d+)?|\b\d[\d,]*(?:\.\d+)?\s?%|\b\d{1,3}(?:,\d{3})+(?:\.\d+)?|\b\d+\.\d+\b)/u',
-        '<span class="p3-fig">$1</span>',
-        e($document->summary)
-    );
+    $highlight = function (string $s): string {
+        return preg_replace(
+            '/(₱\s?[\d,]+(?:\.\d+)?|\b\d[\d,]*(?:\.\d+)?\s?%|\b\d{1,3}(?:,\d{3})+(?:\.\d+)?|\b\d+\.\d+\b)/u',
+            '<span class="p3-fig">$1</span>',
+            e($s)
+        );
+    };
+    $sentences = preg_split('/(?<=[.!?])\s+/u', trim($document->summary)) ?: [];
+    $sentences = array_values(array_filter($sentences, fn ($s) => trim($s) !== ''));
 @endphp
-<p class="mb-0 p3-summary-text">{!! $summaryHtml !!}</p>
+@if(count($sentences) > 1)
+<ul class="mb-0 ps-3 p3-summary-list">
+@foreach($sentences as $s)
+<li class="mb-2">{!! $highlight($s) !!}</li>
+@endforeach
+</ul>
+@else
+<p class="mb-0 p3-summary-text">{!! $highlight($document->summary) !!}</p>
+@endif
 @if($summaryCheck !== null && ! $summaryCheck['verified'] && $summaryCheck['unsupported'])
 <div class="small mt-3 p-2 rounded" style="background:#fff3cd;color:#856404"><i class="bi bi-exclamation-triangle-fill me-1"></i>Not found in the document text: <strong>{{ implode(', ', $summaryCheck['unsupported']) }}</strong></div>
 @endif

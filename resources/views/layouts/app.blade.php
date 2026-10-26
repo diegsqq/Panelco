@@ -100,6 +100,9 @@
         .p3-summary.is-verified::before { background: linear-gradient(180deg, #00A868, #7ed99f); }
         .p3-summary.is-warn::before { background: linear-gradient(180deg, #f0ad4e, #ffe3ae); }
         .p3-summary-text { color: #33443b; line-height: 1.85; text-align: justify; }
+        .p3-summary-list { color: #33443b; line-height: 1.8; }
+        .p3-summary-list li { margin-bottom: .5rem; }
+        .p3-summary-list li::marker { color: #00A868; font-weight: 700; }
         .p3-fig { background: #e6f3ea; color: #00743F; font-weight: 700; padding: .05rem .38rem; border-radius: .4rem; font-size: .88em; white-space: nowrap; }
         mark { background: #fff3b0; padding: 0 .1em; border-radius: .2em; }
         @media (max-width: 767.98px) {
