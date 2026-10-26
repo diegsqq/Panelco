@@ -65,9 +65,20 @@ class DocumentController extends Controller
     {
         $query = $this->visibleToUser($request);
 
+        $search = trim((string) $request->input('q', ''));
+        if ($search !== '') {
+            $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $search) . '%';
+            $query->where(function ($q) use ($like) {
+                $q->where('title', 'like', $like)
+                    ->orWhere('original_filename', 'like', $like)
+                    ->orWhereHas('category', fn ($c) => $c->where('name', 'like', $like))
+                    ->orWhereHas('suggestedCategory', fn ($c) => $c->where('name', 'like', $like));
+            });
+        }
+
         $documents = $query->paginate(12)->withQueryString();
 
-        return view('documents.index', compact('documents'));
+        return view('documents.index', compact('documents', 'search'));
     }
 
     public function create(): View

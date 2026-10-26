@@ -168,6 +168,7 @@
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-shield-lock text-success" title="Private storage · authorized access only"></i>
+                    <span class="fw-semibold small text-dark">{{ auth()->user()->name }}</span>
                 </div>
             </div>
             <main class="p-3">

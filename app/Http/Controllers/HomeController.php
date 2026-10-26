@@ -44,7 +44,13 @@ class HomeController extends Controller
             ->selectRaw('COALESCE(category_id, suggested_category_id) as category_id, COUNT(*) as total')
             ->groupBy('category_id')
             ->with('category')
-            ->get();
+            ->get()
+            ->groupBy(fn ($row) => $row->category?->name ?? 'Uncategorized')
+            ->map(fn ($group) => (object) [
+                'category' => $group->first()->category,
+                'total' => $group->sum('total'),
+            ])
+            ->values();
 
         $recentConversations = Conversation::where('user_id', $user->id)
             ->latest()->limit(5)->get();

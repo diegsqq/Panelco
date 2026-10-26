@@ -1,8 +1,20 @@
 @extends('layouts.app')
 @section('content')
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
 <div><h3 class="fw-bold mb-0">Document Library</h3></div>
+<div class="d-flex flex-wrap gap-2 align-items-center">
+<form method="GET" action="{{ route('documents.library') }}" class="d-flex align-items-center gap-2" role="search">
+    <div class="input-group" style="min-width:16rem">
+        <span class="input-group-text" style="background:#f2f7f3;border-color:#d5e8db;color:#00A868"><i class="bi bi-search"></i></span>
+        <input type="search" name="q" value="{{ $search ?? request('q') }}" class="form-control" placeholder="Search title, file, category…" aria-label="Search documents" style="border-color:#d5e8db">
+    </div>
+    <button type="submit" class="btn btn-sm" style="background:#00A868;border-color:#00A868;color:#fff;font-weight:600">Search</button>
+    @if(($search ?? '') !== '')
+    <a href="{{ route('documents.library') }}" class="btn btn-sm btn-outline-secondary">Clear</a>
+    @endif
+</form>
 <a href="{{ route('documents.upload') }}" class="btn" style="background:#00A868;border-color:#00A868;color:#fff;font-weight:600"><i class="bi bi-cloud-upload me-1"></i>Upload</a>
+</div>
 </div>
 
 <div class="card card-p3 p-0 overflow-hidden">
