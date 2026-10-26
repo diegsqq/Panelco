@@ -40,7 +40,7 @@ $icon = str_contains($mime, 'pdf') ? ['bi-file-earmark-pdf-fill', '#dc3545'] : (
 <div class="d-flex align-items-center gap-2 position-relative" style="z-index:2">
 @can('delete', $doc)
 <button type="button" class="btn btn-sm btn-outline-danger" title="Delete document" data-delete-url="{{ route('documents.destroy', $doc) }}" onclick="window.__libDeleteUrl=this.getAttribute('data-delete-url'); event.stopPropagation(); bootstrap.Modal.getOrCreateInstance(document.getElementById('libDeleteModal')).show();">
-<i class="bi bi-trash me-1"></i>Delete
+<i class="bi bi-trash me-1"></i>
 </button>
 @endcan
 </div>
@@ -60,7 +60,7 @@ $icon = str_contains($mime, 'pdf') ? ['bi-file-earmark-pdf-fill', '#dc3545'] : (
 </div>
 <div class="p3-modal-actions">
 <button type="button" class="btn btn-outline-secondary px-4 flex-fill" data-bs-dismiss="modal">Cancel</button>
-<button type="button" class="btn btn-outline-danger px-4 flex-fill" id="libConfirmDeleteBtn"><i class="bi bi-trash me-1"></i>Delete</button>
+<button type="button" class="btn btn-outline-danger px-4 flex-fill" id="libConfirmDeleteBtn"><i class="bi bi-trash me-1"></i></button>
 </div>
 </div>
 </div>
