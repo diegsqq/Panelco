@@ -50,8 +50,8 @@ $icon = str_contains($mime, 'pdf') ? ['bi-file-earmark-pdf-fill', '#dc3545'] : (
 @endforelse
 </div>
 
-<div class="d-flex align-items-center gap-2">
-<div class="flex-shrink-0" style="min-width:5.5rem">
+<div class="d-flex align-items-center gap-2 justify-content-center">
+<div class="flex-shrink-0">
 @if($documents->hasPages())
     @if($documents->onFirstPage())
         <span class="btn btn-sm btn-outline-secondary disabled">Previous</span>
@@ -60,7 +60,7 @@ $icon = str_contains($mime, 'pdf') ? ['bi-file-earmark-pdf-fill', '#dc3545'] : (
     @endif
 @endif
 </div>
-<div class="flex-shrink-0" style="min-width:5.5rem;text-align:right">
+<div class="flex-shrink-0">
 @if($documents->hasPages())
     @if($documents->hasMorePages())
         <a class="btn btn-sm" style="background:#00A868;border-color:#00A868;color:#fff;font-weight:600" href="{{ $documents->nextPageUrl() }}">Next</a>
