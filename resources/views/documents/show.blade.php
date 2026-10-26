@@ -144,7 +144,6 @@
 <span class="fw-bold text-truncate" style="max-width:70%"><i class="bi bi-eye-fill me-1" style="color:#00A868"></i>{{ $document->original_filename }}</span>
 <div class="d-flex align-items-center gap-2">
 <button type="button" class="btn btn-sm btn-outline-success" id="viewerPrintBtn"><i class="bi bi-printer me-1"></i>Print</button>
-<span class="badge" style="background:#e6f3ea;color:#1F7A2B">View only</span>
 </div>
 </div>
 <div id="viewerBody" class="flex-grow-1" style="overflow:auto;background:#f1f5f3;min-height:0;text-align:center">
