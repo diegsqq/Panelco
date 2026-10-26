@@ -8,6 +8,15 @@
 @unless($document->processing_status === 'completed')<span class="badge status-{{ $document->processing_status }}">{{ $document->processing_status }}</span>@endunless
 </div>
 <hr>
+@can('download', $document)
+@if(str_starts_with($document->mime_type ?? '', 'image/'))
+<div class="text-center mb-3 p-3 rounded" style="background:#f2f7f3;border:1px solid #d5e8db">
+    <img src="{{ route('documents.thumb', $document) }}" alt="{{ $document->original_filename }}"
+        style="max-width:100%;max-height:440px;border-radius:.5rem;box-shadow:0 2px 8px rgba(10,31,92,.12)">
+    <div class="small text-muted mt-2"><i class="bi bi-image me-1"></i>{{ $document->original_filename }}</div>
+</div>
+@endif
+@endcan
 <dl class="row small mb-0">
 <dt class="col-sm-4"><i class="bi bi-file-earmark me-1" style="color:#00A868"></i>Type</dt><dd class="col-sm-8">{{ $document->document_type ?? '—' }}</dd>
 <dt class="col-sm-4"><i class="bi bi-tags me-1" style="color:#00A868"></i>Category</dt><dd class="col-sm-8">{{ $document->category?->name ?? $document->suggestedCategory?->name ?? '—' }}@if(!$document->category && $document->suggestedCategory) <span class="text-muted">suggested{{ $document->classification_confidence !== null ? ' · ' . round($document->classification_confidence * 100) . '%' : '' }}</span>@endif</dd>
@@ -196,6 +205,8 @@
             } catch (e) { /* fall through */ }
         }
         // Print the viewer content with the same styling as on screen.
+        // Bottom padding is intentionally omitted: it pushed a sliver of
+        // content onto a second, otherwise empty page.
         var styles = '';
         document.querySelectorAll('link[rel="stylesheet"], style').forEach(function (s) { styles += s.outerHTML; });
         var frame = document.createElement('iframe');
@@ -208,7 +219,7 @@
         document.body.appendChild(frame);
         var d = frame.contentWindow.document;
         d.open();
-        d.write('<!doctype html><html><head><title></title>' + styles + '<style>@page{margin:0}body{background:#fff;margin:0;padding:1.5cm;}</style></head><body>' + body.innerHTML + '</body></html>');
+        d.write('<!doctype html><html><head><title></title>' + styles + '<style>@page{margin:0}body{background:#fff;margin:0;padding:1.5cm 1.5cm 0 1.5cm;}</style></head><body>' + body.innerHTML + '</body></html>');
         d.close();
         setTimeout(function () {
             frame.contentWindow.focus();

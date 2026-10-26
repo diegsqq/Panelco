@@ -77,9 +77,7 @@ class DocumentExtractionService
         if ($full === '') {
             throw new ExtractionFailedException(
                 'The document was found, but its contents could not be extracted. It may be a scanned image — ' .
-                ($this->ocrAvailable()
-                    ? 'OCR will be attempted by the processing pipeline.'
-                    : 'please upload a readable copy or scan it again.')
+                'please upload a readable (text-based) copy or scan it again.'
             );
         }
 
@@ -100,6 +98,20 @@ class DocumentExtractionService
         }
 
         $full = trim(preg_replace('/[ \t]+/', ' ', implode("\n", array_filter($parts))));
+
+        if ($full === '') {
+            // The DOCX may contain only scanned images (no text runs).
+            // Try OCR on every embedded image before giving up.
+            $ocrParts = [];
+            foreach ($this->docxImagePaths($path) as $imgPath) {
+                $t = $this->ocrFile($imgPath);
+                @unlink($imgPath);
+                if ($t !== '') {
+                    $ocrParts[] = $t;
+                }
+            }
+            $full = trim(implode("\n\n", $ocrParts));
+        }
 
         if ($full === '') {
             throw new ExtractionFailedException('The document was found, but its contents could not be extracted. Please upload a readable copy.');
@@ -146,25 +158,10 @@ class DocumentExtractionService
 
     private function fromImage(string $path): array
     {
-        $binary = $this->ocrBinary();
-        if ($binary === null) {
-            throw new ExtractionFailedException('The document was found, but its contents could not be extracted. Image OCR is not installed — please upload a readable copy or scan it again.');
-        }
+        $text = $this->ocrFile($path);
 
-        $tmp = tempnam(sys_get_temp_dir(), 'ocr') . '.txt';
-        $cmd = escapeshellarg($binary) . ' ' . escapeshellarg($path) . ' ' . escapeshellarg(substr($tmp, 0, -4)) . ' 2>&1';
-        $output = [];
-        $code = 0;
-        exec($cmd, $output, $code);
-
-        $text = '';
-        if (is_file($tmp)) {
-            $text = trim((string) file_get_contents($tmp));
-            @unlink($tmp);
-        }
-
-        if ($code !== 0 || $text === '') {
-            throw new ExtractionFailedException('The document was found, but its contents could not be extracted. Please upload a readable copy or scan it again.');
+        if ($text === '') {
+            throw new ExtractionFailedException('The document was found, but its contents could not be extracted. Image OCR found no readable text — please upload a clearer scan.');
         }
 
         return ['text' => $text, 'pages' => [1 => $text]];
@@ -173,6 +170,105 @@ class DocumentExtractionService
     public function ocrAvailable(): bool
     {
         return $this->ocrBinary() !== null;
+    }
+
+    private function ocrFile(string $path): string
+    {
+        $binary = $this->ocrBinary();
+        if ($binary === null) {
+            return '';
+        }
+
+        // Tesseract does not accept every image container (e.g. JFIF);
+        // normalise to PNG via GD when the extension is not directly
+        // supported, so embedded DOCX images (image1.jfif) still OCR.
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $input = $path;
+        $tmpPng = null;
+        if (! in_array($ext, ['png', 'jpg', 'jpeg', 'tif', 'tiff', 'bmp'], true)) {
+            if (extension_loaded('gd')) {
+                $im = @imagecreatefromstring((string) @file_get_contents($path));
+                if ($im !== false) {
+                    $tmpPng = tempnam(sys_get_temp_dir(), 'ocrimg') . '.png';
+                    imagepng($im, $tmpPng);
+                    imagedestroy($im);
+                    $input = $tmpPng;
+                }
+            }
+        }
+
+        $tmp = tempnam(sys_get_temp_dir(), 'ocr') . '.txt';
+        $best = '';
+        $bestScore = 0;
+        foreach ([6, 4, 3, 11] as $psm) {
+            $runTmp = tempnam(sys_get_temp_dir(), 'ocr') . '.txt';
+            $cmd = escapeshellarg($binary) . ' ' . escapeshellarg($input)
+                . ' ' . escapeshellarg(substr($runTmp, 0, -4))
+                . ' --psm ' . $psm . ' -l eng 2>&1';
+            $output = [];
+            $code = 0;
+            exec($cmd, $output, $code);
+
+            $text = '';
+            if (is_file($runTmp)) {
+                $text = trim((string) file_get_contents($runTmp));
+                @unlink($runTmp);
+            }
+            if ($code !== 0 || $text === '') {
+                continue;
+            }
+            // Score by alphanumeric content; prefer the pass that yields
+            // the most real (letter/digit) characters.
+            $score = preg_match_all('/[\p{L}\p{N}]/u', $text);
+            if ($score > $bestScore) {
+                $bestScore = $score;
+                $best = $text;
+            }
+        }
+        @unlink($tmp);
+
+        $text = $best;
+
+        if ($tmpPng !== null) {
+            @unlink($tmpPng);
+        }
+
+        return $text;
+    }
+
+    /**
+     * Extract embedded image files from a DOCX archive to temp files.
+     *
+     * @return string[]
+     */
+    private function docxImagePaths(string $path): array
+    {
+        $zip = new \ZipArchive();
+        if ($zip->open($path) !== true) {
+            return [];
+        }
+
+        $paths = [];
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = $zip->getNameIndex($i);
+            if (! preg_match('#^word/media/.+#i', (string) $name)) {
+                continue;
+            }
+            $ext = strtolower(pathinfo((string) $name, PATHINFO_EXTENSION));
+            if (! in_array($ext, ['png', 'jpg', 'jpeg', 'jfif', 'gif', 'bmp', 'tif', 'tiff', 'webp'], true)) {
+                continue;
+            }
+            $bin = $zip->getFromIndex($i);
+            if ($bin === false) {
+                continue;
+            }
+            $tmp = tempnam(sys_get_temp_dir(), 'docximg');
+            file_put_contents($tmp, $bin);
+            $paths[] = $tmp;
+        }
+        $zip->close();
+
+        return $paths;
     }
 
     private function ocrBinary(): ?string

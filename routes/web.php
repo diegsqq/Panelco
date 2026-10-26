@@ -26,6 +26,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/library/{document}', [App\Http\Controllers\DocumentController::class, 'show'])->name('documents.show');
     Route::get('/library/{document}/download', [App\Http\Controllers\DocumentController::class, 'download'])->name('documents.download');
     Route::get('/library/{document}/view', [App\Http\Controllers\DocumentController::class, 'view'])->name('documents.view');
+    Route::get('/library/{document}/thumb', [App\Http\Controllers\DocumentController::class, 'thumb'])->name('documents.thumb');
     Route::post('/library/{document}/retry', [App\Http\Controllers\DocumentController::class, 'retry'])->name('documents.retry');
     Route::post('/library/{document}/approve', [App\Http\Controllers\DocumentController::class, 'approve'])->name('documents.approve');
     Route::delete('/library/{document}', [App\Http\Controllers\DocumentController::class, 'destroy'])->name('documents.destroy');

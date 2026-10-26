@@ -76,7 +76,7 @@ class DocumentController extends Controller
             });
         }
 
-        $documents = $query->paginate(12)->withQueryString();
+        $documents = $query->paginate(10)->withQueryString();
 
         return view('documents.index', compact('documents', 'search'));
     }
@@ -124,6 +124,10 @@ class DocumentController extends Controller
 
         $title = trim((string) $request->input('title', ''));
         $categoryId = $request->input('category_id') ?: null;
+        if ($categoryId === null) {
+            // No category chosen → file lands in "Others".
+            $categoryId = DocumentCategory::firstOrCreate(['name' => 'Others'])->id;
+        }
         $documentDate = $request->input('document_date') ?: null;
         $fileLastModified = $request->input('file_last_modified');
 
@@ -254,6 +258,25 @@ class DocumentController extends Controller
             $document->storage_path,
             $document->original_filename,
             [],
+            'inline'
+        );
+    }
+
+    public function thumb(Document $document): StreamedResponse
+    {
+        // Lightweight image preview for lists/detail pages: same access
+        // rules as view(), but no audit log (thumbnails fire on every page
+        // load) and short browser cache.
+        $this->authorize('download', $document);
+
+        if (! Storage::disk('private')->exists($document->storage_path)) {
+            abort(404, 'File not found in private storage.');
+        }
+
+        return Storage::disk('private')->response(
+            $document->storage_path,
+            $document->original_filename,
+            ['Cache-Control' => 'private, max-age=3600'],
             'inline'
         );
     }
