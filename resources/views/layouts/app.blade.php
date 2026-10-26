@@ -91,7 +91,7 @@
         .p3-docx h2 { font-size: 1.2rem; }
         .p3-docx h3 { font-size: 1.05rem; }
         .p3-docx p { margin-bottom: .7rem; }
-        .p3-docx table { width: 100%; border-collapse: collapse; margin: 1rem auto; font-size: .8rem; }
+        .p3-docx img { max-width: 100%; height: auto; border-radius: .5rem; margin: .5rem 0; }
         .p3-docx td, .p3-docx th { border: 1px solid #d5e8db; padding: .45rem .6rem; vertical-align: top; }
         .p3-docx tr:nth-child(odd) td { background: #fbfefc; }
         /* Summary card */
