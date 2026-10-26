@@ -5,9 +5,10 @@
     $val = fn (string $key, string $default = '') => $s[$key] ?? $default;
     $on = fn (string $key, string $default = '1') => $val($key, $default) === '1';
 @endphp
+
 <div class="d-flex justify-content-between align-items-center mb-3">
-<h4 class="mb-0">General Settings</h4>
-@if(! $isAdmin)<span class="badge" style="background:#fff3cd;color:#856404"><i class="bi bi-eye me-1"></i>View only</span>@endif
+    <h4 class="mb-0">My Profile</h4>
+    @if(! $isAdmin)<span class="badge" style="background:#fff3cd;color:#856404"><i class="bi bi-eye me-1"></i>View only</span>@endif
 </div>
 
 @if($isAdmin)
@@ -16,6 +17,7 @@
 @method('PUT')
 @endif
 
+@if($isAdmin)
 <div class="row g-4">
 <div class="col-lg-6">
 <div class="card card-p3 p-4 h-100">
@@ -31,6 +33,7 @@
 <div class="col-md-4">
 <label class="form-label">Support Email</label>
 <input name="support_email" type="email" class="form-control" value="{{ old('support_email', $val('support_email')) }}" placeholder="it@panelco.gov.ph" {{ $isAdmin ? '' : 'disabled' }}>
+</div>
 </div>
 </div>
 </div>
@@ -63,6 +66,7 @@
 </div>
 </div>
 </div>
+</div>
 
 <div class="col-lg-6">
 <div class="card card-p3 p-4 h-100">
@@ -87,6 +91,7 @@
 </div>
 </div>
 </div>
+</div>
 
 <div class="col-lg-6">
 <div class="card card-p3 p-4 h-100">
@@ -107,6 +112,7 @@
 </div>
 </div>
 </div>
+@endif
 
 @if($isAdmin)
 <div class="d-flex gap-2 mt-4">
@@ -114,7 +120,29 @@
 <a href="{{ route('settings.index') }}" class="btn btn-outline-secondary px-4">Reset</a>
 </div>
 @endif
-@if($isAdmin)
+@if(!$isAdmin)
+<form method="POST" action="{{ route('settings.update') }}">
+@csrf
+@method('PUT')
+
+<div class="row g-3">
+    <div class="col-12">
+        <label class="form-label">Name</label>
+        <input name="name" class="form-control" value="{{ old('name', auth()->user()->name) }}" required>
+    </div>
+    <div class="col-12">
+        <label class="form-label">Email</label>
+        <input name="email" type="email" class="form-control" value="{{ old('email', auth()->user()->email) }}" required>
+    </div>
+    <div class="col-12">
+        <label class="form-label">Password (leave blank to keep current)</label>
+        <input name="password" type="password" class="form-control" placeholder="Leave blank to keep current password">
+    </div>
+    <div class="col-12 mt-3">
+        <button class="btn btn-p3 px-4"><i class="bi bi-check-lg me-1"></i>Update Profile</button>
+        <a href="{{ route('settings.index') }}" class="btn btn-outline-secondary px-4">Cancel</a>
+    </div>
+</div>
 </form>
 @endif
 @endsection
