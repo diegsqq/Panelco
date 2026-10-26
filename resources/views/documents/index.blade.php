@@ -9,9 +9,6 @@
         <input type="search" name="q" value="{{ $search ?? request('q') }}" class="form-control" placeholder="Search title, file, category…" aria-label="Search documents" style="border-color:#d5e8db">
     </div>
     <button type="submit" class="btn btn-sm" style="background:#00A868;border-color:#00A868;color:#fff;font-weight:600">Search</button>
-    @if(($search ?? '') !== '')
-    <a href="{{ route('documents.library') }}" class="btn btn-sm btn-outline-secondary">Clear</a>
-    @endif
 </form>
 <a href="{{ route('documents.upload') }}" class="btn" style="background:#00A868;border-color:#00A868;color:#fff;font-weight:600"><i class="bi bi-cloud-upload me-1"></i>Upload</a>
 </div>
