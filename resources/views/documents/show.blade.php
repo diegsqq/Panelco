@@ -113,11 +113,7 @@
 @can('delete', $document)<form method="POST" action="{{ route('documents.destroy', $document) }}" id="deleteDocForm">@csrf @method('DELETE')<button type="button" class="btn btn-outline-danger btn-sm w-100" data-bs-toggle="modal" data-bs-target="#deleteDocModal"><i class="bi bi-trash me-1"></i>Delete</button></form>@endcan
 </div>
 </div>
-<div class="card card-p3 p-3">
-<h6 class="fw-bold">Processing</h6>
-@unless($document->processing_status === 'completed')<p class="small mb-1">Status: <strong>{{ $document->processing_status }}</strong></p>@endunless
-<p class="small text-muted mb-0">{{ $document->chunks->count() }} indexed passages.</p>
-</div>
+
 <div class="card card-p3 p-3">
 <h6 class="fw-bold"><i class="bi bi-lightning-charge-fill me-1" style="color:#00A868"></i>Ask Lightning about this document</h6>
 <div class="d-flex flex-wrap gap-2">
@@ -127,6 +123,7 @@
 </div>
 </div>
 </div>
+
 </div>
 {{-- View-only document modal: the file is fetched as an ephemeral blob (no
      shareable file URL), rendered without browser toolbars, and the object
@@ -188,41 +185,41 @@
         setTimeout(function () { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 1000);
     }
     function printNow() {
-        var iframe = body.querySelector('iframe');
-        if (iframe) {
+        var pdfFrame = body.querySelector('iframe');
+        if (pdfFrame) {
             try {
-                if (iframe.contentDocument) iframe.contentDocument.title = docTitle;
-                iframe.contentWindow.focus();
-                iframe.contentWindow.print();
+                if (pdfFrame.contentDocument) pdfFrame.contentDocument.title = '';
+                pdfFrame.contentWindow.focus();
+                pdfFrame.contentWindow.print();
                 pendingPrint = false;
                 return;
             } catch (e) { /* fall through */ }
         }
-        var img = body.querySelector('img');
-        if (img) {
-            printHtml('<html><head><title>' + docTitle + '</title><style>@page{margin:0}body{margin:1.5cm;font-family:system-ui,sans-serif;text-align:center}</style></head><body><img src="' + img.src + '" style="max-width:100%"></body></html>');
-            pendingPrint = false;
-            return;
-        }
-        var docx = body.querySelector('.p3-docx');
-        if (docx) {
-            printHtml('<html><head><title>' + docTitle + '</title><style>@page{margin:0}body{margin:1.5cm;font-family:system-ui,sans-serif;line-height:1.5}</style></head><body>' + docx.innerHTML + '</body></html>');
-            pendingPrint = false;
-            return;
-        }
-        var pre = body.querySelector('pre');
-        if (pre) {
-            printHtml('<html><head><title>' + docTitle + '</title><style>@page{margin:0}body{margin:1.5cm;font-family:monospace;white-space:pre-wrap}</style></head><body><pre>' + pre.textContent.replace(/</g, '&lt;') + '</pre></body></html>');
-            pendingPrint = false;
-            return;
-        }
-        window.print();
+        // Print the viewer content with the same styling as on screen.
+        var styles = '';
+        document.querySelectorAll('link[rel="stylesheet"], style').forEach(function (s) { styles += s.outerHTML; });
+        var frame = document.createElement('iframe');
+        frame.style.position = 'fixed';
+        frame.style.right = '0';
+        frame.style.bottom = '0';
+        frame.style.width = '0';
+        frame.style.height = '0';
+        frame.style.border = '0';
+        document.body.appendChild(frame);
+        var d = frame.contentWindow.document;
+        d.open();
+        d.write('<!doctype html><html><head><title></title>' + styles + '<style>@page{margin:0}body{background:#fff;margin:0;padding:1.5cm;}</style></head><body>' + body.innerHTML + '</body></html>');
+        d.close();
+        setTimeout(function () {
+            frame.contentWindow.focus();
+            frame.contentWindow.print();
+            setTimeout(function () { if (frame.parentNode) frame.parentNode.removeChild(frame); }, 1000);
+        }, 500);
         pendingPrint = false;
     }
 
     var printBtn = document.getElementById('printDocBtn');
     var viewerPrintBtn = document.getElementById('viewerPrintBtn');
-    var docTitle = @json($document->original_filename);
     if (printBtn) {
         printBtn.addEventListener('click', function () {
             if (modal.classList.contains('show')) {
@@ -236,6 +233,21 @@
     if (viewerPrintBtn) {
         viewerPrintBtn.addEventListener('click', function () { printNow(); });
     }
+    // Ctrl/Cmd+P opens the browser's own print dialog, which stamps page
+    // count, date/time and the page title onto the output — no web code can
+    // remove those. Route the shortcut through the app's clean print flow
+    // instead (PDF viewer print or PDF export: no header/footer text).
+    document.addEventListener('keydown', function (e) {
+        if ((e.ctrlKey || e.metaKey) && String(e.key).toLowerCase() === 'p') {
+            e.preventDefault();
+            if (printBtn) {
+                printBtn.click();
+            } else {
+                pendingPrint = true;
+                bootstrap.Modal.getOrCreateInstance(modal).show();
+            }
+        }
+    });
     var confirmDeleteBtn = document.getElementById('confirmDeleteDocBtn');
     if (confirmDeleteBtn) {
         confirmDeleteBtn.addEventListener('click', function () {

@@ -105,6 +105,17 @@
         .p3-summary-list li::marker { color: #00A868; font-weight: 700; }
         .p3-fig { background: #e6f3ea; color: #00743F; font-weight: 700; padding: .05rem .38rem; border-radius: .4rem; font-size: .88em; white-space: nowrap; }
         mark { background: #fff3b0; padding: 0 .1em; border-radius: .2em; }
+        @media print {
+            /* Zero page margin removes the browser's own print header/footer
+               (date/time, page count, title, URL) — Chrome has no margin
+               space left to draw them in. Content padding keeps page 1
+               readable. */
+            @page { margin: 0; size: auto; }
+            .p3-sidebar, .p3-topbar, .sidebar-backdrop, #logoutModal, .modal, .btn, .btn-close, .p3-footer { display: none !important; }
+            body { background: #fff; }
+            main { animation: none; padding: 12mm !important; }
+            .card-p3 { box-shadow: none; }
+        }
         @media (max-width: 767.98px) {
             .p3-sidebar { position: fixed; z-index: 1045; top: 0; left: 0; bottom: 0; width: 280px; min-height: auto; transform: translateX(-105%); transition: transform .3s ease; display: flex !important; }
             .p3-sidebar.open { transform: none; box-shadow: 0 0 40px rgba(0,0,0,.35); }
