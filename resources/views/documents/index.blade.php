@@ -49,6 +49,28 @@ $icon = str_contains($mime, 'pdf') ? ['bi-file-earmark-pdf-fill', '#dc3545'] : (
 <div class="p-5 text-center"><i class="bi bi-inbox fs-2 text-muted"></i><p class="fw-semibold mt-2 mb-2">No documents found.</p><a href="{{ route('documents.upload') }}" class="btn btn-sm" style="background:#00A868;color:#fff">Upload a document</a></div>
 @endforelse
 </div>
+
+<div class="d-flex align-items-center gap-2">
+<div class="flex-shrink-0" style="min-width:5.5rem">
+@if($documents->hasPages())
+    @if($documents->onFirstPage())
+        <span class="btn btn-sm btn-outline-secondary disabled">Previous</span>
+    @else
+        <a class="btn btn-sm btn-outline-secondary" href="{{ $documents->previousPageUrl() }}">Previous</a>
+    @endif
+@endif
+</div>
+<div class="flex-shrink-0" style="min-width:5.5rem;text-align:right">
+@if($documents->hasPages())
+    @if($documents->hasMorePages())
+        <a class="btn btn-sm" style="background:#00A868;border-color:#00A868;color:#fff;font-weight:600" href="{{ $documents->nextPageUrl() }}">Next</a>
+    @else
+        <span class="btn btn-sm btn-outline-secondary disabled">Next</span>
+    @endif
+@endif
+</div>
+</div>
+
 <div class="modal fade" id="libDeleteModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
 <div class="modal-dialog modal-dialog-centered" style="max-width:420px;width:calc(100% - 2rem)">
 <div class="modal-content p3-modal">
