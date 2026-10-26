@@ -33,4 +33,30 @@ $icon = str_contains($mime, 'pdf') ? ['bi-file-earmark-pdf-fill', '#dc3545'] : (
 <div class="p-5 text-center"><i class="bi bi-inbox fs-2 text-muted"></i><p class="fw-semibold mt-2 mb-2">No documents found.</p><a href="{{ route('documents.upload') }}" class="btn btn-sm" style="background:#00A868;color:#fff">Upload a document</a></div>
 @endforelse
 </div>
+<script>
+(function () {
+    var form = document.querySelector('form[role="search"]');
+    if (!form) return;
+    var input = form.querySelector('input[name="q"]');
+    var list = document.querySelector('.card.card-p3.p-0.overflow-hidden');
+    if (!input || !list) return;
+    var timer = null;
+    input.addEventListener('input', function () {
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+            var q = input.value.trim();
+            var url = new URL(form.action);
+            if (q) url.searchParams.set('q', q); else url.searchParams.delete('q');
+            fetch(url.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function (r) { return r.text(); })
+                .then(function (html) {
+                    var doc = new DOMParser().parseFromString(html, 'text/html');
+                    var newList = doc.querySelector('.card.card-p3.p-0.overflow-hidden');
+                    if (newList) list.innerHTML = newList.innerHTML;
+                    try { history.replaceState(null, '', url.toString()); } catch (e) {}
+                });
+        }, 300);
+    });
+})();
+</script>
 @endsection
