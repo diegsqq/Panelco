@@ -10,7 +10,6 @@
     </div>
     <button type="submit" class="btn btn-sm" style="background:#00A868;border-color:#00A868;color:#fff;font-weight:600">Search</button>
 </form>
-<a href="{{ route('documents.upload') }}" class="btn" style="background:#00A868;border-color:#00A868;color:#fff;font-weight:600"><i class="bi bi-cloud-upload me-1"></i>Upload</a>
 </div>
 </div>
 
