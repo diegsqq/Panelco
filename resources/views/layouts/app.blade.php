@@ -106,14 +106,14 @@
         .p3-fig { background: #e6f3ea; color: #00743F; font-weight: 700; padding: .05rem .38rem; border-radius: .4rem; font-size: .88em; white-space: nowrap; }
         mark { background: #fff3b0; padding: 0 .1em; border-radius: .2em; }
         @media print {
-            /* Zero page margin removes the browser's own print header/footer
-               (date/time, page count, title, URL) — Chrome has no margin
-               space left to draw them in. Content padding keeps page 1
-               readable. */
-            @page { margin: 0; size: auto; }
+            /* Real page margin so page 2+ never starts flush (content was
+               being cut at the top). Stamps-free output comes from the app
+               PDF flow (Ctrl+P / Print button) — File > Print always shows
+               browser date/title/URL, no website can stop that. */
+            @page { margin: 16mm 14mm; size: auto; }
             .p3-sidebar, .p3-topbar, .sidebar-backdrop, #logoutModal, .modal, .btn, .btn-close, .p3-footer { display: none !important; }
             body { background: #fff; }
-            main { animation: none; padding: 12mm !important; }
+            main { animation: none; padding: 0 !important; }
             .card-p3 { box-shadow: none; }
         }
         @media (max-width: 767.98px) {
