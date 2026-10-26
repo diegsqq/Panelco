@@ -10,8 +10,7 @@
 </style>
 <div class="p-4 mb-4 text-white d-flex flex-wrap justify-content-between align-items-center" style="background:linear-gradient(135deg,#00A868,#1DBF7D);border-radius:1rem">
     <div>
-        <h3 class="fw-bold mb-0">Good day, {{ auth()->user()->name }}</h3>
-        <small class="text-white-50">Total uploaded: {{ $stats['total'] }}</small>
+        <h3 class="fw-bold mb-0">Welcome back</h3>
     </div>
     <div class="d-flex gap-3 mt-2 mt-md-0">
         <a href="{{ route('documents.upload') }}" class="btn btn-lg" style="background:#ffffff;color:#00A868;font-weight:700"><i class="bi bi-cloud-upload me-1"></i>Upload</a>
@@ -56,16 +55,7 @@
             <span class="badge" style="background:#e6f3ea;color:#00743F">{{ $stats['total'] }} docs</span>
             </div>
             @if($categoryDistribution->isNotEmpty())
-            @php($max = max($categoryDistribution->max('total'), 1))
-            @foreach ($categoryDistribution as $row)
-                <div class="d-flex align-items-center gap-2" style="margin-bottom:.5rem">
-                    <span class="text-truncate" style="width:35%;min-width:0;font-size:.95rem">{{ $row->category?->name ?? 'Uncategorized' }}</span>
-                    <div class="flex-grow-1" style="height:18px;background:#eef4f0;border-radius:4px;overflow:hidden">
-                        <div style="width:{{ round($row->total / $max * 100) }}%;height:100%;background:linear-gradient(90deg,#00A868,#1DBF7D);border-radius:4px"></div>
-                    </div>
-                    <strong style="width:44px;text-align:right;font-size:.95rem">{{ $row->total }}</strong>
-                </div>
-            @endforeach
+            <div id="categorySankey" style="width:100%;height:260px;"></div>
             @else
                 <p class="text-muted mb-0">No categories yet.</p>
             @endif
@@ -79,16 +69,32 @@
                 <p class="text-muted mb-0">No conversations yet.</p>
             @endforelse
         </div>
-        @can('manage-documents')
-        <div class="card card-p3 p-4">
-            <h5 class="fw-bold mb-2">Recent activity</h5>
-            @forelse ($recentAudit as $log)
-                <div class="border-bottom py-2" style="font-size:1rem">{{ \Illuminate\Support\Str::headline($log->action) }} <span class="text-muted">· {{ $log->user?->name ?? 'system' }} · {{ $log->created_at->diffForHumans() }}</span></div>
-            @empty
-                <p class="text-muted mb-0">No activity yet.</p>
-            @endforelse
-        </div>
-        @endcan
     </div>
 </div>
+@if($categoryDistribution->isNotEmpty())
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<script>
+(function () {
+    var el = document.getElementById('categorySankey');
+    if (!el) return;
+    var chart = echarts.init(el);
+    var categories = @json($categoryDistribution->map(fn ($r) => $r->category?->name ?? 'Uncategorized')->values());
+    var values = @json($categoryDistribution->pluck('total')->values());
+    var nodes = [{ name: 'Documents' }].concat(categories.map(function (n) { return { name: n }; }));
+    var links = values.map(function (v, i) { return { source: 0, target: i + 1, value: v }; });
+    chart.setOption({
+        tooltip: { trigger: 'item' },
+        series: [{
+            type: 'sankey',
+            data: nodes,
+            links: links,
+            emphasis: { focus: 'adjacency' },
+            lineStyle: { color: 'gradient', curveness: 0.5 },
+            label: { position: 'right' }
+        }]
+    });
+    window.addEventListener('resize', function () { chart.resize(); });
+})();
+</script>
+@endif
 @endsection

@@ -66,7 +66,6 @@ class Phase9AdminTest extends TestCase
         $this->seed();
         $emp = User::where('email', 'employee@panelco3.local')->first();
 
-        $this->actingAs($emp)->get(route('dashboard'))->assertOk()
-            ->assertSee('Total uploaded');
+        $this->actingAs($emp)->get(route('dashboard'))->assertOk();
     }
 }

@@ -15,7 +15,7 @@
 <dt class="col-sm-4"><i class="bi bi-calendar me-1" style="color:#00A868"></i>Document date</dt><dd class="col-sm-8">{{ $document->document_date?->format('Y-m-d') ?? '—' }}</dd>
 <dt class="col-sm-4"><i class="bi bi-cloud-upload me-1" style="color:#00A868"></i>Uploaded</dt><dd class="col-sm-8">{{ $document->created_at->format('M d, Y') }} by {{ $document->uploader?->name ?? '—' }}</dd>
 <dt class="col-sm-4"><i class="bi bi-check-circle me-1" style="color:#00A868"></i>Approved</dt><dd class="col-sm-8">{{ $document->approved_at ? $document->approved_at->format('M d, Y') . ' by ' . ($document->approver?->name ?? '—') : '—' }}</dd>
-<dt class="col-sm-4"><i class="bi bi-key me-1" style="color:#00A868"></i>Keywords</dt><dd class="col-sm-8">@if($document->keywords)@foreach(array_filter(array_map('trim', explode(',', $document->keywords))) as $kw)<span class="badge me-1 mb-1" style="background:#e6f3ea;color:#00743F">{{ $kw }}</span>@endforeach@endif</dd>
+<dt class="col-sm-4"><i class="bi bi-key me-1" style="color:#00A868"></i>Keywords</dt><dd class="col-sm-8">@if($document->keywords)@foreach(array_filter(array_map('trim', explode(',', $document->keywords))) as $kw)<span class="badge me-1 mb-1" style="background:#e6f3ea;color:#00743F">{{ $kw }}</span>@endforeach @endif</dd>
 @if ($document->processing_error)<dt class="col-sm-4"><i class="bi bi-exclamation-triangle me-1" style="color:#dc3545"></i>Error</dt><dd class="col-sm-8 text-danger">{{ $document->processing_error }}</dd>@endif
 </dl>
 </div>

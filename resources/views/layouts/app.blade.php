@@ -168,7 +168,6 @@
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-shield-lock text-success" title="Private storage · authorized access only"></i>
-                    <span class="fw-semibold" style="font-size:.82rem;color:#00743F">{{ \App\Models\User::roleLabel(auth()->user()->role) }}</span>
                 </div>
             </div>
             <main class="p-3">

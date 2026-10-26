@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AuditLog;
 use App\Models\Conversation;
 use App\Models\Document;
 use App\Models\DocumentCategory;
@@ -39,7 +38,7 @@ class HomeController extends Controller
         ];
 
         $recent = (clone $documentQuery)->with(['category', 'department'])
-            ->latest()->limit(10)->get();
+            ->latest()->limit(9)->get();
 
         $categoryDistribution = (clone $documentQuery)
             ->selectRaw('COALESCE(category_id, suggested_category_id) as category_id, COUNT(*) as total')
@@ -50,8 +49,6 @@ class HomeController extends Controller
         $recentConversations = Conversation::where('user_id', $user->id)
             ->latest()->limit(5)->get();
 
-        $recentAudit = AuditLog::with('user')->latest()->limit(5)->get();
-
-        return view('home', compact('stats', 'recent', 'categoryDistribution', 'recentConversations', 'recentAudit'));
+        return view('home', compact('stats', 'recent', 'categoryDistribution', 'recentConversations'));
     }
 }
