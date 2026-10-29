@@ -74,6 +74,8 @@
         .status-processing { background: #cce5ff; color: #004085; }
         .status-completed { background: #d4edda; color: #155724; }
         .status-failed { background: #f8d7da; color: #721c24; }
+        /* Full page scroll locked on Lightning routes — only inner areas scroll. */
+        body.p3-no-scroll { overflow: hidden; height: 100vh; }
         main { animation: p3-fade .3s ease; }
         @keyframes p3-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
         .form-control:focus, .form-select:focus, .btn:focus-visible, a:focus-visible { box-shadow: 0 0 0 .25rem rgba(0,168,104,.25); outline: none; }
@@ -261,7 +263,7 @@
         }
     </style>
 </head>
-<body>
+<body class="{{ request()->routeIs('chat.*') ? 'p3-no-scroll' : '' }}">
 <div class="container-fluid">
     <div class="row">
         @auth

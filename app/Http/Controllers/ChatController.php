@@ -40,7 +40,7 @@ class ChatController extends Controller
 
         $conversation = Conversation::create([
             'user_id' => auth()->id(),
-            'title' => mb_substr(trim($data['question']), 0, 80),
+            'title' => mb_substr(trim($data['question']), 0, 40),
         ]);
 
         $this->ask($conversation, trim($data['question']));
