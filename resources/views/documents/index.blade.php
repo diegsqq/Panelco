@@ -13,7 +13,8 @@
 </div>
 </div>
 
-<div class="card card-p3 p-0 overflow-hidden">
+<div id="libListWrap" style="min-height:calc(100vh - 130px);display:flex;flex-direction:column">
+<div class="card card-p3 p-0 overflow-hidden" style="flex-grow:1">
 @forelse ($documents as $doc)
 @php
 $mime = $doc->mime_type ?? '';
@@ -48,6 +49,25 @@ $icon = str_contains($mime, 'pdf') ? ['bi-file-earmark-pdf-fill', '#dc3545'] : (
 <div class="p-5 text-center"><i class="bi bi-inbox fs-2 text-muted"></i><p class="fw-semibold mt-2 mb-2">No documents found.</p><a href="{{ route('documents.upload') }}" class="btn btn-sm" style="background:#00A868;color:#fff">Upload a document</a></div>
 @endforelse
 </div>
+<div id="libPagination" class="d-flex flex-wrap justify-content-center align-items-center gap-3" style="margin-top:.75rem;position:sticky;bottom:0;z-index:20;display:{{ $documents->hasPages() ? 'flex' : 'none' }}">
+@if ($documents->hasPages())
+<small class="text-muted">{{ $documents->firstItem() }}&ndash;{{ $documents->lastItem() }} of {{ $documents->total() }}</small>
+<div class="d-flex align-items-center gap-2">
+@if ($documents->onFirstPage())
+<span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true"><i class="bi bi-chevron-left"></i></span>
+@else
+<a class="btn btn-sm btn-outline-success" href="{{ $documents->previousPageUrl() }}" rel="prev" aria-label="Previous page"><i class="bi bi-chevron-left"></i></a>
+@endif
+<span class="px-1 fw-semibold" style="color:#00743F">{{ $documents->currentPage() }}/{{ $documents->lastPage() }}</span>
+@if ($documents->hasMorePages())
+<a class="btn btn-sm btn-outline-success" href="{{ $documents->nextPageUrl() }}" rel="next" aria-label="Next page"><i class="bi bi-chevron-right"></i></a>
+@else
+<span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true"><i class="bi bi-chevron-right"></i></span>
+@endif
+</div>
+@endif
+</div>
+</div>
 
 <div class="modal fade" id="libDeleteModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
 <div class="modal-dialog modal-dialog-centered" style="max-width:420px;width:calc(100% - 2rem)">
@@ -71,6 +91,7 @@ $icon = str_contains($mime, 'pdf') ? ['bi-file-earmark-pdf-fill', '#dc3545'] : (
     if (!form) return;
     var input = form.querySelector('input[name="q"]');
     var list = document.querySelector('.card.card-p3.p-0.overflow-hidden');
+    var pagination = document.getElementById('libPagination');
     if (!input || !list) return;
     var timer = null;
     input.addEventListener('input', function () {
@@ -85,6 +106,15 @@ $icon = str_contains($mime, 'pdf') ? ['bi-file-earmark-pdf-fill', '#dc3545'] : (
                     var doc = new DOMParser().parseFromString(html, 'text/html');
                     var newList = doc.querySelector('.card.card-p3.p-0.overflow-hidden');
                     if (newList) list.innerHTML = newList.innerHTML;
+                    if (pagination) {
+                        var newPag = doc.getElementById('libPagination');
+                        if (newPag && newPag.innerHTML.trim()) {
+                            pagination.innerHTML = newPag.innerHTML;
+                            pagination.style.display = 'flex';
+                        } else {
+                            pagination.style.display = 'none';
+                        }
+                    }
                     try { history.replaceState(null, '', url.toString()); } catch (e) {}
                 });
         }, 300);

@@ -39,10 +39,28 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'first_name',
+        'last_name',
         'email',
+        'phone',
+        'pending_email',
+        'pending_phone',
+        'email_change_code',
+        'phone_change_code',
+        'verification_expires_at',
         'password',
         'role',
         'department_id',
+        'avatar_path',
+        'job_title',
+        'organization',
+        'locale',
+        'theme',
+        'notify_doc_done',
+        'notify_doc_failed',
+        'notify_login_alert',
+        'two_factor_enabled',
+        'two_factor_secret',
     ];
 
     /**
@@ -64,8 +82,22 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'verification_expires_at' => 'datetime',
             'password' => 'hashed',
+            'notify_doc_done' => 'boolean',
+            'notify_doc_failed' => 'boolean',
+            'notify_login_alert' => 'boolean',
+            'two_factor_enabled' => 'boolean',
         ];
+    }
+
+    /** Initials shown when no avatar photo is uploaded (e.g. "JD"). */
+    public function initials(): string
+    {
+        $parts = preg_split('/\s+/', trim((string) $this->name));
+        $letters = array_filter(array_map(fn ($p) => mb_strtoupper(mb_substr($p, 0, 1)), $parts));
+
+        return mb_substr(implode('', $letters), 0, 2) ?: 'U';
     }
 
     public function department(): BelongsTo

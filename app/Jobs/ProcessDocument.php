@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Mail\DocumentStatusNotification;
 use App\Models\AuditLog;
 use App\Models\Document;
 use App\Models\DocumentCategory;
@@ -12,6 +13,7 @@ use App\Services\DocumentExtractionService;
 use App\Services\ExtractionFailedException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Mail;
 
 class ProcessDocument implements ShouldQueue
 {
@@ -33,6 +35,7 @@ class ProcessDocument implements ShouldQueue
         } catch (ExtractionFailedException $e) {
             $document->update(['processing_status' => 'failed', 'processing_error' => $e->getMessage()]);
             $this->audit($document, 'document.processing_failed', ['error' => $e->getMessage()]);
+            $this->notifyUploader($document, true);
 
             return;
         } catch (\Throwable $e) {
@@ -41,6 +44,7 @@ class ProcessDocument implements ShouldQueue
                 'processing_error' => 'Unexpected processing error. Please retry or re-upload the document.',
             ]);
             $this->audit($document, 'document.processing_failed', []);
+            $this->notifyUploader($document, true);
 
             return;
         }
@@ -101,6 +105,33 @@ class ProcessDocument implements ShouldQueue
 
         $document->update($updates);
         $this->audit($document, 'document.processed', ['chunks' => $document->chunks()->count()]);
+        $this->notifyUploader($document, false);
+    }
+
+    /**
+     * Emails the uploader when processing finishes, if their
+     * notification preference is on. Never breaks the job.
+     */
+    private function notifyUploader(Document $document, bool $failed): void
+    {
+        try {
+            if ($document->uploaded_by === null) {
+                return;
+            }
+            $uploader = $document->uploader;
+            if (! $uploader) {
+                return;
+            }
+
+            $prefEnabled = $failed ? $uploader->notify_doc_failed : $uploader->notify_doc_done;
+            if (! $prefEnabled) {
+                return;
+            }
+
+            Mail::to($uploader->email)->send(new DocumentStatusNotification($document, $failed));
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     private function guessType(Document $document): ?string

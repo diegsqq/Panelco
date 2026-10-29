@@ -1,7 +1,29 @@
 <!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+@php $p3Dark = auth()->user()?->theme === 'dark'; @endphp
+<html lang="{{ app()->getLocale() }}" data-theme="{{ $p3Dark ? 'dark' : 'light' }}" data-bs-theme="{{ $p3Dark ? 'dark' : 'light' }}">
 <head>
     <meta charset="utf-8">
+    <script>
+    /* Theme swap delay: keep previous theme for a beat, then fade to the
+       new one so the CSS transition is visible instead of jumping. */
+    (function () {
+        var h = document.documentElement;
+        var final = h.getAttribute('data-theme');
+        var last = null;
+        try { last = localStorage.getItem('p3-theme'); } catch (e) {}
+        if (last && last !== final) {
+            h.setAttribute('data-theme', last);
+            h.setAttribute('data-bs-theme', last);
+            setTimeout(function () {
+                h.setAttribute('data-theme', final);
+                h.setAttribute('data-bs-theme', final);
+                try { localStorage.setItem('p3-theme', final); } catch (e) {}
+            }, 550);
+        } else {
+            try { localStorage.setItem('p3-theme', final); } catch (e) {}
+        }
+    })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'PANELCO III SmartDocs AI') }}</title>
@@ -19,6 +41,15 @@
             --p3-card-border: #d5e8db;
         }
         body { background: var(--p3-bg); font-family: "Segoe UI", system-ui, -apple-system, sans-serif; }
+        /* Dark theme: remap shared vars so every var()-based rule adapts.
+           color-scheme makes native scrollbars, form controls, and
+           date pickers render dark automatically. */
+        [data-theme="dark"] { color-scheme: dark; --p3-bg: #0e1512; --p3-card-border: #26362e; scrollbar-color: #2c3d34 transparent; }
+        [data-theme="dark"] ::-webkit-scrollbar { width: 10px; height: 10px; }
+        [data-theme="dark"] ::-webkit-scrollbar-thumb { background: #2c3d34; border-radius: 6px; }
+        [data-theme="dark"] ::-webkit-scrollbar-track { background: transparent; }
+        /* Smooth fade when switching themes */
+        body, .card-p3, .p3-topbar, .form-control, .form-select, .input-group-text, .modal-content, .p3-notif-row, .p3-theme-tile, .p3-dept-pill { transition: background-color .5s ease, border-color .5s ease, color .5s ease; }
         .p3-sidebar { background: linear-gradient(180deg, var(--p3-navy) 0%, var(--p3-navy-2) 100%); min-height: 100vh; max-height: 100vh; position: sticky; top: 0; overflow-y: auto; }
         .p3-sidebar .nav-link { color: #d3e9dc; border-radius: .75rem; padding: .5rem .5rem .5rem 1rem; font-weight: 500; display: flex; align-items: center; gap: 1rem; transition: background-color .25s ease, color .25s ease; }
         .p3-sidebar .nav-link:hover { background: rgba(255,255,255,.12); color: #fff; }
@@ -62,6 +93,8 @@
         .lift { transition: transform .18s ease, box-shadow .18s ease; }
         .lift:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,100,60,.12); }
         .avatar { width: 32px; height: 32px; flex: 0 0 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; }
+        .p3-avatar-sm { width: 30px; height: 30px; border-radius: 50%; overflow: hidden; background: #e6f3ea; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #d5e8db; flex: 0 0 auto; }
+        .p3-avatar-sm .fw-bold { color: #00743F; font-size: .72rem; }
         .avatar-user { background: #00A868; color: #fff; }
         .avatar-ai { background: #fff; color: #00A868; border: 2px solid #00A868; }
         .msg-in { animation: p3-msg .25s ease; }
@@ -105,6 +138,110 @@
         .p3-summary-list li::marker { color: #00A868; font-weight: 700; }
         .p3-fig { background: #e6f3ea; color: #00743F; font-weight: 700; padding: .05rem .38rem; border-radius: .4rem; font-size: .88em; white-space: nowrap; }
         mark { background: #fff3b0; padding: 0 .1em; border-radius: .2em; }
+        /* Dark mode — per-user, Settings > Preferences > Appearance */
+        [data-theme="dark"] body { background: #101714; color: #ffffff; }
+        [data-theme="dark"] .p3-topbar { background: #16211c; border-color: #26362e; color: #ffffff; }
+        [data-theme="dark"] .card-p3 { background: #16211c; border-color: #26362e; box-shadow: none; }
+        [data-theme="dark"] .text-muted, [data-theme="dark"] small.text-muted { color: #c2d2ca !important; }
+        [data-theme="dark"] .form-label, [data-theme="dark"] label.form-label { color: #ffffff; }
+        [data-theme="dark"] .form-control, [data-theme="dark"] .form-select { background: #0f1512; border-color: #2c3d34; color: #ffffff; }
+        [data-theme="dark"] .form-control::placeholder { color: #7d9087; }
+        [data-theme="dark"] .form-control:disabled, [data-theme="dark"] .form-select:disabled { background: #121a16; color: #9db2a7; border-color: #26362e; }
+        [data-theme="dark"] .input-group-text { background: #1d2b24; border-color: #2c3d34; }
+        [data-theme="dark"] .border-bottom, [data-theme="dark"] .border-top { border-color: #26362e !important; }
+        [data-theme="dark"] hr { border-color: #26362e; }
+        [data-theme="dark"] .src-card:hover { background: #1c2a23; }
+        [data-theme="dark"] .stat-icon { background: #1d2b24 !important; }
+        [data-theme="dark"] .p3-dept-pill { background: #16211c; border-color: #2c3d34; color: #7fe0ac; }
+        [data-theme="dark"] .p3-dept-pill:hover { background: #1d2b24; }
+        [data-theme="dark"] .btn-outline-secondary { color: #b8c8bf; border-color: #3a4c43; }
+        [data-theme="dark"] .btn-outline-success { color: #7fe0ac; border-color: #2f6b4f; }
+        [data-theme="dark"] .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+        [data-theme="dark"] .alert-success { background: #12291d; border-color: #1d4432 !important; color: #8fe0b3; }
+        [data-theme="dark"] .alert-danger { background: #2d1414; border-color: #5a2424; color: #f1a8a8; }
+        [data-theme="dark"] .alert-warning { background: #2b2410; border-color: #4d421c; color: #ecd78a; }
+        [data-theme="dark"] .modal-content { background: #16211c; color: #ffffff; }
+        [data-theme="dark"] .modal-content .text-muted { color: #c2d2ca !important; }
+        [data-theme="dark"] code { background: #0f1512; color: #8fe0ac; }
+        [data-theme="dark"] .form-check-input { background-color: #0f1512; border-color: #3a4c43; }
+        [data-theme="dark"] .form-check-input:checked { background-color: #00A868; border-color: #00A868; }
+        [data-theme="dark"] .p3-summary-text, [data-theme="dark"] .p3-summary-list { color: #ffffff; }
+        [data-theme="dark"] .p3-cell-interp { color: #dfe8e3; }
+        [data-theme="dark"] .table-p3 tbody tr:nth-child(odd) { background: #131d18; }
+        [data-theme="dark"] .table-p3 tbody tr { border-color: #26362e; }
+        [data-theme="dark"] a[style*="color:#00743F"], [data-theme="dark"] div[style*="color:#00743F"], [data-theme="dark"] span[style*="color:#00743F"] { color: #4fd39a !important; }
+        [data-theme="dark"] .chat-scroll, [data-theme="dark"] .p3-docx { background: #0f1512; color: #ffffff; }
+        [data-theme="dark"] .p3-sidebar { box-shadow: none; }
+        /* Settings — avatar, tiles, QR, notifications */
+        .p3-avatar-lg { width: 92px; height: 92px; border-radius: 50%; overflow: visible; border: 3px solid #d5e8db; background: #e6f3ea; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; position: relative; }
+        .p3-avatar-lg .p3-avatar-inner { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .p3-avatar-lg img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .p3-avatar-cam { position: absolute; right: -3px; bottom: -3px; width: 30px; height: 30px; border-radius: 50%; background: #00A868; color: #fff; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: .8rem; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.22); transition: transform .15s ease, background-color .15s ease; z-index: 2; }
+        .p3-avatar-cam:hover { transform: scale(1.1); background: #00743F; }
+        .p3-theme-tile { flex: 1 1 150px; border: 2px solid var(--p3-card-border); border-radius: .85rem; background: #fff; padding: .9rem 1rem; display: flex; align-items: center; gap: .65rem; font-weight: 600; font-size: .9rem; color: #4b5a52; cursor: pointer; transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease; }
+        .p3-theme-tile:hover { border-color: #7ed99f; background: #f0f9f3; }
+        .p3-theme-tile.on { border-color: #00A868; background: #e6f3ea; color: #00743F; box-shadow: 0 2px 8px rgba(0,168,104,.18); }
+        .p3-theme-tile i { font-size: 1.35rem; }
+        .p3-qr-box { display: inline-block; background: #fff; border: 1px dashed #b7e0c8; border-radius: 1rem; padding: .85rem; line-height: 0; }
+        .p3-code-input { max-width: 10rem; letter-spacing: 4px; text-align: center; font-weight: 700; font-size: 1.05rem; }
+        .form-switch .form-check-input:checked { background-color: #00A868; border-color: #00A868; }
+        .p3-notif-row { display: flex; align-items: flex-start; gap: 1rem; padding: .85rem 1rem; border: 1px solid var(--p3-card-border); border-radius: .8rem; background: #fbfefc; transition: background-color .15s ease; }
+        .p3-notif-row:hover { background: #f0f9f3; }
+        .p3-notif-row + .p3-notif-row { margin-top: .6rem; }
+        .p3-notif-row i { font-size: 1.15rem; color: #00743F; margin-top: .1rem; }
+        [data-theme="dark"] .p3-avatar-lg { background: #1d2b24; border-color: #2c3d34; }
+        [data-theme="dark"] .p3-avatar-cam { border-color: #16211c; }
+        [data-theme="dark"] .p3-theme-tile { background: #16211c; border-color: #2c3d34; color: #b8c8bf; }
+        [data-theme="dark"] .p3-theme-tile:hover { background: #1d2b24; border-color: #2f6b4f; }
+        [data-theme="dark"] .p3-theme-tile.on { border-color: #00A868; background: #12291d; color: #7fe0ac; }
+        [data-theme="dark"] .p3-qr-box { background: #fff; border-color: #2f6b4f; }
+        [data-theme="dark"] .p3-notif-row { background: #131d18; border-color: #26362e; }
+        [data-theme="dark"] .p3-notif-row:hover { background: #1d2b24; }
+        /* ---- Dark mode, part 2: components the first pass missed ---- */
+        [data-theme="dark"] .status-pending { background: #3a3010; color: #ffe08a; }
+        [data-theme="dark"] .status-processing { background: #10304d; color: #8fc6ff; }
+        [data-theme="dark"] .status-completed { background: #12291d; color: #8fe0b3; }
+        [data-theme="dark"] .status-failed { background: #3a1616; color: #f1a8a8; }
+        [data-theme="dark"] .p3-cat-pill { background: #12291d; color: #7fe0ac; border-color: #1d4432; }
+        [data-theme="dark"] .p3-formula { background: #0f1512; border-color: #2c3d34; color: #a9c4b6; }
+        [data-theme="dark"] .p3-cell-interp { color: #9db2a7; }
+        [data-theme="dark"] .p3-fig { background: #12291d; color: #7fe0ac; }
+        [data-theme="dark"] .form-select.p3-chosen { color: #7fe0ac; background-color: #12291d; }
+        [data-theme="dark"] mark { background: #4a3d12; color: #ffe9a8; }
+        [data-theme="dark"] ::selection { background: rgba(0,168,104,.35); }
+        [data-theme="dark"] .table, [data-theme="dark"] .table-p3 { --bs-table-bg: transparent; --bs-table-color: #d7e5dc; --bs-table-border-color: #26362e; }
+        [data-theme="dark"] .table-p3 { --bs-table-striped-bg: #131d18; --bs-table-hover-bg: #1d2b24; }
+        [data-theme="dark"] .table-p3 tbody tr:hover { background: #1d2b24; }
+        [data-theme="dark"] .p3-docx h1, [data-theme="dark"] .p3-docx h2, [data-theme="dark"] .p3-docx h3, [data-theme="dark"] .p3-docx h4 { color: #ffffff; }
+        [data-theme="dark"] .p3-docx td, [data-theme="dark"] .p3-docx th { border-color: #2c3d34; }
+        [data-theme="dark"] .p3-docx tr:nth-child(odd) td { background: #131d18; }
+        [data-theme="dark"] .p3-modal-actions { border-color: #26362e; }
+        [data-theme="dark"] .p3-summary::before { background: linear-gradient(180deg, #2c3d34, #1d2b24); }
+        [data-theme="dark"] .p3-summary.is-verified::before { background: linear-gradient(180deg, #00A868, #1d4432); }
+        [data-theme="dark"] .p3-summary.is-warn::before { background: linear-gradient(180deg, #f0ad4e, #4d421c); }
+        [data-theme="dark"] .p3-avatar-sm { background: #1d2b24; border-color: #2c3d34; }
+        [data-theme="dark"] .p3-avatar-sm .fw-bold { color: #7fe0ac; }
+        [data-theme="dark"] #sidebarToggle { border-color: #2c3d34 !important; }
+        [data-theme="dark"] .dropdown-menu { background: #16211c; border-color: #26362e; }
+        [data-theme="dark"] .dropdown-item { color: #ffffff; }
+        [data-theme="dark"] .dropdown-item:hover, [data-theme="dark"] .dropdown-item:focus { background: #1d2b24; color: #fff; }
+        [data-theme="dark"] .dropdown-divider { border-color: #26362e; }
+        [data-theme="dark"] .pagination { --bs-pagination-bg: #16211c; --bs-pagination-border-color: #26362e; --bs-pagination-color: #7fe0ac; --bs-pagination-hover-bg: #1d2b24; --bs-pagination-hover-border-color: #2f6b4f; --bs-pagination-active-bg: #00A868; --bs-pagination-active-border-color: #00A868; --bs-pagination-disabled-bg: #121a16; --bs-pagination-disabled-border-color: #26362e; --bs-pagination-disabled-color: #6f857a; }
+        [data-theme="dark"] .breadcrumb-item, [data-theme="dark"] .breadcrumb-item.active { color: #8fa59a; }
+        [data-theme="dark"] .text-success { color: #4fd39a !important; }
+        [data-theme="dark"] .btn-p3-yellow { background: #e6f3ea; border-color: #e6f3ea; color: #0b5c34; }
+        [data-theme="dark"] .avatar-ai { background: #16211c; }
+        [data-theme="dark"] .chat-bubble-in, [data-theme="dark"] .msg-in { background: #16211c; }
+        [data-theme="dark"] .src-card { border-color: #2c3d34 !important; }
+        /* Inline-styled text that would be dark-on-dark in dark mode.
+           Only overridden where the background is also themed dark. */
+        [data-theme="dark"] .stat-icon { color: #7fe0ac !important; }
+        [data-theme="dark"] [style*="color:#00743F"] { color: #4fd39a !important; }
+        /* ...except text sitting on a white background that stays white */
+        [data-theme="dark"] [style*="background:#fff"][style*="color:#00743F"] { color: #0b5c34 !important; }
+        [data-theme="dark"] [style*="color:#7d8f86"] { color: #9db2a7 !important; }
+        [data-theme="dark"] [style*="color:#33503f"] { color: #a9c4b6 !important; }
+        [data-theme="dark"] [style*="color:#2b3a32"] { color: #d7e5dc !important; }
         @media print {
             /* Real page margin so page 2+ never starts flush (content was
                being cut at the top). Stamps-free output comes from the app
@@ -137,24 +274,26 @@
             </div>
             <nav class="nav flex-column gap-1 flex-grow-1" id="p3Nav">
                 <span class="nav-indicator" id="navIndicator"></span>
-                <a class="nav-link {{ request()->routeIs('dashboard','home') ? 'active' : '' }}" href="{{ route('dashboard') }}"><span class="nav-ico"><i class="bi bi-grid-1x2-fill"></i></span>Dashboard</a>
-                <a class="nav-link {{ request()->routeIs('documents.upload') ? 'active' : '' }}" href="{{ route('documents.upload') }}"><span class="nav-ico"><i class="bi bi-cloud-arrow-up-fill"></i></span>Upload Documents</a>
-                <a class="nav-link {{ request()->routeIs('documents.library') ? 'active' : '' }}" href="{{ route('documents.library') }}"><span class="nav-ico"><i class="bi bi-folder-fill"></i></span>Document Library</a>
-                <a class="nav-link {{ request()->routeIs('chat.*') ? 'active' : '' }}" href="{{ route('chat.index') }}"><span class="nav-ico"><i class="bi bi-lightning-charge-fill"></i></span>Lightning</a>
+                <a class="nav-link {{ request()->routeIs('dashboard','home') ? 'active' : '' }}" href="{{ route('dashboard') }}"><span class="nav-ico"><i class="bi bi-grid-1x2-fill"></i></span>{{ __('nav.dashboard') }}</a>
+                <a class="nav-link {{ request()->routeIs('documents.upload') ? 'active' : '' }}" href="{{ route('documents.upload') }}"><span class="nav-ico"><i class="bi bi-cloud-arrow-up-fill"></i></span>{{ __('nav.upload') }}</a>
+                <a class="nav-link {{ request()->routeIs('documents.library') ? 'active' : '' }}" href="{{ route('documents.library') }}"><span class="nav-ico"><i class="bi bi-folder-fill"></i></span>{{ __('nav.library') }}</a>
+                <a class="nav-link {{ request()->routeIs('chat.*') ? 'active' : '' }}" href="{{ route('chat.index') }}"><span class="nav-ico"><i class="bi bi-lightning-charge-fill"></i></span>{{ __('nav.lightning') }}</a>
                 @php $settingsOpen = request()->routeIs('settings.*') || request()->routeIs('admin.*'); @endphp
-                <a class="nav-link {{ $settingsOpen ? 'active' : '' }}" data-bs-toggle="collapse" href="#settingsMenu" role="button" aria-expanded="{{ $settingsOpen ? 'true' : 'false' }}"><span class="nav-ico"><i class="bi bi-gear-fill"></i></span>Settings<i class="bi bi-chevron-down ms-auto small"></i></a>
+                <a class="nav-link {{ $settingsOpen ? 'active' : '' }}" data-bs-toggle="collapse" href="#settingsMenu" role="button" aria-expanded="{{ $settingsOpen ? 'true' : 'false' }}"><span class="nav-ico"><i class="bi bi-gear-fill"></i></span>{{ __('nav.settings') }}<i class="bi bi-chevron-down ms-auto small"></i></a>
                 <div class="collapse {{ $settingsOpen ? 'show' : '' }} ps-3" id="settingsMenu">
-                    <a class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}" href="{{ route('settings.index') }}"><span class="nav-ico"><i class="bi bi-sliders"></i></span>General</a>
+                    <a class="nav-link {{ request()->routeIs('settings.index') ? 'active' : '' }}" href="{{ route('settings.index') }}"><span class="nav-ico"><i class="bi bi-sliders"></i></span>{{ __('nav.general') }}</a>
+                    <a class="nav-link {{ request()->routeIs('settings.security') ? 'active' : '' }}" href="{{ route('settings.security') }}"><span class="nav-ico"><i class="bi bi-shield-lock"></i></span>{{ __('nav.security') }}</a>
+                    <a class="nav-link {{ request()->routeIs('settings.preferences') ? 'active' : '' }}" href="{{ route('settings.preferences') }}"><span class="nav-ico"><i class="bi bi-palette-fill"></i></span>{{ __('nav.preferences') }}</a>
                     @can('admin')
-                    <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}"><span class="nav-ico"><i class="bi bi-people-fill"></i></span>User Management</a>
-                    <a class="nav-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}" href="{{ route('admin.categories.index') }}"><span class="nav-ico"><i class="bi bi-tags-fill"></i></span>Categories</a>
-                    <a class="nav-link {{ request()->routeIs('admin.departments.*') ? 'active' : '' }}" href="{{ route('admin.departments.index') }}"><span class="nav-ico"><i class="bi bi-diagram-3-fill"></i></span>Departments</a>
+                    <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}"><span class="nav-ico"><i class="bi bi-people-fill"></i></span>{{ __('nav.users') }}</a>
+                    <a class="nav-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}" href="{{ route('admin.categories.index') }}"><span class="nav-ico"><i class="bi bi-tags-fill"></i></span>{{ __('nav.categories') }}</a>
+                    <a class="nav-link {{ request()->routeIs('admin.departments.*') ? 'active' : '' }}" href="{{ route('admin.departments.index') }}"><span class="nav-ico"><i class="bi bi-diagram-3-fill"></i></span>{{ __('nav.departments') }}</a>
                     @endcan
                 </div>
             </nav>
             <div class="mt-3">
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
-                <button type="button" class="btn w-100 p3-logout justify-content-center" data-bs-toggle="modal" data-bs-target="#logoutModal" title="Logout"><i class="bi bi-power me-2"></i>Logout</button>
+                <button type="button" class="btn w-100 p3-logout justify-content-center" data-bs-toggle="modal" data-bs-target="#logoutModal" title="Logout"><i class="bi bi-power me-2"></i>{{ __('nav.logout') }}</button>
             </div>
         </aside>
         <div class="modal fade" id="logoutModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -181,8 +320,15 @@
                     @endif
                 </div>
                 <div class="d-flex align-items-center gap-2">
+                    <span class="p3-avatar-sm" title="{{ auth()->user()->name }}">
+                    @if(auth()->user()->avatar_path)
+                        <img src="{{ route('profile.avatar') }}?v={{ auth()->user()->updated_at?->timestamp }}" alt="{{ auth()->user()->name }}" style="width:100%;height:100%;object-fit:cover">
+                    @else
+                        <span class="fw-bold">{{ auth()->user()->initials() }}</span>
+                    @endif
+                    </span>
                     <i class="bi bi-shield-lock text-success" title="Private storage · authorized access only"></i>
-                    <span class="fw-semibold small text-dark">{{ auth()->user()->name }}</span>
+                    <span class="fw-semibold small" style="color:inherit">{{ auth()->user()->name }}</span>
                 </div>
             </div>
             <main class="p-3">

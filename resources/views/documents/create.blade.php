@@ -43,7 +43,6 @@
         {{-- Step 1: file picker --}}
         <div class="card card-p3 p-4">
             <div class="d-flex align-items-center gap-2 mb-3">
-                <span class="avatar avatar-user" style="width:26px;height:26px;font-size:.75rem">1</span>
                 <h6 class="fw-bold mb-0">Choose a file</h6>
             </div>
 
@@ -80,7 +79,6 @@
         {{-- Step 2: details --}}
         <div class="card card-p3 p-4 mt-3">
             <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="avatar avatar-user" style="width:26px;height:26px;font-size:.75rem">2</span>
                 <h6 class="fw-bold mb-0">Document details</h6>
                 <span class="text-muted" style="font-size:.72rem">— all optional, all editable</span>
             </div>

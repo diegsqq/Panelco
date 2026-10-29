@@ -21,7 +21,7 @@ class ChatController extends Controller
 
     public function index(): View
     {
-        $conversations = Conversation::where('user_id', auth()->id())->latest()->paginate(15);
+        $conversations = Conversation::where('user_id', auth()->id())->latest()->paginate(12);
 
         return view('chat.index', compact('conversations'));
     }

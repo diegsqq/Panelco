@@ -2,11 +2,12 @@
 @section('content')
 <div class="row justify-content-center">
 <div class="col-lg-9">
+<div id="chatFull" class="p3-chat-full">
 <div class="d-flex justify-content-between align-items-center">
 <a href="{{ route('chat.index') }}" class="small text-decoration-none" style="color:#00A868">&larr; All conversations</a>
 </div>
 <h4 class="fw-bold mt-1 mb-3">{{ $conversation->title }}</h4>
-<div class="d-flex flex-column gap-3 chat-scroll pe-1" id="messages" aria-live="polite">
+<div class="d-flex flex-column gap-3 chat-scroll p3-chat-msgs pe-1" id="messages" aria-live="polite">
 @foreach ($conversation->messages as $msg)
 @if ($msg->role === 'user')
 <div class="d-flex justify-content-end gap-2 msg-in">
@@ -38,7 +39,7 @@
 @endif
 @endforeach
 </div>
-<form method="POST" action="{{ route('chat.ask', $conversation) }}" class="mt-3 sticky-bottom pb-1" id="askForm" style="background:var(--p3-bg)">
+<form method="POST" action="{{ route('chat.ask', $conversation) }}" class="p3-chat-form pb-1" id="askForm" style="background:var(--p3-bg)">
 @csrf
 <div class="input-group">
 <textarea name="question" id="questionInput" class="form-control" rows="1" maxlength="2000" required placeholder="Ask a follow-up… (Enter to send)" autocomplete="off" aria-label="Ask a follow-up" style="resize:none"></textarea>
@@ -47,6 +48,28 @@
 </form>
 </div>
 </div>
+</div>
+<style>
+/* Full-screen conversation: page never scrolls, only the message list does. */
+.p3-chat-full { display: flex; flex-direction: column; min-height: 0; }
+.p3-chat-msgs { flex: 1 1 auto; min-height: 0; overflow-y: auto; max-height: none !important; }
+.p3-chat-form { flex: 0 0 auto; margin-top: .75rem; }
+</style>
+<script>
+(function () {
+    // Fit the chat column to the viewport so the page itself never scrolls.
+    function fit() {
+        var el = document.getElementById('chatFull');
+        if (!el) return;
+        var top = el.getBoundingClientRect().top;
+        el.style.height = Math.max(320, window.innerHeight - top - 8) + 'px';
+    }
+    fit();
+    window.addEventListener('resize', fit);
+    window.addEventListener('load', fit);
+    setTimeout(fit, 400); // re-fit after main's entrance animation settles
+})();
+</script>
 <script>
 (function () {
     var box = document.getElementById('messages');

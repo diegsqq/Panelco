@@ -35,7 +35,8 @@
 })();
 </script>
 </div>
-<div class="card card-p3 p-0 overflow-hidden">
+<div id="convListWrap" style="min-height:calc(100vh - 130px);display:flex;flex-direction:column">
+<div class="card card-p3 p-0 overflow-hidden" style="flex-grow:1">
 <div class="p-3 border-bottom fw-bold">Your conversations</div>
 @forelse ($conversations as $c)
 <div class="d-flex justify-content-between align-items-center border-bottom p-3">
@@ -46,7 +47,25 @@
 <div class="p-4 text-center text-muted">No conversations yet — ask your first question above.</div>
 @endforelse
 </div>
-<div class="mt-3">{{ $conversations->links() }}</div>
+<div id="chatPagination" class="d-flex flex-wrap justify-content-center align-items-center gap-3" style="margin-top:.75rem;position:sticky;bottom:0;z-index:20">
+@if ($conversations->hasPages())
+<small class="text-muted">{{ $conversations->firstItem() }}&ndash;{{ $conversations->lastItem() }} of {{ $conversations->total() }}</small>
+<div class="d-flex align-items-center gap-2">
+@if ($conversations->onFirstPage())
+<span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true"><i class="bi bi-chevron-left"></i></span>
+@else
+<a class="btn btn-sm btn-outline-success" href="{{ $conversations->previousPageUrl() }}" rel="prev" aria-label="Previous page"><i class="bi bi-chevron-left"></i></a>
+@endif
+<span class="px-1 fw-semibold" style="color:#00743F">{{ $conversations->currentPage() }}/{{ $conversations->lastPage() }}</span>
+@if ($conversations->hasMorePages())
+<a class="btn btn-sm btn-outline-success" href="{{ $conversations->nextPageUrl() }}" rel="next" aria-label="Next page"><i class="bi bi-chevron-right"></i></a>
+@else
+<span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true"><i class="bi bi-chevron-right"></i></span>
+@endif
+</div>
+@endif
+</div>
+</div>
 </div>
 </div>
 @endsection
