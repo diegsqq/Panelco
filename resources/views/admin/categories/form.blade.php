@@ -14,7 +14,7 @@
 </div>
 <div class="form-text" id="aiKwMsg">Matching is case-insensitive substring search over extracted text.</div>
 </div>
-<button class="btn" style="background:#00A868;color:#fff">Save</button>
+<button class="btn" style="background:#ffffff;color:#00A868;border:1px solid #00A868">Save</button>
 <a href="{{ route('admin.categories.index') }}" class="btn btn-link">Cancel</a>
 </form>
 @if(isset($category))

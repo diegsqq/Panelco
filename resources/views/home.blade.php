@@ -24,13 +24,13 @@
     }
 </style>
 <div class="p3-dashboard" id="p3Dashboard">
-<div class="p-4 text-white d-flex flex-wrap justify-content-between align-items-center" style="background:linear-gradient(135deg,#00A868,#1DBF7D);border-radius:1rem">
+<div class="d-flex flex-wrap justify-content-between align-items-center">
     <div>
-        <h3 class="fw-bold mb-0">Welcome back, {{ auth()->user()->isAdmin() ? 'Admin' : strtok(auth()->user()->name, ' ') }}</h3>
+        <h3 class="fw-bold mb-0" style="color:#00A868">Welcome back, {{ auth()->user()->isAdmin() ? 'Admin' : strtok(auth()->user()->name, ' ') }}</h3>
     </div>
     <div class="d-flex gap-3 mt-2 mt-md-0">
-        <a href="{{ route('documents.upload') }}" class="btn btn-lg" style="background:#ffffff;color:#00A868;font-weight:700"><i class="bi bi-cloud-upload me-1"></i>Upload</a>
-        <a href="{{ route('chat.index') }}" class="btn btn-lg btn-outline-light"><i class="bi bi-chat-dots me-1"></i>Ask Lightning</a>
+        <a href="{{ route('documents.upload') }}" class="btn btn-lg" style="background:#ffffff;color:#00A868;border:1px solid #00A868;font-weight:700"><i class="bi bi-cloud-upload me-1"></i>Upload</a>
+        <a href="{{ route('chat.index') }}" class="btn btn-lg" style="background:#ffffff;color:#00A868;border:1px solid #00A868;font-weight:700"><i class="bi bi-chat-dots me-1"></i>Ask Lightning</a>
     </div>
 </div>
 
@@ -59,7 +59,7 @@
                     <i class="bi bi-chevron-right flex-shrink-0" style="font-size:.85rem;color:#b7c4bd"></i>
                 </a>
             @empty
-                <div class="text-center py-4"><i class="bi bi-inbox fs-2 text-muted"></i><p class="fw-semibold mt-2 mb-2">No documents yet.</p><a href="{{ route('documents.upload') }}" class="btn btn-sm" style="background:#00A868;color:#fff">Upload your first document</a></div>
+                <div class="text-center py-4"><i class="bi bi-inbox fs-2 text-muted"></i><p class="fw-semibold mt-2 mb-2">No documents yet.</p><a href="{{ route('documents.upload') }}" class="btn btn-sm" style="background:#ffffff;color:#00A868;border:1px solid #00A868">Upload your first document</a></div>
             @endforelse
             </div>
         </div>

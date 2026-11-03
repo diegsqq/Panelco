@@ -6,7 +6,7 @@
 @csrf @if(isset($department)) @method('PUT') @endif
 <div class="mb-3"><label class="form-label">Name</label><input name="name" class="form-control" value="{{ old('name', $department->name ?? '') }}" required></div>
 <div class="mb-3"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="2">{{ old('description', $department->description ?? '') }}</textarea></div>
-<button class="btn" style="background:#00A868;color:#fff">Save</button>
+<button class="btn" style="background:#ffffff;color:#00A868;border:1px solid #00A868">Save</button>
 <a href="{{ route('admin.departments.index') }}" class="btn btn-link">Cancel</a>
 </form>
 @if(isset($department))

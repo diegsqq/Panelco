@@ -1,19 +1,19 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-vh-100 d-flex" style="background:linear-gradient(135deg,#00A868 0%,#00743F 55%,#1DBF7D 100%)">
+<div class="min-vh-100 d-flex" style="background:#ffffff">
     <div class="container align-self-center py-5">
         <div class="row g-0 shadow overflow-hidden mx-auto" style="max-width:960px;border-radius:1rem">
-            <div class="col-md-6 p-4 p-md-5 text-white d-flex flex-column align-items-center justify-content-center text-center" style="background:rgba(0,0,0,.25)">
+            <div class="col-md-6 p-4 p-md-5 d-flex flex-column align-items-center justify-content-center text-center" style="background:#e6f3ea;color:#00743F">
                 <img src="{{ asset('images/logo.png') }}" alt="PANELCO III logo" style="height:110px" class="mb-3">
                 <div class="fw-bold fs-4">SmartDocs AI</div>
-                <p class="mt-2 mb-4" style="color:#cdebd6;max-width:340px">Smart, secure, and searchable — your cooperative's documents, made simple.</p>
+                <p class="mt-2 mb-4" style="color:#4b5a52;max-width:340px">Smart, secure, and searchable — your cooperative's documents, made simple.</p>
                 <div class="d-flex flex-column gap-2 small text-start" style="color:#cdebd6">
                     <div><i class="bi bi-check-circle-fill me-2" style="color:#7ee2a8"></i>Upload and classify documents instantly</div>
                     <div><i class="bi bi-check-circle-fill me-2" style="color:#7ee2a8"></i>Get AI summaries with citations</div>
                     <div><i class="bi bi-check-circle-fill me-2" style="color:#7ee2a8"></i>Ask questions — answers from real records</div>
                 </div>
-                <div class="mt-4 small" style="color:#9ed2ae"><i class="bi bi-shield-lock me-1"></i>Authorized access only</div>
+                <div class="mt-4 small" style="color:#7d8f86"><i class="bi bi-shield-lock me-1"></i>Authorized access only</div>
             </div>
             <div class="col-md-6 p-4 p-md-5 bg-white">
                 <h5 class="fw-bold mt-2" style="color:#00A868">Employee Login</h5>
@@ -37,7 +37,7 @@
                         <div class="form-check"><input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}><label class="form-check-label small" for="remember">Remember Me</label></div>
                         @if (Route::has('password.request'))<a class="small" href="{{ route('password.request') }}">Forgot password?</a>@endif
                     </div>
-                    <button type="submit" class="btn w-100" style="background:#00A868;border-color:#00A868;color:#fff;font-weight:600">Login to SmartDocs</button>
+                    <button type="submit" class="btn w-100" style="background:#ffffff;border-color:#00A868;color:#00A868;font-weight:600">Login to SmartDocs</button>
                 </form>
                 <script>
                 (function () {

@@ -337,6 +337,7 @@
                     @if(request()->routeIs('documents.show'))
                     <a href="{{ route('documents.library') }}" class="small text-decoration-none fw-semibold" style="color:#00A868"><i class="bi bi-arrow-left me-1"></i>Back to library</a>
                     @endif
+                    <span id="p3DateTime" class="small fw-semibold text-muted d-none d-sm-inline" style="white-space:nowrap"></span>
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <span class="p3-avatar-sm" title="{{ auth()->user()->name }}">
@@ -433,6 +434,20 @@
     });
     backdrop.addEventListener('click', close);
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+})();
+</script>
+<script>
+(function () {
+    var el = document.getElementById('p3DateTime');
+    if (!el) return;
+    function tick() {
+        var d = new Date();
+        var date = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: '2-digit', year: 'numeric' });
+        var time = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        el.textContent = date + ' - ' + time;
+    }
+    tick();
+    setInterval(tick, 1000);
 })();
 </script>
 </body>

@@ -37,7 +37,7 @@
                 <small class="text-muted">Title, category, and date are suggested automatically — edit anything before uploading.</small>
             </div>
         </div>
-        <button class="btn btn-p3 px-4" id="submitBtn" type="submit"><i class="bi bi-cloud-upload me-1"></i>Upload &amp; Queue</button>
+        <button class="btn px-4" id="submitBtn" type="submit" style="background:#ffffff;color:#00A868;border:1px solid #00A868;font-weight:700"><i class="bi bi-cloud-upload me-1"></i>Upload &amp; Queue</button>
     </div>
 
         {{-- Step 1: file picker --}}

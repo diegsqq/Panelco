@@ -2,21 +2,22 @@
 @section('content')
 <div class="row justify-content-center">
 <div class="col-12 p3-chat-page" id="chatPage">
-<div class="card card-p3 p-3 mb-2" style="background:linear-gradient(135deg,#00A868,#00743F);flex:0 0 auto">
+<div class="p-3 mb-2" style="flex:0 0 auto">
 <div class="d-flex align-items-center gap-2 mb-2">
-<span class="d-inline-flex align-items-center justify-content-center" style="width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.2);color:#fff;font-size:1rem"><i class="bi bi-lightning-charge-fill"></i></span>
-<h5 class="fw-bold text-white mb-0" style="font-size:1.05rem">Lightning</h5>
+<span class="d-inline-flex align-items-center justify-content-center" style="width:30px;height:30px;border-radius:9px;background:#e6f3ea;color:#00A868;font-size:1rem"><i class="bi bi-lightning-charge-fill"></i></span>
+<h5 class="fw-bold mb-0" style="font-size:1.05rem;color:#00A868">Lightning</h5>
+<button type="button" class="btn btn-sm ms-auto" style="background:#fff;color:#00A868;border:1px solid #00A868;font-weight:700" onclick="window.print()"><i class="bi bi-file-earmark-pdf me-1"></i>Convert to PDF</button>
 </div>
 <form method="POST" action="{{ route('chat.store') }}" id="newChatForm">
 @csrf
 <div class="input-group input-group-sm">
 <input name="question" class="form-control" maxlength="2000" required placeholder="Ask about your documents…" value="{{ request('q') }}" aria-label="Ask about your documents">
-<button class="btn" style="background:#fff;color:#00743F;font-weight:700">Send</button>
+<button class="btn" style="background:#ffffff;color:#00A868;border:1px solid #00A868;font-weight:700">Send</button>
 </div>
 </form>
 <div class="d-flex flex-wrap gap-2 mt-2">
 @foreach(['Summarize the latest report', 'What corrective actions were recorded?', 'Find documents mentioning a transformer', 'What are the important details?'] as $s)
-<button type="button" class="btn btn-sm btn-outline-light chip-q" style="font-size:.72rem;padding:.2rem .6rem">{{ $s }}</button>
+<button type="button" class="btn btn-sm chip-q" style="font-size:.72rem;padding:.2rem .6rem;background:#fff;color:#00A868;border:1px solid #00A868">{{ $s }}</button>
 @endforeach
 </div>
 <script>

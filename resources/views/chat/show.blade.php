@@ -43,7 +43,7 @@
 @csrf
 <div class="input-group">
 <textarea name="question" id="questionInput" class="form-control" rows="1" maxlength="2000" required placeholder="Ask a follow-up… (Enter to send)" autocomplete="off" aria-label="Ask a follow-up" style="resize:none"></textarea>
-<button class="btn" style="background:#00A868;border-color:#00A868;color:#fff;font-weight:600" id="sendBtn">Send</button>
+<button class="btn" style="background:#ffffff;border-color:#00A868;color:#00A868;font-weight:600" id="sendBtn">Send</button>
 </div>
 </form>
 </div>

@@ -14,17 +14,17 @@ body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--bg)}
 </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark" style="background:#00A868">
+<nav class="navbar navbar-expand-lg navbar-light" style="background:#ffffff;border-bottom:1px solid #e5e5e5">
 <div class="container">
 <a class="navbar-brand fw-bold" href="/"><img src="{{ asset('images/logo.png') }}" alt="PANELCO III" style="height:30px" class="me-2">SmartDocs AI</a>
 </div>
 </nav>
-<header class="hero text-white py-5">
+<header class="hero py-5" style="background:#ffffff">
 <div class="container py-4">
 <div class="row align-items-center g-4">
 <div class="col-lg-7">
-<h1 class="fw-bold display-6">Answers grounded in real records — never invented.</h1>
-<p class="lead" style="color:#cdebd6">Upload memorandums, incident reports, and approvals. SmartDocs extracts text, suggests classifications, summarizes, and chats with clickable citations — only from documents you are authorized to access.</p>
+<h1 class="fw-bold display-6" style="color:#00A868">Answers grounded in real records — never invented.</h1>
+<p class="lead" style="color:#4b5a52">Upload memorandums, incident reports, and approvals. SmartDocs extracts text, suggests classifications, summarizes, and chats with clickable citations — only from documents you are authorized to access.</p>
 <div class="d-flex gap-2 mt-3">
 <a href="{{ route('login') }}" class="btn" style="background:#ffffff;color:#00A868;font-weight:700">Employee Login</a>
 </div>

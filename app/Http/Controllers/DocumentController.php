@@ -271,6 +271,60 @@ class DocumentController extends Controller
         );
     }
 
+    public function toPdf(Document $document): \Symfony\Component\HttpFoundation\Response
+    {
+        $this->authorize('download', $document);
+
+        if (! \Illuminate\Support\Facades\Storage::disk('private')->exists($document->storage_path)) {
+            abort(404, 'File not found in private storage.');
+        }
+
+        $mime = $document->mime_type ?? '';
+        $content = \Illuminate\Support\Facades\Storage::disk('private')->get($document->storage_path);
+
+        if ($mime === 'application/pdf') {
+            return \Illuminate\Support\Facades\Storage::disk('private')->download($document->storage_path, $document->original_filename);
+        }
+
+        $html = '<html><head><meta charset="utf-8"><style>body{font-family:DejaVu Sans,sans-serif;font-size:12px;} pre{white-space:pre-wrap;word-wrap:break-word;} img{max-width:100%;}</style></head><body>';
+
+        if (str_starts_with($mime, 'image/')) {
+            $html .= '<img src="data:' . $mime . ';base64,' . base64_encode($content) . '" alt="Document">';
+        } elseif ($mime === 'text/plain') {
+            $html .= '<pre>' . e($content) . '</pre>';
+        } elseif ($mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+            $tmp = tempnam(sys_get_temp_dir(), 'docx');
+            file_put_contents($tmp, $content);
+            try {
+                $phpWord = \PhpOffice\PhpWord\IOFactory::load($tmp);
+                $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'HTML');
+                ob_start();
+                $writer->save('php://output');
+                $docHtml = ob_get_clean();
+                // Strip outer html/head/body wrappers if present, keep inner content.
+                $html .= $docHtml;
+            } finally {
+                @unlink($tmp);
+            }
+        } else {
+            abort(415, 'Unsupported file type for PDF conversion.');
+        }
+
+        $html .= '</body></html>';
+
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $filename = pathinfo($document->original_filename, PATHINFO_FILENAME) . '.pdf';
+
+        return response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
     public function thumb(Document $document): StreamedResponse
     {
         // Lightweight image preview for lists/detail pages: same access

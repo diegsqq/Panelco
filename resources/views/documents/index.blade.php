@@ -48,9 +48,6 @@
     <section class="lib-shell">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
             <div>
-                <div class="lib-breadcrumb d-flex align-items-center gap-2 mb-2">
-                    <span>Navigation</span><i class="bi bi-chevron-right"></i><span class="text-dark fw-semibold">Documents</span>
-                </div>
                 <h3 class="fw-bold mb-0">Documents</h3>
                 <small class="text-muted">{{ number_format($documents->total()) }} {{ \Illuminate\Support\Str::plural('document', $documents->total()) }}</small>
             </div>

@@ -10,7 +10,7 @@
 <img src="{{ asset('images/logo.png') }}" alt="PANELCO III" class="mb-3" style="height:72px">
 <h1 class="display-4 fw-bold" style="color:#00A868">@yield('code')</h1>
 <p class="text-muted">@yield('message')</p>
-<a href="{{ url('/dashboard') }}" class="btn mt-2" style="background:#00A868;color:#fff">Back to Dashboard</a>
+<a href="{{ url('/dashboard') }}" class="btn mt-2" style="background:#ffffff;color:#00A868;border:1px solid #00A868">Back to Dashboard</a>
 </div></div></div></div>
 </body>
 </html>
