@@ -85,7 +85,7 @@ class DocumentController extends Controller
             $query->where('processing_status', $validated['status']);
         }
 
-        $documents = $query->paginate(10)->withQueryString();
+        $documents = $query->paginate(14)->withQueryString();
 
         return view('documents.index', compact('documents', 'search'));
     }

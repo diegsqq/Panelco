@@ -8,8 +8,8 @@
     .lib-breadcrumb { color: #858585; font-size: .78rem; }
     .lib-breadcrumb .bi-chevron-right { font-size: .6rem; }
     .lib-toolbar { background: #f7f7f7; }
-    .lib-table-wrap { min-height: 0; flex: 1 1 auto; overflow: auto; border: 1px solid #dedede; border-radius: .65rem; }
-    .lib-table { min-width: 930px; margin: 0; font-size: .79rem; }
+    .lib-table-wrap { min-height: 0; flex: 1 1 auto; overflow: hidden; border: 1px solid #dedede; border-radius: .65rem; }
+    .lib-table { width: 100%; margin: 0; font-size: .79rem; table-layout: auto; }
     .lib-table > :not(caption) > * > * { padding: .52rem .55rem; border-color: #e4e4e4; vertical-align: middle; }
     .lib-table thead th { position: sticky; top: 0; z-index: 1; background: #f7f7f7; color: #777; font-weight: 500; white-space: nowrap; }
     .lib-table tbody tr:nth-child(odd) { background: #fcfcfc; }
@@ -51,7 +51,7 @@
                 <h3 class="fw-bold mb-0">Documents</h3>
                 <small class="text-muted">{{ number_format($documents->total()) }} {{ \Illuminate\Support\Str::plural('document', $documents->total()) }}</small>
             </div>
-            <a href="{{ route('documents.upload') }}" class="btn btn-p3 btn-sm px-3">
+            <a href="{{ route('documents.upload') }}" class="btn btn-sm px-3" style="background:#ffffff;color:#00A868;border:1px solid #00A868;font-weight:700">
                 <i class="bi bi-plus-lg me-1"></i>Add New
             </a>
         </div>
@@ -85,7 +85,7 @@
                         <th scope="col">Type</th>
                         <th scope="col">Department</th>
                         <th scope="col">Category</th>
-                        <th scope="col">Status</th>
+
                         <th scope="col">Uploaded by</th>
                         <th scope="col">Date added</th>
                         <th scope="col" class="text-end">Size</th>
@@ -118,7 +118,7 @@
                             <td>{{ $fileType[0] }}</td>
                             <td>{{ $doc->department?->name ?? '—' }}</td>
                             <td><span class="lib-category">{{ $doc->category?->name ?? $doc->suggestedCategory?->name ?? 'Uncategorized' }}</span></td>
-                            <td><span class="lib-status lib-status-{{ $status }}">{{ $statusLabel }}</span></td>
+
                             <td>
                                 @if($doc->uploader)
                                     <span class="d-inline-flex align-items-center gap-2 text-nowrap"><span class="lib-avatar">{{ $doc->uploader->initials() }}</span>{{ $doc->uploader->name }}</span>
@@ -138,10 +138,10 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="text-center py-5">
+                            <td colspan="9" class="text-center py-5">
                                 <i class="bi bi-inbox fs-2 text-muted"></i>
                                 <p class="fw-semibold mt-2 mb-2">No documents found.</p>
-                                <a href="{{ route('documents.upload') }}" class="btn btn-sm btn-p3">Upload a document</a>
+                                <a href="{{ route('documents.upload') }}" class="btn btn-sm btn-outline-success">Upload a document</a>
                             </td>
                         </tr>
                     @endforelse

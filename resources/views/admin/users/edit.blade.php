@@ -56,7 +56,7 @@
 </div>
 </div>
 <div class="d-flex gap-2 mt-4">
-<button class="btn btn-p3 px-4"><i class="bi bi-check-lg me-1"></i>Save Changes</button>
+<button class="btn btn-outline-success px-4"><i class="bi bi-check-lg me-1"></i>Save Changes</button>
 <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary px-4">Cancel</a>
 </div>
 </form>

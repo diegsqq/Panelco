@@ -56,7 +56,7 @@
 <option value="tl" {{ ($me->locale ?? 'en') === 'tl' ? 'selected' : '' }}>Tagalog / Filipino</option>
 </select>
 </div>
-<button class="btn btn-p3 px-4"><i class="bi bi-check-lg me-1"></i>{{ __('settings.save') }}</button>
+<button class="btn btn-outline-success px-4"><i class="bi bi-check-lg me-1"></i>{{ __('settings.save') }}</button>
 </form>
 </div>
 </div>
@@ -104,7 +104,7 @@
 </div>
 </div>
 <div class="d-flex align-items-center gap-3 mt-3 flex-wrap">
-<button class="btn btn-p3 px-4"><i class="bi bi-check-lg me-1"></i>{{ __('settings.save_prefs') }}</button>
+<button class="btn btn-outline-success px-4"><i class="bi bi-check-lg me-1"></i>{{ __('settings.save_prefs') }}</button>
 <small class="text-muted"><i class="bi bi-envelope-paper me-1"></i>Emails go to <b>{{ $me->email }}</b></small>
 </div>
 </form>
@@ -194,7 +194,7 @@
 </div>
 
 <div class="d-flex gap-2 mt-3">
-<button class="btn btn-p3 px-4"><i class="bi bi-check-lg me-1"></i>Save Settings</button>
+<button class="btn btn-outline-success px-4"><i class="bi bi-check-lg me-1"></i>Save Settings</button>
 <a href="{{ route('settings.preferences') }}" class="btn btn-outline-secondary px-4">Reset</a>
 </div>
 </form>

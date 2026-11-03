@@ -67,7 +67,7 @@
 <input type="password" name="password_confirmation" class="form-control" required minlength="8" autocomplete="new-password">
 <button type="button" class="btn btn-outline-secondary pw-toggle" aria-label="Show password"><i class="bi bi-eye"></i></button></div>
 </div>
-<button class="btn btn-p3 mt-3 px-4"><i class="bi bi-key me-1"></i>{{ __('settings.password_btn') }}</button>
+<button class="btn btn-outline-success mt-3 px-4"><i class="bi bi-key me-1"></i>{{ __('settings.password_btn') }}</button>
 </form>
 </div>
 </div>
@@ -105,7 +105,7 @@
 <form method="POST" action="{{ route('settings.2fa.confirm') }}" class="d-flex gap-2 flex-wrap align-items-center">
 @csrf
 <input name="code" class="form-control p3-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="123456" autocomplete="one-time-code" required>
-<button class="btn btn-p3 px-3"><i class="bi bi-shield-check me-1"></i>Activate 2FA</button>
+<button class="btn btn-outline-success px-3"><i class="bi bi-shield-check me-1"></i>Activate 2FA</button>
 </form>
 @elseif($pending2fa)
 <div class="alert alert-danger" role="alert">
@@ -123,7 +123,7 @@
 <div class="p3-security-note mb-3"><i class="bi bi-lightbulb-fill me-1"></i>Recommended — blocks sign-in even if your password leaks.</div>
 <form method="POST" action="{{ route('settings.2fa.setup') }}">
 @csrf
-<button class="btn btn-p3 px-4"><i class="bi bi-shield-lock me-1"></i>Enable 2FA</button>
+<button class="btn btn-outline-success px-4"><i class="bi bi-shield-lock me-1"></i>Enable 2FA</button>
 </form>
 @endif
 </div>
@@ -218,7 +218,7 @@
 <small class="text-muted">1 – 3650 days. Older audit entries are purged automatically.</small>
 </div>
 </div>
-<button class="btn btn-p3 mt-3 px-4"><i class="bi bi-check-lg me-1"></i>{{ __('settings.save') }}</button>
+<button class="btn btn-outline-success mt-3 px-4"><i class="bi bi-check-lg me-1"></i>{{ __('settings.save') }}</button>
 </form>
 @else
 <div class="row g-3">

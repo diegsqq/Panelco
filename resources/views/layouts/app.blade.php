@@ -92,7 +92,7 @@
         .form-select.p3-chosen { color: var(--p3-navy); font-weight: 600; background-color: #f0f9f3; }
         .p3-dept-pill { border: 1px solid #d5e8db; color: var(--p3-navy); background: #fff; border-radius: 2rem; font-weight: 500; padding: .35rem .9rem; transition: all .15s ease; }
         .p3-dept-pill:hover { background: #e6f3ea; }
-        .p3-dept-pill:has(input:checked) { background: var(--p3-navy); border-color: var(--p3-navy); color: #fff; box-shadow: 0 2px 6px rgba(0,168,104,.3); }
+        .p3-dept-pill:has(input:checked) { background: #ffffff; border-color: var(--p3-navy); color: var(--p3-navy); box-shadow: 0 2px 6px rgba(0,168,104,.18); }
         .p3-logout { background: transparent; border: 1px solid #ddd; color: #555; border-radius: .75rem; font-weight: 600; padding: .6rem 1rem; letter-spacing: .3px; transition: all .18s ease; }
         .p3-logout:hover, .p3-logout:focus { background: #ededed; color: #c0392b; border-color: #ddd; }
         .p3-logout:active { transform: none; }
@@ -325,7 +325,7 @@
                     </div>
                     <div class="p3-modal-actions">
                         <button type="button" class="btn btn-outline-secondary px-4 flex-fill" data-bs-dismiss="modal">Stay</button>
-                        <button type="submit" form="logout-form" class="btn btn-p3 px-4 flex-fill">Logout</button>
+                        <button type="submit" form="logout-form" class="btn btn-outline-success px-4 flex-fill">Logout</button>
                     </div>
                 </div>
             </div>

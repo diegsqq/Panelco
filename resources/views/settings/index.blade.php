@@ -50,7 +50,7 @@
 <small class="text-muted d-block">{{ $me->email }}{{ $me->organization ? ' · ' . $me->organization : '' }}</small>
 <div class="d-flex gap-2 mt-2 flex-wrap align-items-center">
 <label class="btn btn-sm btn-outline-success mb-0" for="avatarInput" style="cursor:pointer"><i class="bi bi-camera me-1"></i>{{ __('settings.upload_photo') }}</label>
-<button id="avatarSave" type="submit" form="avatarForm" class="btn btn-sm btn-p3 mb-0 d-none"><i class="bi bi-check-lg me-1"></i>{{ __('settings.save') }}</button>
+<button id="avatarSave" type="submit" form="avatarForm" class="btn btn-sm btn-outline-success mb-0 d-none"><i class="bi bi-check-lg me-1"></i>{{ __('settings.save') }}</button>
 <button id="avatarCancel" type="button" class="btn btn-sm btn-outline-secondary mb-0 d-none">Cancel</button>
 @if($me->avatar_path)
 <form method="POST" action="{{ route('settings.profile.avatar.destroy') }}">
@@ -99,7 +99,7 @@
 </div>
 </div>
 <div class="mt-3 d-flex align-items-center gap-3 flex-wrap">
-<button class="btn btn-p3 px-4"><i class="bi bi-check-lg me-1"></i>{{ __('settings.save_account') }}</button>
+<button class="btn btn-outline-success px-4"><i class="bi bi-check-lg me-1"></i>{{ __('settings.save_account') }}</button>
 <small class="text-muted"><i class="bi bi-shield-check me-1"></i>{{ __('settings.verify_note') }}</small>
 </div>
 </form>
@@ -112,7 +112,7 @@
 @csrf
 @method('PUT')
 <input name="code" class="form-control p3-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="123456" required>
-<button class="btn btn-sm btn-p3 px-3">Verify Email</button>
+<button class="btn btn-sm btn-outline-success px-3">Verify Email</button>
 </form>
 <form method="POST" action="{{ route('settings.profile.resend') }}" class="mt-1">
 @csrf
@@ -130,7 +130,7 @@
 @csrf
 @method('PUT')
 <input name="code" class="form-control p3-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="123456" required>
-<button class="btn btn-sm btn-p3 px-3">Verify Number</button>
+<button class="btn btn-sm btn-outline-success px-3">Verify Number</button>
 </form>
 <form method="POST" action="{{ route('settings.profile.resend') }}" class="mt-1">
 @csrf

@@ -11,7 +11,7 @@
 @foreach ($conversation->messages as $msg)
 @if ($msg->role === 'user')
 <div class="d-flex justify-content-end gap-2 msg-in">
-<div class="p-3 text-white" style="background:#00A868;border-radius:1rem 1rem .25rem 1rem;max-width:85%">{{ $msg->content }}<div class="mt-1 opacity-75" style="font-size:.72rem">{{ $msg->created_at->format('g:i A') }}</div></div>
+<div class="p-3" style="background:#ffffff;color:#00743F;border:1px solid #00A868;border-radius:1rem 1rem .25rem 1rem;max-width:85%">{{ $msg->content }}<div class="mt-1 opacity-75" style="font-size:.72rem">{{ $msg->created_at->format('g:i A') }}</div></div>
 <span class="avatar avatar-user" title="{{ auth()->user()->name }}">{{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}</span>
 </div>
 @else

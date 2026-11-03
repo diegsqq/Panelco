@@ -11,7 +11,7 @@
     .up-file-icon { width: 52px; height: 52px; flex: 0 0 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
     .up-meta-card { border: 1px solid var(--p3-card-border, #d5e8db); border-radius: .9rem; padding: .85rem 1rem; background: #fff; transition: border-color .2s ease, box-shadow .2s ease; }
     .up-meta-card.suggested { border-color: #9ed9b3; box-shadow: 0 0 0 3px rgba(0,168,104,.08); }
-    .up-auto-badge { font-size: .65rem; letter-spacing: .3px; background: #e6f3ea; color: #00743F; border-radius: 1rem; padding: .15rem .5rem; font-weight: 700; text-transform: uppercase; vertical-align: middle; }
+    .up-auto-badge { font-size: .65rem; letter-spacing: .3px; background: #ffffff; color: #00743F; border: 1px solid #00A868; border-radius: 1rem; padding: .15rem .5rem; font-weight: 700; text-transform: uppercase; vertical-align: middle; }
     .up-progress { height: 3px; background: #e6f3ea; border-radius: 2px; overflow: hidden; opacity: 0; transition: opacity .2s ease; }
     .up-progress.on { opacity: 1; }
     .up-progress-bar { height: 100%; width: 40%; background: linear-gradient(90deg, #00A868, #1DBF7D); border-radius: 2px; animation: up-slide 1s ease-in-out infinite; }

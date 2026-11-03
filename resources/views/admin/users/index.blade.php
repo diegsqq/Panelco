@@ -3,7 +3,7 @@
 @php $showForm = $errors->any() || count(old()) > 0; @endphp
 <div class="d-flex justify-content-between align-items-center mb-3">
 <h4 class="mb-0">User Management</h4>
-<button class="btn btn-p3" data-bs-toggle="collapse" data-bs-target="#userCreateForm" aria-expanded="{{ $showForm ? 'true' : 'false' }}"><i class="bi bi-person-plus-fill me-1"></i>New User</button>
+<button class="btn btn-outline-success" data-bs-toggle="collapse" data-bs-target="#userCreateForm" aria-expanded="{{ $showForm ? 'true' : 'false' }}"><i class="bi bi-person-plus-fill me-1"></i>New User</button>
 </div>
 <div class="collapse {{ $showForm ? 'show' : '' }} mb-4" id="userCreateForm">
 <div class="card card-p3 p-4">
@@ -57,7 +57,7 @@
 </div>
 </div>
 <div class="d-flex gap-2 mt-4">
-<button class="btn btn-p3 px-4"><i class="bi bi-check-lg me-1"></i>Save</button>
+<button class="btn btn-outline-success px-4"><i class="bi bi-check-lg me-1"></i>Save</button>
 <button type="button" class="btn btn-outline-secondary px-4" data-bs-toggle="collapse" data-bs-target="#userCreateForm">Cancel</button>
 </div>
 </form>
@@ -72,7 +72,7 @@
 <td class="fw-semibold">{{ $u->name }}</td><td class="text-break">{{ $u->email }}</td>
 <td><span class="badge text-capitalize" style="background:#e6f3ea;color:var(--p3-navy)">{{ \App\Models\User::roleLabel($u->role) }}</span></td>
 <td>{{ $u->department?->name ?? '—' }}</td>
-<td class="text-end"><a href="{{ route('admin.users.edit', $u) }}" class="btn btn-sm btn-p3">Edit</a></td>
+<td class="text-end"><a href="{{ route('admin.users.edit', $u) }}" class="btn btn-sm btn-outline-success">Edit</a></td>
 </tr>
 @empty
 <tr><td colspan="5" class="text-center text-muted p-4">No users yet.</td></tr>
