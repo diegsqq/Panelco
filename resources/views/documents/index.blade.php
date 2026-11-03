@@ -2,15 +2,15 @@
 
 @section('content')
 <style>
-    body:has(#libPage) main { padding: .75rem 1rem 1rem !important; }
+    body:has(#libPage) main { padding: .75rem 1rem .25rem !important; }
     .lib-page { min-height: 0; display: flex; flex-direction: column; }
-    .lib-shell { min-height: 0; flex: 1 1 auto; display: flex; flex-direction: column; padding: 1.15rem; background: #fff; border: 1px solid #e5e5e5; border-radius: 1rem; }
+    .lib-shell { min-height: 0; flex: 1 1 auto; display: flex; flex-direction: column; padding: .75rem; background: #fff; border: 1px solid #e5e5e5; border-radius: 1rem; }
     .lib-breadcrumb { color: #858585; font-size: .78rem; }
     .lib-breadcrumb .bi-chevron-right { font-size: .6rem; }
     .lib-toolbar { background: #f7f7f7; }
-    .lib-table-wrap { min-height: 0; flex: 1 1 auto; overflow: hidden; border: 1px solid #dedede; border-radius: .65rem; }
-    .lib-table { width: 100%; margin: 0; font-size: .79rem; table-layout: auto; }
-    .lib-table > :not(caption) > * > * { padding: .52rem .55rem; border-color: #e4e4e4; vertical-align: middle; }
+    .lib-table-wrap { min-height: 0; flex: 1 1 auto; overflow: hidden; border: 1px solid #dedede; border-radius: .65rem; display: flex; flex-direction: column; }
+    .lib-table { width: 100%; margin: 0; font-size: .79rem; table-layout: auto; height: 100%; flex: 1 1 auto; }
+    .lib-table > :not(caption) > * > * { padding: .35rem .45rem; border-color: #e4e4e4; vertical-align: middle; }
     .lib-table thead th { position: sticky; top: 0; z-index: 1; background: #f7f7f7; color: #777; font-weight: 500; white-space: nowrap; }
     .lib-table tbody tr:nth-child(odd) { background: #fcfcfc; }
     .lib-table tbody tr:hover { background: #f0f7f3; }
@@ -51,14 +51,7 @@
                 <h3 class="fw-bold mb-0">Documents</h3>
                 <small class="text-muted">{{ number_format($documents->total()) }} {{ \Illuminate\Support\Str::plural('document', $documents->total()) }}</small>
             </div>
-            <a href="{{ route('documents.upload') }}" class="btn btn-sm px-3" style="background:#ffffff;color:#00A868;border:1px solid #00A868;font-weight:700">
-                <i class="bi bi-plus-lg me-1"></i>Add New
-            </a>
-        </div>
-
-        <div class="lib-toolbar d-flex flex-wrap justify-content-between align-items-center gap-2 px-2 py-2 border rounded-top">
-            <span class="fw-semibold small">All Documents</span>
-            <form method="GET" action="{{ route('documents.library') }}" class="d-flex flex-wrap align-items-center gap-2" role="search">
+            <form method="GET" action="{{ route('documents.library') }}" class="d-flex flex-wrap align-items-center gap-2 ms-auto" role="search">
                 <div class="input-group input-group-sm" style="width:min(16rem, 55vw)">
                     <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
                     <input type="search" name="q" value="{{ $search }}" class="form-control" placeholder="Search documents" aria-label="Search documents">
@@ -150,7 +143,6 @@
         </div>
 
         <div id="libPagination" class="lib-pagination d-flex flex-wrap justify-content-center align-items-center gap-3 pt-3">
-            @if ($documents->hasPages())
                 <small class="text-muted">{{ $documents->firstItem() }}&ndash;{{ $documents->lastItem() }} of {{ $documents->total() }}</small>
                 <div class="d-flex align-items-center gap-2">
                     @if ($documents->onFirstPage())
@@ -165,7 +157,6 @@
                         <span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true"><i class="bi bi-chevron-right"></i></span>
                     @endif
                 </div>
-            @endif
         </div>
     </section>
 </div>
@@ -224,7 +215,7 @@
         var el = document.getElementById('libPage');
         if (!el) return;
         var top = el.getBoundingClientRect().top;
-        el.style.height = Math.max(320, window.innerHeight - top) + 'px';
+        el.style.height = Math.max(320, window.innerHeight - top - 8) + 'px';
     }
     fit();
     window.addEventListener('resize', fit);
