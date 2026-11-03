@@ -103,4 +103,37 @@ class Phase3UploadTest extends TestCase
     {
         $this->get(route('documents.library'))->assertRedirect('/login');
     }
+
+    public function test_library_renders_documents_and_filters_by_status(): void
+    {
+        $this->seed();
+        $admin = User::where('email', 'admin@panelco3.local')->first();
+
+        Document::create([
+            'uploaded_by' => $admin->id,
+            'title' => 'Approved plan',
+            'original_filename' => 'approved.pdf',
+            'storage_path' => 'documents/approved.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => 1024,
+            'processing_status' => 'completed',
+        ]);
+        Document::create([
+            'uploaded_by' => $admin->id,
+            'title' => 'Pending plan',
+            'original_filename' => 'pending.pdf',
+            'storage_path' => 'documents/pending.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => 2048,
+            'processing_status' => 'pending',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('documents.library', ['status' => 'completed']))
+            ->assertOk()
+            ->assertSeeText('Documents')
+            ->assertSeeText('Approved plan')
+            ->assertSeeText('Complete')
+            ->assertDontSeeText('Pending plan');
+    }
 }

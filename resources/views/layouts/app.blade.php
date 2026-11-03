@@ -37,8 +37,8 @@
             --p3-blue: #1DBF7D;
             --p3-yellow: #ffffff;
             --p3-yellow-dark: #e6f3ea;
-            --p3-bg: #f2f7f3;
-            --p3-card-border: #d5e8db;
+            --p3-bg: #f5f5f5;
+            --p3-card-border: #e5e5e5;
         }
         body { background: var(--p3-bg); font-family: "Segoe UI", system-ui, -apple-system, sans-serif; }
         /* Dark theme: remap shared vars so every var()-based rule adapts.
@@ -50,19 +50,19 @@
         [data-theme="dark"] ::-webkit-scrollbar-track { background: transparent; }
         /* Smooth fade when switching themes */
         body, .card-p3, .p3-topbar, .form-control, .form-select, .input-group-text, .modal-content, .p3-notif-row, .p3-theme-tile, .p3-dept-pill { transition: background-color .5s ease, border-color .5s ease, color .5s ease; }
-        .p3-sidebar { background: linear-gradient(180deg, var(--p3-navy) 0%, var(--p3-navy-2) 100%); min-height: 100vh; max-height: 100vh; position: sticky; top: 0; overflow-y: auto; }
-        .p3-sidebar .nav-link { color: #d3e9dc; border-radius: .75rem; padding: .5rem .5rem .5rem 1rem; font-weight: 500; display: flex; align-items: center; gap: 1rem; transition: background-color .25s ease, color .25s ease; }
-        .p3-sidebar .nav-link:hover { background: rgba(255,255,255,.12); color: #fff; }
-        .p3-sidebar .nav-link:hover .nav-ico { background: rgba(255,255,255,.28); }
-        .p3-sidebar .nav-link.active { background: rgba(255,255,255,.18); color: #fff; font-weight: 600; }
-        .p3-sidebar .nav-link.active .nav-ico { background: #fff; color: var(--p3-navy); }
+        .p3-sidebar { background: #f8f8f8; border-right: 1px solid #e8e8e8; min-height: 100vh; max-height: 100vh; position: sticky; top: 0; overflow-y: auto; }
+        .p3-sidebar .text-white { color: #242424 !important; }
+        .p3-sidebar .nav-link { color: #555; border-radius: .55rem; padding: .45rem .6rem; font-weight: 500; display: flex; align-items: center; gap: .6rem; transition: background-color .25s ease, color .25s ease; }
+        .p3-sidebar .nav-link:hover { background: #ededed; color: #171717; }
+        .p3-sidebar .nav-link.active { background: #fff; color: #171717; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-weight: 600; }
+        .p3-sidebar .nav-link.active .nav-ico { color: #00A868; }
         .p3-sidebar nav { position: relative; }
-        .p3-sidebar .nav-indicator { position: absolute; left: 2px; top: 0; width: 4px; height: 24px; border-radius: 4px; background: #fff; box-shadow: 0 0 10px rgba(255,255,255,.8); opacity: 0; transition: top 1.6s cubic-bezier(.65,0,.35,1), height 1.6s ease, opacity .3s ease; pointer-events: none; }
+        .p3-sidebar .nav-indicator { position: absolute; left: 2px; top: 0; width: 4px; height: 24px; border-radius: 4px; background: #00A868; box-shadow: 0 0 8px rgba(0,168,104,.3); opacity: 0; transition: top 1.6s cubic-bezier(.65,0,.35,1), height 1.6s ease, opacity .3s ease; pointer-events: none; }
         .p3-sidebar .nav-link.arrived .nav-ico { animation: p3-ding .55s ease; }
         @keyframes p3-ding { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,.7); } 40% { transform: scale(1.18); box-shadow: 0 0 0 8px rgba(255,255,255,0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
-        .p3-sidebar .nav-ico { width: 32px; height: 32px; flex: 0 0 32px; border-radius: 10px; background: rgba(255,255,255,.16); display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; transition: background .15s ease; }
+        .p3-sidebar .nav-ico { width: 22px; height: 22px; flex: 0 0 22px; border-radius: 10px; background: transparent; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; color: inherit; transition: background .15s ease; }
         .p3-brand-mark { width: 42px; height: 42px; border-radius: 12px; background: #fff; display: flex; align-items: center; justify-content: center; color: var(--p3-navy); font-size: 1.4rem; box-shadow: 0 4px 12px rgba(0,0,0,.25); }
-        .p3-topbar { background: #fff; border-bottom: 1px solid var(--p3-card-border); }
+        .p3-topbar { background: #f5f5f5; border: 0; }
         .card-p3 { border: 1px solid var(--p3-card-border); border-radius: 1rem; box-shadow: 0 1px 3px rgba(10,31,92,.06); }
         .stat-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
         .btn-p3 { background: var(--p3-navy); border-color: var(--p3-navy); color: #fff; border-radius: .65rem; font-weight: 600; }
@@ -74,8 +74,18 @@
         .status-processing { background: #cce5ff; color: #004085; }
         .status-completed { background: #d4edda; color: #155724; }
         .status-failed { background: #f8d7da; color: #721c24; }
-        /* Full page scroll locked on Lightning routes — only inner areas scroll. */
+        /* Full page scroll locked on Lightning + Document Library routes — only inner areas scroll. */
         body.p3-no-scroll { overflow: hidden; height: 100vh; }
+        /* No visible scrollbars (vertical or horizontal) on full-screen pages —
+           wheel/touch scrolling still works inside the list card. */
+        .p3-chat-page, .p3-conv-wrap, .p3-conv-card, .p3-chat-msgs { overflow-x: hidden; -ms-overflow-style: none; scrollbar-width: none; }
+        .p3-chat-page::-webkit-scrollbar, .p3-conv-wrap::-webkit-scrollbar, .p3-conv-card::-webkit-scrollbar, .p3-chat-msgs::-webkit-scrollbar { width: 0; height: 0; display: none; }
+        /* Shared full-page fit layout (Lightning + Document Library) */
+        .p3-chat-page { display: flex; flex-direction: column; min-height: 0; }
+        .p3-conv-wrap { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+        .p3-conv-card { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; }
+        .p3-conv-card > div { flex-shrink: 0; }
+        .p3-conv-foot { position: sticky; bottom: 0; z-index: 5; margin-top: auto; padding: .45rem 0 .35rem; background: inherit; }
         main { animation: p3-fade .3s ease; }
         @keyframes p3-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
         .form-control:focus, .form-select:focus, .btn:focus-visible, a:focus-visible { box-shadow: 0 0 0 .25rem rgba(0,168,104,.25); outline: none; }
@@ -83,8 +93,8 @@
         .p3-dept-pill { border: 1px solid #d5e8db; color: var(--p3-navy); background: #fff; border-radius: 2rem; font-weight: 500; padding: .35rem .9rem; transition: all .15s ease; }
         .p3-dept-pill:hover { background: #e6f3ea; }
         .p3-dept-pill:has(input:checked) { background: var(--p3-navy); border-color: var(--p3-navy); color: #fff; box-shadow: 0 2px 6px rgba(0,168,104,.3); }
-        .p3-logout { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.3); color: #fff; border-radius: .75rem; font-weight: 600; padding: .6rem 1rem; letter-spacing: .3px; transition: all .18s ease; }
-        .p3-logout:hover, .p3-logout:focus { background: #fff; color: #c0392b; border-color: #fff; box-shadow: 0 6px 16px rgba(0,0,0,.3); transform: translateY(-1px); }
+        .p3-logout { background: transparent; border: 1px solid #ddd; color: #555; border-radius: .75rem; font-weight: 600; padding: .6rem 1rem; letter-spacing: .3px; transition: all .18s ease; }
+        .p3-logout:hover, .p3-logout:focus { background: #ededed; color: #c0392b; border-color: #ddd; }
         .p3-logout:active { transform: none; }
         .p3-modal { position: relative; border: none; border-radius: 1.25rem; overflow: hidden; box-shadow: 0 20px 50px rgba(0,100,60,.25); }
         .p3-modal .btn-close { position: absolute; top: .75rem; right: .75rem; opacity: .5; }
@@ -141,8 +151,8 @@
         .p3-fig { background: #e6f3ea; color: #00743F; font-weight: 700; padding: .05rem .38rem; border-radius: .4rem; font-size: .88em; white-space: nowrap; }
         mark { background: #fff3b0; padding: 0 .1em; border-radius: .2em; }
         /* Dark mode — per-user, Settings > Preferences > Appearance */
-        [data-theme="dark"] body { background: #101714; color: #ffffff; }
-        [data-theme="dark"] .p3-topbar { background: #16211c; border-color: #26362e; color: #ffffff; }
+        [data-theme="dark"] body { background: var(--p3-bg); color: #ffffff; }
+        [data-theme="dark"] .p3-topbar { background: var(--p3-bg); border-color: #26362e; color: #ffffff; }
         [data-theme="dark"] .card-p3 { background: #16211c; border-color: #26362e; box-shadow: none; }
         [data-theme="dark"] .text-muted, [data-theme="dark"] small.text-muted { color: #c2d2ca !important; }
         [data-theme="dark"] .form-label, [data-theme="dark"] label.form-label { color: #ffffff; }
@@ -173,7 +183,14 @@
         [data-theme="dark"] .table-p3 tbody tr { border-color: #26362e; }
         [data-theme="dark"] a[style*="color:#00743F"], [data-theme="dark"] div[style*="color:#00743F"], [data-theme="dark"] span[style*="color:#00743F"] { color: #4fd39a !important; }
         [data-theme="dark"] .chat-scroll, [data-theme="dark"] .p3-docx { background: #0f1512; color: #ffffff; }
-        [data-theme="dark"] .p3-sidebar { box-shadow: none; }
+        [data-theme="dark"] .p3-sidebar { background: #111a15; border-color: #26362e; box-shadow: none; }
+        [data-theme="dark"] .p3-sidebar .text-white { color: #e5eee8 !important; }
+        [data-theme="dark"] .p3-sidebar .nav-link { color: #c3d0c8; }
+        [data-theme="dark"] .p3-sidebar .nav-link:hover, [data-theme="dark"] .p3-sidebar .nav-link.active { background: #1d2b24; color: #fff; }
+        [data-theme="dark"] .p3-sidebar .nav-link.active .nav-ico { color: #7fe0ac; }
+        [data-theme="dark"] .p3-sidebar .nav-indicator { background: #7fe0ac; box-shadow: 0 0 8px rgba(127,224,172,.3); }
+        [data-theme="dark"] .p3-logout { background: transparent; border-color: #3a4c43; color: #c3d0c8; }
+        [data-theme="dark"] .p3-logout:hover, [data-theme="dark"] .p3-logout:focus { background: #1d2b24; border-color: #3a4c43; color: #f1a8a8; }
         /* Settings — avatar, tiles, QR, notifications */
         .p3-avatar-lg { width: 92px; height: 92px; border-radius: 50%; overflow: visible; border: 3px solid #d5e8db; background: #e6f3ea; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; position: relative; }
         .p3-avatar-lg .p3-avatar-inner { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; }
@@ -263,7 +280,7 @@
         }
     </style>
 </head>
-<body class="{{ request()->routeIs('chat.*') ? 'p3-no-scroll' : '' }}">
+<body class="{{ request()->routeIs('chat.*') || request()->routeIs('documents.library') ? 'p3-no-scroll' : '' }}">
 <div class="container-fluid">
     <div class="row">
         @auth

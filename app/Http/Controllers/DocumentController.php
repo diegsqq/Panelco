@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -63,9 +64,13 @@ class DocumentController extends Controller
 
     public function index(Request $request): View
     {
-        $query = $this->visibleToUser($request);
+        $validated = $request->validate([
+            'q' => ['nullable', 'string', 'max:255'],
+            'status' => ['nullable', Rule::in(['pending', 'processing', 'completed', 'failed'])],
+        ]);
+        $query = $this->visibleToUser($request)->with('suggestedCategory');
 
-        $search = trim((string) $request->input('q', ''));
+        $search = trim((string) ($validated['q'] ?? ''));
         if ($search !== '') {
             $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $search) . '%';
             $query->where(function ($q) use ($like) {
@@ -74,6 +79,10 @@ class DocumentController extends Controller
                     ->orWhereHas('category', fn ($c) => $c->where('name', 'like', $like))
                     ->orWhereHas('suggestedCategory', fn ($c) => $c->where('name', 'like', $like));
             });
+        }
+
+        if (! empty($validated['status'])) {
+            $query->where('processing_status', $validated['status']);
         }
 
         $documents = $query->paginate(10)->withQueryString();

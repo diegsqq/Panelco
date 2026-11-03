@@ -26,7 +26,7 @@
 <div class="p3-dashboard" id="p3Dashboard">
 <div class="p-4 text-white d-flex flex-wrap justify-content-between align-items-center" style="background:linear-gradient(135deg,#00A868,#1DBF7D);border-radius:1rem">
     <div>
-        <h3 class="fw-bold mb-0">Welcome back</h3>
+        <h3 class="fw-bold mb-0">Welcome back, {{ auth()->user()->isAdmin() ? 'Admin' : strtok(auth()->user()->name, ' ') }}</h3>
     </div>
     <div class="d-flex gap-3 mt-2 mt-md-0">
         <a href="{{ route('documents.upload') }}" class="btn btn-lg" style="background:#ffffff;color:#00A868;font-weight:700"><i class="bi bi-cloud-upload me-1"></i>Upload</a>
