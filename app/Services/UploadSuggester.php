@@ -58,11 +58,26 @@ class UploadSuggester
         }
 
         $result['text_found'] = true;
-        $result['title'] = $this->titleFromText($text) ?? $result['title'];
-        $result['category_id'] = $this->recommender->suggest($text)['category_id'] ?? null;
-        $result['document_date'] = $result['document_date'] ?? $this->detectDate($text);
+        $metadata = $this->suggestFromText($text);
+        $result['title'] = $metadata['title'] ?? $result['title'];
+        $result['category_id'] = $metadata['category_id'];
+        $result['document_date'] = $metadata['document_date'] ?? $result['document_date'];
 
         return $result;
+    }
+
+    /**
+     * @return array{title: ?string, category_id: ?int, document_date: ?string}
+     */
+    public function suggestFromText(string $text): array
+    {
+        $text = trim($text);
+
+        return [
+            'title' => $text !== '' ? $this->titleFromText($text) : null,
+            'category_id' => $text !== '' ? ($this->recommender->suggest($text)['category_id'] ?? null) : null,
+            'document_date' => $text !== '' ? $this->detectDate($text) : null,
+        ];
     }
 
     /**
@@ -144,7 +159,7 @@ class UploadSuggester
         return null;
     }
 
-    private function titleFromFilename(string $filename): string
+    public function titleFromFilename(string $filename): string
     {
         $base = pathinfo($filename, PATHINFO_FILENAME);
         $clean = trim(preg_replace('/[\-_]+/', ' ', $base) ?? $base);

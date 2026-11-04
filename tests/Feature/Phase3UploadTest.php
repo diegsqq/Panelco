@@ -136,4 +136,66 @@ class Phase3UploadTest extends TestCase
             ->assertSeeText('Complete')
             ->assertDontSeeText('Pending plan');
     }
+
+    public function test_employee_library_and_document_access_are_owner_only(): void
+    {
+        $this->seed();
+        $employee = User::where('email', 'employee@panelco3.local')->first();
+        $otherEmployee = User::factory()->create([
+            'role' => User::ROLE_EMPLOYEE,
+            'department_id' => $employee->department_id,
+        ]);
+        $own = Document::create([
+            'uploaded_by' => $employee->id,
+            'title' => 'My private report',
+            'original_filename' => 'mine.txt',
+            'storage_path' => 'documents/mine.txt',
+            'mime_type' => 'text/plain',
+            'file_size' => 10,
+            'department_id' => $employee->department_id,
+            'processing_status' => 'completed',
+        ]);
+        $shared = Document::create([
+            'uploaded_by' => $otherEmployee->id,
+            'title' => 'Department shared report',
+            'original_filename' => 'shared.txt',
+            'storage_path' => 'documents/shared.txt',
+            'mime_type' => 'text/plain',
+            'file_size' => 10,
+            'department_id' => $employee->department_id,
+            'processing_status' => 'completed',
+        ]);
+
+        $this->actingAs($employee)->get(route('documents.library'))
+            ->assertOk()
+            ->assertSeeText('My private report')
+            ->assertDontSeeText('Department shared report');
+        $this->get(route('documents.show', $own))->assertOk();
+        $this->get(route('documents.show', $shared))->assertForbidden();
+    }
+
+    public function test_document_page_shows_vertical_summary_details_and_actions(): void
+    {
+        $this->seed();
+        $employee = User::where('email', 'employee@panelco3.local')->first();
+        $doc = Document::create([
+            'uploaded_by' => $employee->id,
+            'title' => 'Transformer Repair Report',
+            'original_filename' => 'repair.txt',
+            'storage_path' => 'documents/repair.txt',
+            'mime_type' => 'text/plain',
+            'file_size' => 80,
+            'processing_status' => 'completed',
+            'summary' => 'The crew repaired the damaged transformer.',
+            'extracted_text' => 'The crew repaired the damaged transformer. A work order was filed.',
+        ]);
+
+        $this->actingAs($employee)->get(route('documents.show', $doc))
+            ->assertOk()
+            ->assertSeeText('Document Summary')
+            ->assertSeeText('Important Details')
+            ->assertSeeText('Corrective Actions')
+            ->assertSeeText('repaired the damaged transformer')
+            ->assertSee('document_id=' . $doc->id, false);
+    }
 }

@@ -17,6 +17,10 @@ class DocumentPolicy
             return true;
         }
 
+        if ($user->role === User::ROLE_EMPLOYEE) {
+            return false;
+        }
+
         if ($document->authorizedUsers()->where('users.id', $user->id)->exists()) {
             return true;
         }

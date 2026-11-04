@@ -62,24 +62,13 @@ class Phase8SecurityTest extends TestCase
         $this->assertEquals(DocumentRetrievalService::STATUS_NO_DOCUMENTS, $result['status']);
     }
 
-    public function test_revoked_department_access_excludes_document(): void
+    public function test_employee_cannot_access_department_shared_document(): void
     {
         $this->seed();
         $emp = User::where('email', 'employee@panelco3.local')->first();
         $admin = User::where('email', 'admin@panelco3.local')->first();
         $doc = $this->completedDoc($admin, 'IT Plans', 'giraffe network upgrade schedule');
         $doc->update(['department_id' => $emp->department_id]);
-
-        // Visible at first via shared department.
-        $this->assertEquals(
-            DocumentRetrievalService::STATUS_OK,
-            app(DocumentRetrievalService::class)->retrieve($emp, 'giraffe network')['status']
-        );
-
-        // Revoke: move doc to admin-only area and detach employee.
-        $adminOnly = \App\Models\Department::create(['name' => 'Vault']);
-        $doc->update(['department_id' => $adminOnly->id]);
-        $emp->departments()->detach();
 
         $result = app(DocumentRetrievalService::class)->retrieve($emp, 'giraffe network');
         $this->assertNotEquals(DocumentRetrievalService::STATUS_OK, $result['status']);

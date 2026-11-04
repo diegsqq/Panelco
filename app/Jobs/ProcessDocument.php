@@ -7,10 +7,10 @@ use App\Models\AuditLog;
 use App\Models\Document;
 use App\Models\DocumentCategory;
 use App\Services\Ai\AiProvider;
-use App\Services\CategoryRecommender;
 use App\Services\DocumentChunker;
 use App\Services\DocumentExtractionService;
 use App\Services\ExtractionFailedException;
+use App\Services\UploadSuggester;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Mail;
@@ -21,7 +21,7 @@ class ProcessDocument implements ShouldQueue
 
     public function __construct(public int $documentId) {}
 
-    public function handle(DocumentExtractionService $extractor, DocumentChunker $chunker, CategoryRecommender $recommender, AiProvider $ai): void
+    public function handle(DocumentExtractionService $extractor, DocumentChunker $chunker, AiProvider $ai, UploadSuggester $suggester): void
     {
         $document = Document::find($this->documentId);
         if (! $document || $document->processing_status === 'completed') {
@@ -50,14 +50,16 @@ class ProcessDocument implements ShouldQueue
         }
 
         $chunker->chunk($document, $result['text'], $result['pages']);
+        $metadata = $suggester->suggestFromText($result['text']);
 
-        // Rule-based suggestion always runs (no AI needed). AI refines it
-        // and adds summary/keywords only when a provider is configured.
-        $suggestion = $recommender->suggest($result['text']);
+        // Rule-based suggestions always run; AI refines them when available.
         $updates = [
             'extracted_text' => $result['text'],
+            'title' => trim((string) $document->title) !== ''
+                ? $document->title
+                : ($metadata['title'] ?? $suggester->titleFromFilename($document->original_filename)),
             'document_type' => $document->document_type ?? $this->guessType($document),
-            'suggested_category_id' => $suggestion['category_id'] ?? null,
+            'suggested_category_id' => $metadata['category_id'],
             'processing_status' => 'completed',
             'processing_error' => null,
         ];
@@ -72,7 +74,8 @@ class ProcessDocument implements ShouldQueue
 
         // Fall back to the processing date when no document date was detected.
         if ($document->document_date === null) {
-            $updates['document_date'] = ($document->created_at ?? now())->toDateString();
+            $updates['document_date'] = $metadata['document_date']
+                ?? ($document->created_at ?? now())->toDateString();
         }
 
         if ($ai->available()) {

@@ -92,7 +92,7 @@ class UploadSuggestTest extends TestCase
         $res->assertOk()->assertJsonPath('document_date', '2025-03-04');
     }
 
-    public function test_suggest_file_date_beats_date_found_in_text(): void
+    public function test_suggest_document_date_in_text_beats_file_date(): void
     {
         $this->seed();
         $emp = User::where('email', 'employee@panelco3.local')->first();
@@ -103,7 +103,7 @@ class UploadSuggestTest extends TestCase
             'file_last_modified' => $hint,
         ]);
 
-        $res->assertOk()->assertJsonPath('document_date', '2025-03-04');
+        $res->assertOk()->assertJsonPath('document_date', '2024-01-15');
     }
 
     public function test_store_saves_file_date_when_document_date_left_empty(): void
@@ -140,6 +140,21 @@ class UploadSuggestTest extends TestCase
 
         $doc = Document::where('original_filename', 'plain2.txt')->first();
         $this->assertEquals('2024-01-15', substr((string) $doc->document_date, 0, 10));
+    }
+
+    public function test_store_leaves_category_unassigned_when_none_was_selected(): void
+    {
+        $this->seed();
+        Storage::fake('private');
+        Queue::fake();
+        $emp = User::where('email', 'employee@panelco3.local')->first();
+
+        $this->actingAs($emp)->post(route('documents.store'), [
+            'file' => UploadedFile::fake()->createWithContent('maintenance.txt', 'Transformer maintenance completed.'),
+        ])->assertRedirect(route('documents.library'));
+
+        $doc = Document::where('original_filename', 'maintenance.txt')->firstOrFail();
+        $this->assertNull($doc->category_id);
     }
 
     public function test_docx_metadata_creation_date_read_without_client_hint(): void

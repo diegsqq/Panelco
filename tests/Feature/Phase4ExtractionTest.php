@@ -78,6 +78,22 @@ class Phase4ExtractionTest extends TestCase
         $this->assertGreaterThanOrEqual(1, $doc->chunks()->count());
     }
 
+    public function test_processing_extracts_title_date_and_category_from_text(): void
+    {
+        $this->seed();
+        $emp = User::where('email', 'employee@panelco3.local')->first();
+        $text = "Transformer Maintenance Report\nDate: January 15, 2024\n"
+            . "Preventive maintenance and transformer inspection completed by the crew.";
+        $doc = $this->makeDoc($emp, 'scan.txt', $text, 'text/plain');
+
+        $this->runJob($doc);
+
+        $doc->refresh();
+        $this->assertEquals('Transformer Maintenance Report', $doc->title);
+        $this->assertEquals('2024-01-15', $doc->document_date->toDateString());
+        $this->assertEquals('Maintenance Reports', $doc->suggestedCategory->name);
+    }
+
     public function test_pdf_extracts_with_page_numbers(): void
     {
         $this->seed();

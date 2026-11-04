@@ -48,7 +48,7 @@
     <section class="lib-shell">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
             <div>
-                <h3 class="fw-bold mb-0">Documents</h3>
+                <h3 class="fw-bold mb-0">{{ auth()->user()->role === \App\Models\User::ROLE_EMPLOYEE ? 'Your documents' : 'Documents' }}</h3>
                 <small class="text-muted">{{ number_format($documents->total()) }} {{ \Illuminate\Support\Str::plural('document', $documents->total()) }}</small>
             </div>
             <form method="GET" action="{{ route('documents.library') }}" class="d-flex flex-wrap align-items-center gap-2 ms-auto" role="search">
@@ -122,10 +122,20 @@
                             <td class="text-nowrap">{{ $doc->created_at?->format('m/d/Y') ?? '—' }}</td>
                             <td class="text-end text-nowrap">{{ $size }}</td>
                             <td class="text-end">
-                                @can('delete', $doc)
-                                    <button type="button" class="btn btn-sm text-muted p-1" title="Delete document" aria-label="Delete {{ $doc->title ?? $doc->original_filename }}" data-delete-url="{{ route('documents.destroy', $doc) }}" onclick="window.__libDeleteUrl=this.getAttribute('data-delete-url'); event.stopPropagation(); bootstrap.Modal.getOrCreateInstance(document.getElementById('libDeleteModal')).show();">
-                                        <i class="bi bi-three-dots"></i>
-                                    </button>
+                                @canany(['update', 'delete'], $doc)
+                                    <div class="dropdown">
+                                        <button type="button" class="btn btn-sm text-muted p-1" title="Document actions" aria-label="Actions for {{ $doc->title ?? $doc->original_filename }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="bi bi-three-dots"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            @can('update', $doc)
+                                                <li><a class="dropdown-item" href="{{ route('documents.edit', $doc) }}"><i class="bi bi-pencil me-2"></i>Edit</a></li>
+                                            @endcan
+                                            @can('delete', $doc)
+                                                <li><button type="button" class="dropdown-item text-danger" data-delete-url="{{ route('documents.destroy', $doc) }}" onclick="window.__libDeleteUrl=this.getAttribute('data-delete-url'); bootstrap.Modal.getOrCreateInstance(document.getElementById('libDeleteModal')).show();"><i class="bi bi-trash me-2"></i>Delete</button></li>
+                                            @endcan
+                                        </ul>
+                                    </div>
                                 @endcan
                             </td>
                         </tr>

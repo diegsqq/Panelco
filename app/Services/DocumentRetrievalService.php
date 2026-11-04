@@ -31,10 +31,10 @@ class DocumentRetrievalService
     /**
      * @return array{status: string, chunks: list<array{chunk: DocumentChunk, document: Document, score: int, excerpt: string}>}
      */
-    public function retrieve(User $user, string $query, ?int $limit = null): array
+    public function retrieve(User $user, string $query, ?int $limit = null, ?int $documentId = null): array
     {
         try {
-            $visible = $this->visibleDocuments($user);
+            $visible = $this->visibleDocuments($user, $documentId);
 
             if ((clone $visible)->where('processing_status', 'completed')->count() === 0) {
                 if ((clone $visible)->count() === 0) {
@@ -50,11 +50,30 @@ class DocumentRetrievalService
             }
 
             $candidates = DocumentChunk::with('document')
-                ->whereHas('document', function ($q) use ($user) {
-                    $this->applyVisibility($q, $user);
+                ->whereHas('document', function ($q) use ($user, $documentId) {
+                    $this->applyVisibility($q, $user, $documentId);
                     $q->where('processing_status', 'completed');
                 })
                 ->get();
+
+            if ($documentId !== null) {
+                $candidates = $candidates->sortBy('chunk_index')
+                    ->take($limit ?? (int) config('smartdocs.retrieval.limit', 5))
+                    ->values();
+                if ($candidates->isEmpty()) {
+                    return ['status' => self::STATUS_NO_MATCH, 'chunks' => []];
+                }
+
+                return [
+                    'status' => self::STATUS_OK,
+                    'chunks' => $candidates->map(fn (DocumentChunk $chunk) => [
+                        'chunk' => $chunk,
+                        'document' => $chunk->document,
+                        'score' => 1,
+                        'excerpt' => $chunk->content,
+                    ])->all(),
+                ];
+            }
 
             $scored = [];
             foreach ($candidates as $chunk) {
@@ -84,11 +103,16 @@ class DocumentRetrievalService
         }
     }
 
-    private function visibleDocuments(User $user)
+    private function visibleDocuments(User $user, ?int $documentId = null)
     {
         $query = Document::query();
+        if ($documentId !== null) {
+            $query->whereKey($documentId);
+        }
 
-        if (! $user->isAdmin()) {
+        if ($user->role === User::ROLE_EMPLOYEE) {
+            $query->where('uploaded_by', $user->id);
+        } elseif (! $user->isAdmin()) {
             $allowedDeptIds = $user->departments()->pluck('departments.id')
                 ->push($user->department_id)->filter()->unique()->values();
             $query->where(function ($q) use ($user, $allowedDeptIds) {
@@ -102,9 +126,18 @@ class DocumentRetrievalService
         return $query;
     }
 
-    private function applyVisibility($query, User $user): void
+    private function applyVisibility($query, User $user, ?int $documentId = null): void
     {
+        if ($documentId !== null) {
+            $query->where('documents.id', $documentId);
+        }
+
         if ($user->isAdmin()) {
+            return;
+        }
+        if ($user->role === User::ROLE_EMPLOYEE) {
+            $query->where('documents.uploaded_by', $user->id);
+
             return;
         }
         $allowedDeptIds = $user->departments()->pluck('departments.id')

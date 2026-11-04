@@ -23,6 +23,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/upload/suggest', [App\Http\Controllers\DocumentController::class, 'suggest'])->name('documents.suggest');
     Route::post('/upload', [App\Http\Controllers\DocumentController::class, 'store'])->name('documents.store');
     Route::get('/library', [App\Http\Controllers\DocumentController::class, 'index'])->name('documents.library');
+    Route::get('/library/{document}/edit', [App\Http\Controllers\DocumentController::class, 'edit'])->name('documents.edit');
+    Route::put('/library/{document}', [App\Http\Controllers\DocumentController::class, 'update'])->name('documents.update');
     Route::get('/library/{document}', [App\Http\Controllers\DocumentController::class, 'show'])->name('documents.show');
     Route::get('/library/{document}/download', [App\Http\Controllers\DocumentController::class, 'download'])->name('documents.download');
     Route::get('/library/{document}/view', [App\Http\Controllers\DocumentController::class, 'view'])->name('documents.view');

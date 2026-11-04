@@ -19,31 +19,48 @@ class ChatController extends Controller
         $this->middleware(['auth', 'throttle:30,1']);
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $document = null;
+        if ($request->filled('document_id')) {
+            $data = $request->validate([
+                'document_id' => ['required', 'integer', 'exists:documents,id'],
+            ]);
+            $document = Document::findOrFail($data['document_id']);
+            $this->authorize('view', $document);
+        }
+
         $conversations = Conversation::where('user_id', auth()->id())->latest()->paginate(12);
 
-        return view('chat.index', compact('conversations'));
+        return view('chat.index', compact('conversations', 'document'));
     }
 
     public function show(Conversation $conversation): View
     {
         abort_unless((int) $conversation->user_id === (int) auth()->id(), 403, 'Access denied.');
-        $conversation->load(['messages.sources.document']);
+        $conversation->load(['document', 'messages.sources.document']);
 
         return view('chat.show', compact('conversation'));
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate(['question' => ['required', 'string', 'max:2000']]);
+        $data = $request->validate([
+            'question' => ['required', 'string', 'max:2000'],
+            'document_id' => ['nullable', 'integer', 'exists:documents,id'],
+        ]);
+        $document = isset($data['document_id']) ? Document::findOrFail($data['document_id']) : null;
+        if ($document !== null) {
+            $this->authorize('view', $document);
+        }
 
         $conversation = Conversation::create([
             'user_id' => auth()->id(),
             'title' => mb_substr(trim($data['question']), 0, 40),
+            'document_id' => $document?->id,
         ]);
 
-        $this->ask($conversation, trim($data['question']));
+        $this->ask($conversation, trim($data['question']), $document);
 
         return redirect()->route('chat.show', $conversation);
     }
@@ -53,7 +70,11 @@ class ChatController extends Controller
         abort_unless((int) $conversation->user_id === (int) auth()->id(), 403, 'Access denied.');
         $data = $request->validate(['question' => ['required', 'string', 'max:2000']]);
 
-        $this->ask($conversation, trim($data['question']));
+        $document = $conversation->document;
+        if ($document !== null) {
+            $this->authorize('view', $document);
+        }
+        $this->ask($conversation, trim($data['question']), $document);
 
         return redirect()->route('chat.show', $conversation);
     }
@@ -66,7 +87,7 @@ class ChatController extends Controller
         return redirect()->route('chat.index')->with('status', 'Conversation deleted.');
     }
 
-    private function ask(Conversation $conversation, string $question): void
+    private function ask(Conversation $conversation, string $question, ?Document $document = null): void
     {
         $user = auth()->user();
 
@@ -85,11 +106,11 @@ class ChatController extends Controller
         // retrieval stays in context. The answer still cites fresh evidence.
         $searchQuestion = $this->withFollowUpContext($conversation, $question);
 
-        $result = app(DocumentRetrievalService::class)->retrieve($user, $searchQuestion);
+        $result = app(DocumentRetrievalService::class)->retrieve($user, $searchQuestion, documentId: $document?->id);
 
         if ($result['status'] !== DocumentRetrievalService::STATUS_OK) {
             $message = $result['status'] === DocumentRetrievalService::STATUS_NO_MATCH
-                && $this->hasPendingTitleMatch($user, $question)
+                && $this->hasPendingTitleMatch($user, $question, $document?->id)
                 ? 'This document is still being processed and is not available for searching yet. Please try again after processing is complete.'
                 : DocumentRetrievalService::statusMessage($result['status']);
 
@@ -185,8 +206,14 @@ class ChatController extends Controller
         return $question . ' ' . $previous->content;
     }
 
-    private function hasPendingTitleMatch($user, string $question): bool
+    private function hasPendingTitleMatch($user, string $question, ?int $documentId = null): bool
     {
+        if ($documentId !== null) {
+            return Document::whereKey($documentId)
+                ->whereIn('processing_status', ['pending', 'processing'])
+                ->exists();
+        }
+
         $terms = app(DocumentRetrievalService::class)->terms($question);
         if (empty($terms)) {
             return false;

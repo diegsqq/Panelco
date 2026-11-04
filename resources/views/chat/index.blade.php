@@ -8,8 +8,15 @@
 <h5 class="fw-bold mb-0" style="font-size:1.05rem;color:#00A868">Lightning</h5>
 <button type="button" class="btn btn-sm ms-auto" style="background:#fff;color:#00A868;border:1px solid #00A868;font-weight:700" onclick="window.print()"><i class="bi bi-file-earmark-pdf me-1"></i>Convert to PDF</button>
 </div>
+@if($document)
+<div class="small mb-2 px-2 py-1 rounded" style="background:#e6f3ea;color:#315343">
+<i class="bi bi-file-earmark-lock me-1"></i>Document context: <strong>{{ $document->title ?? $document->original_filename }}</strong>
+<a href="{{ route('documents.show', $document) }}" class="ms-1">View document</a>
+</div>
+@endif
 <form method="POST" action="{{ route('chat.store') }}" id="newChatForm">
 @csrf
+@if($document)<input type="hidden" name="document_id" value="{{ $document->id }}">@endif
 <div class="input-group input-group-sm">
 <input name="question" class="form-control" maxlength="2000" required placeholder="Ask about your documents…" value="{{ request('q') }}" aria-label="Ask about your documents">
 <button class="btn" style="background:#ffffff;color:#00A868;border:1px solid #00A868;font-weight:700">Send</button>

@@ -22,4 +22,12 @@ class DetailExtractorTest extends TestCase
     {
         $this->assertSame([], (new DetailExtractor())->extract('Nice weather today indeed.'));
     }
+
+    public function test_extracts_corrective_actions_separately(): void
+    {
+        $text = 'The transformer was repaired by the crew. The monthly report was submitted to the office.';
+        $actions = (new DetailExtractor())->extractCorrectiveActions($text);
+
+        $this->assertSame(['The transformer was repaired by the crew.'], $actions);
+    }
 }

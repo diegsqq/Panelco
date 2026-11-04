@@ -4,9 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Conversation;
 use App\Models\Document;
-use App\Models\DocumentCategory;
 use Illuminate\Contracts\Support\Renderable;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -21,13 +20,7 @@ class HomeController extends Controller
 
         $documentQuery = Document::query();
         if (! $user->isAdmin()) {
-            $allowedDeptIds = $user->departments()->pluck('departments.id')->push($user->department_id)->filter()->unique()->values();
-            $documentQuery->where(function ($q) use ($user, $allowedDeptIds) {
-                $q->where('uploaded_by', $user->id)
-                    ->orWhereIn('department_id', $allowedDeptIds)
-                    ->orWhereNull('department_id')
-                    ->orWhereIn('id', $user->authorizedDocuments()->pluck('documents.id'));
-            });
+            $documentQuery->where('uploaded_by', $user->id);
         }
 
         $stats = [
@@ -37,20 +30,20 @@ class HomeController extends Controller
             'failed' => (clone $documentQuery)->where('processing_status', 'failed')->count(),
         ];
 
-        $recent = (clone $documentQuery)->with(['category', 'department'])
+        $recent = (clone $documentQuery)->with(['category', 'suggestedCategory', 'department'])
             ->latest()->limit(9)->get();
 
         $categoryDistribution = (clone $documentQuery)
-            ->selectRaw('COALESCE(category_id, suggested_category_id) as category_id, COUNT(*) as total')
-            ->groupBy('category_id')
-            ->with('category')
-            ->get()
-            ->groupBy(fn ($row) => $row->category?->name ?? 'Uncategorized')
-            ->map(fn ($group) => (object) [
-                'category' => $group->first()->category,
-                'total' => $group->sum('total'),
-            ])
-            ->values();
+            ->leftJoin('document_categories as resolved_category', function ($join) {
+                $join->on(
+                    'resolved_category.id',
+                    '=',
+                    DB::raw('COALESCE(documents.category_id, documents.suggested_category_id)')
+                );
+            })
+            ->selectRaw("COALESCE(resolved_category.name, 'Uncategorized') as category_name, COUNT(documents.id) as total")
+            ->groupBy('resolved_category.name')
+            ->get();
 
         $recentConversations = Conversation::where('user_id', $user->id)
             ->latest()->limit(5)->get();

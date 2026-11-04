@@ -18,6 +18,13 @@ class DetailExtractor
         'approved', 'damaged', 'interrupted', 'outage',
     ];
 
+    private const CORRECTIVE_ACTION_WORDS = [
+        'repair', 'repaired', 'replace', 'replaced', 'restore', 'restored',
+        'rectify', 'rectified', 'correct', 'corrected', 'resolve', 'resolved',
+        'fix', 'fixed', 'mitigate', 'mitigated', 'remediate', 'remediated',
+        'recommend', 'recommended', 'dispatch', 'dispatched',
+    ];
+
     public function extract(string $text, int $max = 8): array
     {
         $sentences = preg_split('/(?<=[.!?])\s+/', $text);
@@ -50,5 +57,30 @@ class DetailExtractor
         arsort($scored);
 
         return array_slice(array_keys($scored), 0, $max);
+    }
+
+    /** @return list<string> */
+    public function extractCorrectiveActions(string $text, int $max = 6): array
+    {
+        $sentences = preg_split('/(?<=[.!?])\s+/', $text);
+        $actions = [];
+
+        foreach ((array) $sentences as $sentence) {
+            $sentence = trim($sentence);
+            if (str_word_count($sentence) < 4 || str_word_count($sentence) > 60) {
+                continue;
+            }
+
+            $lower = mb_strtolower($sentence);
+            foreach (self::CORRECTIVE_ACTION_WORDS as $word) {
+                if (str_contains($lower, $word)) {
+                    $actions[$sentence] = ($actions[$sentence] ?? 0) + 1;
+                }
+            }
+        }
+
+        arsort($actions);
+
+        return array_slice(array_keys($actions), 0, $max);
     }
 }

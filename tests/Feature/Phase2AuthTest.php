@@ -52,8 +52,7 @@ class Phase2AuthTest extends TestCase
 
         $this->assertTrue($emp->can('view', $doc));
         $this->assertTrue($admin->can('view', $doc));
-        // Other employee with no department relation: doc has null department so accessible by default.
-        // Restrict to department to test denial:
+        $this->assertFalse($other->can('view', $doc));
         $doc->update(['department_id' => $emp->department_id]);
         $other->update(['department_id' => null]);
         $other->departments()->detach();

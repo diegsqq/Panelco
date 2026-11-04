@@ -11,11 +11,16 @@ class Conversation extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'title'];
+    protected $fillable = ['user_id', 'title', 'document_id'];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function document(): BelongsTo
+    {
+        return $this->belongsTo(Document::class);
     }
 
     public function messages(): HasMany

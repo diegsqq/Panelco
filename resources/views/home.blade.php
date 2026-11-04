@@ -52,7 +52,7 @@
                     <span class="stat-icon flex-shrink-0" style="width:30px;height:30px;background:{{ $docIcon[2] }};color:{{ $docIcon[1] }};font-size:.85rem"><i class="bi {{ $docIcon[0] }}"></i></span>
                     <div class="flex-grow-1" style="min-width:0">
                         <div class="fw-semibold text-truncate" style="color:#00743F;font-size:.95rem">{{ $doc->title ?? $doc->original_filename }}</div>
-                        <div class="text-truncate" style="font-size:.82rem;color:#7d8f86">{{ $doc->category?->name ?? 'Uncategorized' }}{{ $doc->department ? ' · '.$doc->department->name : '' }} · {{ $doc->created_at->diffForHumans() }}</div>
+                        <div class="text-truncate" style="font-size:.82rem;color:#7d8f86">{{ $doc->category?->name ?? $doc->suggestedCategory?->name ?? 'Uncategorized' }}{{ $doc->department ? ' · '.$doc->department->name : '' }} · {{ $doc->created_at->diffForHumans() }}</div>
                         @if($doc->summary)<div class="text-truncate" style="font-size:.84rem;color:#9aa8a1">{{ $doc->summary }}</div>@endif
                     </div>
                     @unless($doc->processing_status === 'completed')<span class="badge status-{{ $doc->processing_status }} flex-shrink-0">{{ $doc->processing_status }}</span>@endunless
@@ -100,12 +100,12 @@
     function init() {
         if (!el.offsetWidth || !el.offsetHeight) { setTimeout(init, 50); return; }
         var chart = echarts.init(el);
-        var categories = @json($categoryDistribution->map(fn ($r) => $r->category?->name ?? 'Uncategorized')->values());
+        var categories = @json($categoryDistribution->pluck('category_name')->values());
         var values = @json($categoryDistribution->pluck('total')->values());
         chart.setOption({
             tooltip: { trigger: 'axis', textStyle: { fontSize: 11 } },
             grid: { left: '3%', right: '4%', bottom: '10%', containLabel: true },
-            xAxis: { type: 'category', data: categories, axisLabel: { show: false } },
+            xAxis: { type: 'category', data: categories, axisLabel: { show: true, interval: 'auto', rotate: 25, fontSize: 10 } },
             yAxis: { type: 'value' },
             series: [{
                 type: 'line',
@@ -142,7 +142,7 @@
         var available = window.innerHeight - rect.top - padBottom;
         dash.style.height = Math.max(360, Math.floor(available)) + 'px';
 
-        var chartEl = document.getElementById('categorySankey');
+        var chartEl = document.getElementById('categoryLine');
         if (chartEl && typeof echarts !== 'undefined') {
             var inst = echarts.getInstanceByDom(chartEl);
             if (inst) inst.resize();

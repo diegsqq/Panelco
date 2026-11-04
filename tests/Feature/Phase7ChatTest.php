@@ -110,6 +110,39 @@ class Phase7ChatTest extends TestCase
         $this->assertGreaterThanOrEqual(1, MessageSource::count());
     }
 
+    public function test_document_context_limits_lightning_search_to_selected_document(): void
+    {
+        $this->seed();
+        $employee = User::where('email', 'employee@panelco3.local')->first();
+        $target = $this->completedDoc($employee, 'Selected Transformer Report', 'Selected transformer was repaired by the crew');
+        $other = $this->completedDoc($employee, 'Other Transformer Report', 'Other transformer was replaced by a separate crew');
+
+        $this->actingAs($employee)->get(route('chat.index', ['document_id' => $target->id]))
+            ->assertOk()
+            ->assertSee('Document context:');
+
+        $this->post(route('chat.store'), [
+            'document_id' => $target->id,
+            'question' => 'Provide a concise vertical summary.',
+        ])->assertRedirect();
+
+        $conversation = Conversation::firstOrFail();
+        $this->assertEquals($target->id, $conversation->document_id);
+        $sourceDocumentIds = $conversation->messages()->where('role', 'assistant')
+            ->first()->sources->pluck('document_id')->unique()->all();
+        $this->assertEquals([$target->id], $sourceDocumentIds);
+        $this->assertNotContains($other->id, $sourceDocumentIds);
+
+        $this->actingAs(User::factory()->create(['role' => User::ROLE_EMPLOYEE]))
+            ->get(route('chat.index', ['document_id' => $target->id]))
+            ->assertForbidden();
+
+        $this->post(route('chat.store'), [
+            'document_id' => $target->id,
+            'question' => 'What happened to the transformer?',
+        ])->assertForbidden();
+    }
+
     public function test_pending_title_match_message(): void
     {
         $this->seed();

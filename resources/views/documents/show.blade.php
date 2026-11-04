@@ -30,7 +30,7 @@
 </div>
 <div class="card card-p3 p-4 mt-3 p3-summary @if($summaryCheck !== null && $summaryCheck['verified']) is-verified @elseif($summaryCheck !== null && $summaryCheck['unsupported']) is-warn @endif">
 <div class="d-flex justify-content-between align-items-center mb-2">
-<h6 class="fw-bold mb-0"><i class="bi bi-journal-text me-1" style="color:#00A868"></i>Summary</h6>
+<h6 class="fw-bold mb-0" id="document-summary"><i class="bi bi-journal-text me-1" style="color:#00A868"></i>Document Summary</h6>
 @if($summaryCheck !== null && $summaryCheck['verified'])
 <span class="badge" id="sum-verified" style="background:#d4edda;color:#155724"><i class="bi bi-patch-check-fill me-1"></i>verified</span>
 @elseif($summaryCheck !== null && count($summaryCheck['unsupported']) > 0)
@@ -71,6 +71,26 @@
 <p class="mb-0 text-muted">Still processing.</p>
 @endif
 </div>
+<div class="card card-p3 p-4 mt-3">
+<h6 class="fw-bold"><i class="bi bi-stars me-1" style="color:#00A868"></i>Important Details</h6>
+@if(count($details))
+<ul class="small mb-0 ps-4">@foreach($details as $d)<li class="mb-1">{{ $d }}</li>@endforeach</ul>
+@elseif($document->processing_status === 'completed')
+<p class="small text-muted mb-0">No distinct details were identified in the extracted text.</p>
+@else
+<p class="small text-muted mb-0">Details will be available after processing.</p>
+@endif
+</div>
+<div class="card card-p3 p-4 mt-3">
+<h6 class="fw-bold"><i class="bi bi-wrench-adjustable-circle me-1" style="color:#00A868"></i>Corrective Actions</h6>
+@if(count($correctiveActions))
+<ul class="small mb-0 ps-4">@foreach($correctiveActions as $action)<li class="mb-1">{{ $action }}</li>@endforeach</ul>
+@elseif($document->processing_status === 'completed')
+<p class="small text-muted mb-0">No corrective actions were identified in the extracted text.</p>
+@else
+<p class="small text-muted mb-0">Corrective actions will be available after processing.</p>
+@endif
+</div>
 @if(count($tables))
 <div class="card card-p3 p-4 mt-3" id="cited-text">
 <h6 class="fw-bold">Document text</h6>
@@ -102,12 +122,6 @@
 @endif
 </div>
 @endif
-@if(!empty($details))
-<div class="card card-p3 p-4 mt-3">
-<h6 class="fw-bold">Important details</h6>
-<ul class="small mb-0 ps-4">@foreach($details as $d)<li class="mb-1">{{ $d }}</li>@endforeach</ul>
-</div>
-@endif
 </div>
 <div class="col-lg-4 d-flex flex-column gap-3">
 <div class="card card-p3 p-3">
@@ -116,6 +130,7 @@
 @can('download', $document)<button type="button" class="btn btn-sm w-100 btn-outline-success" data-bs-toggle="modal" data-bs-target="#viewerModal"><i class="bi bi-eye-fill me-1"></i>View document</button>@endcan
 @can('download', $document)<a href="{{ route('documents.download', $document) }}" class="btn btn-outline-success btn-sm"><i class="bi bi-download me-1"></i>Download</a>@endcan
 @can('download', $document)<button type="button" class="btn btn-outline-success btn-sm w-100" id="printDocBtn"><i class="bi bi-printer me-1"></i>Print document</button>@endcan
+@can('update', $document)<a href="{{ route('documents.edit', $document) }}" class="btn btn-outline-success btn-sm w-100"><i class="bi bi-pencil me-1"></i>Edit document</a>@endcan
 @if ($document->processing_status === 'failed')
 @can('update', $document)<form method="POST" action="{{ route('documents.retry', $document) }}">@csrf<button class="btn btn-sm w-100" style="background:#ffffff;color:#00A868;border:1px solid #00A868">Retry processing</button></form>@endcan
 @endif
@@ -126,9 +141,9 @@
 <div class="card card-p3 p-3">
 <h6 class="fw-bold"><i class="bi bi-lightning-charge-fill me-1" style="color:#00A868"></i>Ask Lightning about this document</h6>
 <div class="d-flex flex-wrap gap-2">
-<a class="btn btn-sm btn-outline-success" href="{{ route('chat.index', ['q' => 'Summarize ' . ($document->title ?? $document->original_filename)]) }}">Summarize it</a>
-<a class="btn btn-sm btn-outline-success" href="{{ route('chat.index', ['q' => 'What are the important details in ' . ($document->title ?? $document->original_filename) . '?']) }}">Important details</a>
-<a class="btn btn-sm btn-outline-success" href="{{ route('chat.index', ['q' => 'What corrective actions were recorded in ' . ($document->title ?? $document->original_filename) . '?']) }}">Corrective actions</a>
+<a class="btn btn-sm btn-outline-success" href="{{ route('chat.index', ['document_id' => $document->id, 'q' => 'Summarize this document in vertical sections: Document Summary, Important Details, and Corrective Actions. Use only facts from the document.']) }}">Summarize it</a>
+<a class="btn btn-sm btn-outline-success" href="{{ route('chat.index', ['document_id' => $document->id, 'q' => 'What are the important details in this document?']) }}">Important details</a>
+<a class="btn btn-sm btn-outline-success" href="{{ route('chat.index', ['document_id' => $document->id, 'q' => 'What corrective actions were recorded in this document?']) }}">Corrective actions</a>
 </div>
 </div>
 </div>

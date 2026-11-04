@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\ProcessDocument;
 use App\Models\AuditLog;
+use App\Models\Department;
 use App\Models\Document;
 use App\Models\DocumentCategory;
 use App\Services\UploadSuggester;
@@ -48,7 +49,9 @@ class DocumentController extends Controller
         $user = $request->user();
         $query = Document::with(['category', 'department', 'uploader'])->latest();
 
-        if (! $user->isAdmin()) {
+        if ($user->role === \App\Models\User::ROLE_EMPLOYEE) {
+            $query->where('uploaded_by', $user->id);
+        } elseif (! $user->isAdmin()) {
             $allowedDeptIds = $user->departments()->pluck('departments.id')
                 ->push($user->department_id)->filter()->unique()->values();
             $query->where(function ($q) use ($user, $allowedDeptIds) {
@@ -97,6 +100,52 @@ class DocumentController extends Controller
         return view('documents.create', compact('categories'));
     }
 
+    public function edit(Document $document): View
+    {
+        $this->authorize('update', $document);
+
+        $document->load(['category', 'department']);
+        $categories = DocumentCategory::orderBy('name')->get();
+        $departments = Department::orderBy('name')->get();
+
+        return view('documents.edit', compact('document', 'categories', 'departments'));
+    }
+
+    public function update(Request $request, Document $document): RedirectResponse
+    {
+        $this->authorize('update', $document);
+
+        $data = $request->validate([
+            'title' => ['nullable', 'string', 'max:255'],
+            'category_id' => ['nullable', 'exists:document_categories,id'],
+            'department_id' => ['nullable', 'exists:departments,id'],
+            'document_date' => ['nullable', 'date'],
+        ]);
+
+        // Department drives who can see the document — only managers/admins
+        // may move it to another department.
+        $payload = [
+            'title' => trim((string) ($data['title'] ?? '')) !== '' ? $data['title'] : null,
+            'category_id' => $data['category_id'] ?? null,
+            'document_date' => $data['document_date'] ?? null,
+        ];
+        if ($request->user()->isManager()) {
+            $payload['department_id'] = $data['department_id'] ?? null;
+        }
+
+        $document->update($payload);
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'document.updated',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+            'metadata' => ['fields' => array_keys($data)],
+        ]);
+
+        return redirect()->route('documents.show', $document)->with('status', 'Document updated.');
+    }
+
     /**
      * AJAX: reads the selected file and proposes editable title, category,
      * and document date before the user actually uploads.
@@ -133,10 +182,6 @@ class DocumentController extends Controller
 
         $title = trim((string) $request->input('title', ''));
         $categoryId = $request->input('category_id') ?: null;
-        if ($categoryId === null) {
-            // No category chosen → file lands in "Others".
-            $categoryId = DocumentCategory::firstOrCreate(['name' => 'Others'])->id;
-        }
         $documentDate = $request->input('document_date') ?: null;
         $fileLastModified = $request->input('file_last_modified');
 
@@ -155,9 +200,7 @@ class DocumentController extends Controller
         foreach ($files as $file) {
             $path = $file->store('documents/' . now()->format('Y/m'), 'private');
 
-            $docTitle = $single && $title !== ''
-                ? $title
-                : pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+            $docTitle = $single && $title !== '' ? $title : null;
 
             $document = Document::create([
                 'uploaded_by' => $request->user()->id,
@@ -212,9 +255,10 @@ class DocumentController extends Controller
             $highlightedHtml = nl2br($safe);
         }
 
-        $details = $document->extracted_text
-            ? app(\App\Services\DetailExtractor::class)->extract($document->extracted_text)
-            : [];
+        $detailExtractor = app(\App\Services\DetailExtractor::class);
+        $details = $document->extracted_text ? $detailExtractor->extract($document->extracted_text) : [];
+        $correctiveActions = $document->extracted_text ? $detailExtractor->extractCorrectiveActions($document->extracted_text) : [];
+        $details = array_values(array_diff($details, $correctiveActions));
 
         $tables = app(\App\Services\StructuredTableExtractor::class)->extract($document->extracted_text);
 
@@ -224,7 +268,7 @@ class DocumentController extends Controller
                 ->verify($document->summary, $document->extracted_text);
         }
 
-        return view('documents.show', compact('document', 'categories', 'highlightedHtml', 'details', 'tables', 'summaryCheck'));
+        return view('documents.show', compact('document', 'categories', 'highlightedHtml', 'details', 'correctiveActions', 'tables', 'summaryCheck'));
     }
 
     public function download(Document $document): StreamedResponse

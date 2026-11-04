@@ -7,6 +7,12 @@
 <a href="{{ route('chat.index') }}" class="small text-decoration-none" style="color:#00A868">&larr; All conversations</a>
 </div>
 <h4 class="fw-bold mt-1 mb-3">{{ $conversation->title }}</h4>
+@if($conversation->document)
+<div class="small mb-2 px-2 py-1 rounded" style="background:#e6f3ea;color:#315343">
+<i class="bi bi-file-earmark-lock me-1"></i>Questions are limited to <strong>{{ $conversation->document->title ?? $conversation->document->original_filename }}</strong>.
+<a href="{{ route('documents.show', $conversation->document) }}" class="ms-1">View document</a>
+</div>
+@endif
 <div class="d-flex flex-column gap-3 chat-scroll p3-chat-msgs pe-1" id="messages" aria-live="polite">
 @foreach ($conversation->messages as $msg)
 @if ($msg->role === 'user')
