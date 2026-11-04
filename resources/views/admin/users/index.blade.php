@@ -10,8 +10,8 @@
 <div class="d-flex align-items-center gap-2 mb-3">
 <span class="stat-icon" style="background:#e6f3ea;color:var(--p3-navy)"><i class="bi bi-person-plus-fill"></i></span>
 <div>
-<div class="fw-semibold">Create New User</div>
-<small class="text-muted">Fill in the account details below.</small>
+<div class="fw-semibold">Create Employee Account</div>
+<small class="text-muted">New accounts default to Employee. Change the role only when elevated access is required.</small>
 </div>
 </div>
 <form method="POST" action="{{ route('admin.users.store') }}">
@@ -36,7 +36,7 @@
 </div>
 <div class="col-md-4">
 <label class="form-label">Role</label>
-<select name="role" class="form-select" required>@foreach (\App\Models\User::ROLES as $r)<option value="{{ $r }}" {{ old('role') === $r ? 'selected' : '' }}>{{ \App\Models\User::roleLabel($r) }}</option>@endforeach</select>
+<select name="role" class="form-select" required>@foreach ([\App\Models\User::ROLE_EMPLOYEE, \App\Models\User::ROLE_MANAGER, \App\Models\User::ROLE_ADMIN] as $r)<option value="{{ $r }}" {{ old('role', \App\Models\User::ROLE_EMPLOYEE) === $r ? 'selected' : '' }}>{{ \App\Models\User::roleLabel($r) }}</option>@endforeach</select>
 </div>
 <div class="col-md-4">
 <label class="form-label">Primary Department</label>

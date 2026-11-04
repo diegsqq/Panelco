@@ -164,6 +164,36 @@ class Phase7ChatTest extends TestCase
         $this->assertStringContainsString('still being processed', $assistant->content);
     }
 
+    public function test_pending_document_hint_does_not_disclose_another_employees_document(): void
+    {
+        $this->seed();
+        $employee = User::where('email', 'employee@panelco3.local')->first();
+        $otherEmployee = User::factory()->create([
+            'role' => User::ROLE_EMPLOYEE,
+            'department_id' => $employee->department_id,
+        ]);
+        $this->completedDoc($employee, 'Ordinary memo', 'General office schedule was shared with staff.');
+        Document::create([
+            'uploaded_by' => $otherEmployee->id,
+            'title' => 'Confidential transformer inspection',
+            'original_filename' => 'confidential.txt',
+            'storage_path' => 'documents/confidential.txt',
+            'mime_type' => 'text/plain',
+            'file_size' => 10,
+            'department_id' => $employee->department_id,
+            'processing_status' => 'pending',
+        ]);
+
+        $this->actingAs($employee)->post(route('chat.store'), [
+            'question' => 'confidential transformer inspection',
+        ])->assertRedirect();
+
+        $assistant = Conversation::firstOrFail()->messages()->where('role', 'assistant')->firstOrFail();
+        $this->assertStringNotContainsString('still being processed', $assistant->content);
+        $this->assertStringNotContainsString('confidential', strtolower($assistant->content));
+        $this->assertStringContainsString("couldn't find relevant information", $assistant->content);
+    }
+
     public function test_conversation_isolation(): void
     {
         $this->seed();

@@ -6,6 +6,7 @@ use App\Models\ChatMessage;
 use App\Models\Conversation;
 use App\Models\Document;
 use App\Models\MessageSource;
+use App\Models\User;
 use App\Services\Ai\AiProvider;
 use App\Services\DocumentRetrievalService;
 use Illuminate\Http\RedirectResponse;
@@ -220,13 +221,16 @@ class ChatController extends Controller
         }
 
         $query = Document::whereIn('processing_status', ['pending', 'processing']);
-        if (! $user->isAdmin()) {
+        if ($user->role === User::ROLE_EMPLOYEE) {
+            $query->where('uploaded_by', $user->id);
+        } elseif (! $user->isAdmin()) {
             $allowedDeptIds = $user->departments()->pluck('departments.id')
                 ->push($user->department_id)->filter()->unique()->values();
             $query->where(function ($q) use ($user, $allowedDeptIds) {
                 $q->where('uploaded_by', $user->id)
                     ->orWhereIn('department_id', $allowedDeptIds)
-                    ->orWhereNull('department_id');
+                    ->orWhereNull('department_id')
+                    ->orWhereIn('id', $user->authorizedDocuments()->pluck('documents.id'));
             });
         }
 

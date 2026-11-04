@@ -54,6 +54,11 @@ class SettingsFeaturesTest extends TestCase
         $this->actingAs($admin)
             ->get(route('settings.index'))
             ->assertOk()
+            ->assertDontSee('App Basics')
+            ->assertDontSee('AI Settings');
+
+        $this->get(route('settings.preferences'))
+            ->assertOk()
             ->assertSee('App Basics')
             ->assertSee('AI Settings')
             ->assertSee('Documents')

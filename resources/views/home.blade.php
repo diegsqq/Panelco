@@ -104,8 +104,8 @@
         var values = @json($categoryDistribution->pluck('total')->values());
         chart.setOption({
             tooltip: { trigger: 'axis', textStyle: { fontSize: 11 } },
-            grid: { left: '3%', right: '4%', bottom: '10%', containLabel: true },
-            xAxis: { type: 'category', data: categories, axisLabel: { show: true, interval: 'auto', rotate: 25, fontSize: 10 } },
+            grid: { left: '3%', right: '4%', bottom: '6%', containLabel: true },
+            xAxis: { type: 'category', data: categories, axisLabel: { show: false }, axisTick: { show: false }, axisLine: { show: false } },
             yAxis: { type: 'value' },
             series: [{
                 type: 'line',

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
-<h4 class="mb-0">Departments</h4>
+<div><h4 class="mb-0">Departments</h4><small class="text-muted">Manage the approved PANELCO III units. Departments assigned to users or documents must be reassigned before deletion.</small></div>
 <a href="{{ route('admin.departments.create') }}" class="btn" style="background:#ffffff;color:#00A868;border:1px solid #00A868">New Department</a>
 </div>
 <div class="card card-p3 p-0 overflow-hidden">

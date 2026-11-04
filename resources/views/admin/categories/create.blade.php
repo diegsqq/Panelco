@@ -21,7 +21,7 @@
         <input name="keywords" id="keywordsField" class="form-control" value="{{ old('keywords') }}" placeholder="maintenance, repair, transformer">
         <button type="button" class="btn btn-outline-success" id="aiKwBtn" title="Generate keywords with AI"><i class="bi bi-magic me-1"></i>Generate with AI</button>
     </div>
-    <div class="form-text" id="aiKwMsg">Matching is case-insensitive substring search over extracted text.</div>
+    <div class="form-text" id="aiKwMsg">Keywords match complete words or phrases in extracted text; review suggestions before saving.</div>
 </div>
 <div class="d-flex gap-2">
     <button class="btn px-4" style="background:#ffffff;color:#00A868;border:1px solid #00A868"><i class="bi bi-check-lg me-1"></i>Save</button>

@@ -40,7 +40,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', Rule::in(User::ROLES)],
+            'role' => ['sometimes', 'required', Rule::in(User::ROLES)],
             'department_id' => ['nullable', 'exists:departments,id'],
             'departments' => ['nullable', 'array'],
             'departments.*' => ['exists:departments,id'],
@@ -50,7 +50,7 @@ class UserController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'role' => $data['role'],
+            'role' => $data['role'] ?? User::ROLE_EMPLOYEE,
             'department_id' => $data['department_id'] ?? null,
         ]);
         $user->departments()->sync($data['departments'] ?? []);
@@ -85,6 +85,12 @@ class UserController extends Controller
             'departments.*' => ['exists:departments,id'],
         ]);
 
+        if ($user->isAdmin()
+            && $data['role'] !== User::ROLE_ADMIN
+            && User::where('role', User::ROLE_ADMIN)->count() === 1) {
+            return back()->withErrors(['role' => 'The last administrator cannot be demoted. Assign another administrator first.'])->withInput();
+        }
+
         $user->fill([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -112,6 +118,10 @@ class UserController extends Controller
     {
         if ((int) $user->id === (int) auth()->id()) {
             return back()->withErrors(['user' => 'You cannot delete your own account.']);
+        }
+
+        if ($user->isAdmin() && User::where('role', User::ROLE_ADMIN)->count() === 1) {
+            return back()->withErrors(['user' => 'The last administrator cannot be deleted. Assign another administrator first.']);
         }
 
         $userId = $user->id;

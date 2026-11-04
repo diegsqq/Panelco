@@ -60,6 +60,14 @@ class DepartmentController extends Controller
 
     public function destroy(Department $department): RedirectResponse
     {
+        if ($department->users()->exists()
+            || $department->primaryUsers()->exists()
+            || $department->documents()->exists()) {
+            return back()->withErrors([
+                'department' => 'This department is assigned to users or documents. Reassign them before deleting it.',
+            ]);
+        }
+
         $id = $department->id;
         $department->delete();
         AuditLog::create(['user_id' => auth()->id(), 'action' => 'department.deleted', 'entity_type' => Department::class, 'entity_id' => $id, 'metadata' => []]);

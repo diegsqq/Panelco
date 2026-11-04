@@ -16,29 +16,23 @@ class CategoryRecommender
      */
     public function suggest(string $text): ?array
     {
-        $lower = mb_strtolower($text);
+        $normalizedText = ' '.$this->normalize($text).' ';
         $best = null;
-
-        // Built-in keyword boosts for common document families. These keep
-        // suggestions useful even when an admin has not configured keywords
-        // for a category yet (e.g. financial-ratio reports).
-        $builtIn = [
-            'Technical Reports' => 'technical,specification,analysis,findings,methodology,ratio,financial,liquidity,leverage,profitability,investment,efficiency,market,return,asset,current,debt,equity,quick',
-        ];
 
         foreach (DocumentCategory::all() as $category) {
             $keywords = array_filter(array_map('trim', explode(',', (string) $category->keywords)));
-            if (isset($builtIn[$category->name])) {
-                $keywords = array_merge($keywords, array_filter(array_map('trim', explode(',', $builtIn[$category->name]))));
-            }
             if (empty($keywords)) {
                 continue;
             }
 
             $score = 0;
+            $matched = [];
             foreach ($keywords as $kw) {
-                if ($kw !== '' && str_contains($lower, mb_strtolower($kw))) {
-                    $score += mb_strlen($kw);
+                $normalizedKeyword = $this->normalize($kw);
+                if ($normalizedKeyword !== '' && ! isset($matched[$normalizedKeyword])
+                    && str_contains($normalizedText, ' '.$normalizedKeyword.' ')) {
+                    $matched[$normalizedKeyword] = true;
+                    $score += mb_strlen($normalizedKeyword);
                 }
             }
 
@@ -55,5 +49,12 @@ class CategoryRecommender
         }
 
         return $best;
+    }
+
+    private function normalize(string $value): string
+    {
+        $normalized = preg_replace('/[^\p{L}\p{N}]+/u', ' ', mb_strtolower($value)) ?? '';
+
+        return trim($normalized);
     }
 }
