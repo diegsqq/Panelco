@@ -23,7 +23,15 @@
 </div>
 </form>
 <div class="d-flex flex-wrap gap-2 mt-2">
-@foreach(['Summarize the latest report', 'What corrective actions were recorded?', 'Find documents mentioning a transformer', 'What are the important details?'] as $s)
+@foreach([
+    'Summarize the latest report',
+    'What corrective actions were recorded?',
+    'Find documents mentioning transformer maintenance',
+    'What are the important details?',
+    'Extract action items, owners, and deadlines from the maintenance report',
+    'Compare transformer maintenance findings across documents',
+    'Translate the maintenance report to Filipino',
+] as $s)
 <button type="button" class="btn btn-sm chip-q" style="font-size:.72rem;padding:.2rem .6rem;background:#fff;color:#00A868;border:1px solid #00A868">{{ $s }}</button>
 @endforeach
 </div>

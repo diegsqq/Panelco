@@ -6,12 +6,22 @@
 </div>
 <div class="card card-p3 p-0 overflow-hidden">
 <table class="table mb-0 small">
-<thead class="table-light"><tr><th>Time</th><th>User</th><th>Action</th><th>Target</th></tr></thead>
+<thead class="table-light"><tr><th>Time</th><th>User</th><th>Action</th><th>Target</th><th>Context</th></tr></thead>
 <tbody>
 @forelse ($logs as $log)
-<tr><td title="{{ $log->created_at }}">{{ $log->created_at->format('M d, H:i') }}</td><td>{{ $log->user?->name ?? 'system' }}</td><td>{{ \Illuminate\Support\Str::headline($log->action) }}</td><td>{{ $log->entity_type ? class_basename($log->entity_type) . ' #' . $log->entity_id : '—' }}</td></tr>
+<tr>
+<td title="{{ $log->created_at }}">{{ $log->created_at->format('M d, H:i') }}</td>
+<td>{{ $log->user?->name ?? 'system' }}</td>
+<td>{{ \Illuminate\Support\Str::headline($log->action) }}</td>
+<td>{{ $log->entity_type ? class_basename($log->entity_type) . ' #' . $log->entity_id : '—' }}</td>
+<td>
+@if($log->metadata['identifier'] ?? false)<div>{{ $log->metadata['identifier'] }}</div>@endif
+@if($log->metadata['ip'] ?? false)<div class="text-muted">{{ $log->metadata['ip'] }}</div>@endif
+@if($log->metadata['user_agent'] ?? false)<small class="text-muted" title="{{ $log->metadata['user_agent'] }}">{{ \Illuminate\Support\Str::limit($log->metadata['user_agent'], 60) }}</small>@endif
+</td>
+</tr>
 @empty
-<tr><td colspan="4" class="text-center text-muted p-4">No logs yet.</td></tr>
+<tr><td colspan="5" class="text-center text-muted p-4">No logs yet.</td></tr>
 @endforelse
 </tbody>
 </table>

@@ -50,6 +50,7 @@ class User extends Authenticatable
         'verification_expires_at',
         'password',
         'role',
+        'is_active',
         'department_id',
         'avatar_path',
         'job_title',
@@ -88,6 +89,7 @@ class User extends Authenticatable
             'notify_doc_failed' => 'boolean',
             'notify_login_alert' => 'boolean',
             'two_factor_enabled' => 'boolean',
+            'is_active' => 'boolean',
         ];
     }
 

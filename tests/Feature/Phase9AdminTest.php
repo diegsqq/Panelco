@@ -59,10 +59,13 @@ class Phase9AdminTest extends TestCase
         $this->assertDatabaseMissing('departments', ['name' => 'Unauthorized Department']);
 
         $this->actingAs($admin)->post(route('admin.departments.store'), [
-            'name' => 'Line Maintenance', 'description' => 'Poles and wires',
+            'name' => 'Line Maintenance',
+            'description' => 'Poles and wires',
+            'keywords' => 'line patrol, pole replacement',
         ])->assertRedirect(route('admin.departments.index'));
         $dept = Department::where('name', 'Line Maintenance')->first();
         $this->assertNotNull($dept);
+        $this->assertSame('line patrol, pole replacement', $dept->keywords);
 
         $this->actingAs($admin)->delete(route('admin.departments.destroy', $dept))->assertRedirect();
         $this->assertNull(Department::where('name', 'Line Maintenance')->first());
@@ -98,13 +101,21 @@ class Phase9AdminTest extends TestCase
         $payload = [
             'name' => 'New PANELCO Employee',
             'email' => 'new.employee@panelco3.local',
-            'password' => 'safe-password-123',
-            'password_confirmation' => 'safe-password-123',
+            'password' => 'Safe-password-123!',
+            'password_confirmation' => 'Safe-password-123!',
         ];
 
         $this->actingAs($employee)->get(route('admin.users.index'))->assertForbidden();
         $this->get(route('admin.users.create'))->assertForbidden();
         $this->post(route('admin.users.store'), $payload)->assertForbidden();
+        $this->actingAs($admin)->post(route('admin.users.store'), [
+            ...$payload,
+            'email' => 'weak.password@panelco3.local',
+            'password' => 'safe-password-123',
+            'password_confirmation' => 'safe-password-123',
+        ])->assertSessionHasErrors('password');
+
+        $this->actingAs($employee);
         $this->put(route('admin.users.update', $employee), [
             'name' => $employee->name,
             'email' => $employee->email,
@@ -125,9 +136,73 @@ class Phase9AdminTest extends TestCase
         ])->assertRedirect(route('admin.users.index'));
         $this->assertSame('Updated PANELCO Employee', $created->fresh()->name);
 
+        $this->put(route('admin.users.update', $created), [
+            'name' => 'Updated PANELCO Employee',
+            'email' => $payload['email'],
+            'role' => User::ROLE_EMPLOYEE,
+            'password' => 'Another-Password-123!',
+            'password_confirmation' => 'Another-Password-123!',
+        ])->assertRedirect(route('admin.users.index'));
+        $this->assertTrue(AuditLog::where('action', 'user.password_reset')
+            ->where('entity_id', $created->id)->exists());
+
         $this->actingAs($admin)->delete(route('admin.users.destroy', $created))
             ->assertRedirect(route('admin.users.index'));
         $this->assertDatabaseMissing('users', ['id' => $created->id]);
+    }
+
+    public function test_admin_can_deactivate_and_reactivate_employee_accounts(): void
+    {
+        $this->seed();
+        $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+
+        $this->actingAs($admin)->patch(route('admin.users.status', $employee), ['is_active' => false])
+            ->assertRedirect();
+        $this->assertFalse($employee->fresh()->is_active);
+        $this->assertTrue(AuditLog::where('action', 'user.deactivated')->where('entity_id', $employee->id)->exists());
+
+        $this->patch(route('admin.users.status', $employee), ['is_active' => true])->assertRedirect();
+        $this->assertTrue($employee->fresh()->is_active);
+        $this->assertTrue(AuditLog::where('action', 'user.activated')->where('entity_id', $employee->id)->exists());
+    }
+
+    public function test_inactive_users_cannot_login_or_use_an_existing_session(): void
+    {
+        $user = User::factory()->create([
+            'role' => User::ROLE_EMPLOYEE,
+            'is_active' => false,
+        ]);
+
+        $this->post(route('login'), [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertSessionHasErrors('email');
+        $this->assertGuest();
+
+        $this->actingAs($user)->get(route('home'))
+            ->assertRedirect(route('login'))
+            ->assertSessionHasErrors('email');
+        $this->assertGuest();
+    }
+
+    public function test_admin_cannot_deactivate_self_or_last_active_administrator(): void
+    {
+        $this->seed();
+        $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
+
+        $this->actingAs($admin)->patch(route('admin.users.status', $admin), ['is_active' => false])
+            ->assertSessionHasErrors('user');
+        $this->assertTrue($admin->fresh()->is_active);
+
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $this->patch(route('admin.users.update', $admin), [
+            'name' => $admin->name,
+            'email' => $admin->email,
+            'role' => User::ROLE_EMPLOYEE,
+        ])->assertSessionHasErrors('role');
+        $this->assertTrue($employee->fresh()->is_active);
+        $this->assertTrue($admin->fresh()->is_active);
     }
 
     public function test_last_administrator_cannot_be_demoted_or_deleted(): void

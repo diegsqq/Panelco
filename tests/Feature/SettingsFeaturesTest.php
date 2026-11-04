@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Mail\ProfileVerificationCode;
 use App\Models\User;
+use App\Models\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
@@ -144,17 +145,36 @@ class SettingsFeaturesTest extends TestCase
 
         $this->actingAs($user)->put(route('settings.password'), [
             'current_password' => 'wrongpass',
-            'password' => 'newsecret123',
-            'password_confirmation' => 'newsecret123',
+            'password' => 'NewSecret123!',
+            'password_confirmation' => 'NewSecret123!',
         ])->assertSessionHasErrors('current_password');
 
         $this->actingAs($user)->put(route('settings.password'), [
             'current_password' => 'password',
-            'password' => 'newsecret123',
-            'password_confirmation' => 'newsecret123',
+            'password' => 'NewSecret123',
+            'password_confirmation' => 'NewSecret123',
+        ])->assertSessionHasErrors('password');
+
+        $this->actingAs($user)->put(route('settings.password'), [
+            'current_password' => 'password',
+            'password' => 'NewSecret123!',
+            'password_confirmation' => 'NewSecret123!',
         ])->assertRedirect(route('settings.security'));
 
-        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('newsecret123', $user->fresh()->password));
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('NewSecret123!', $user->fresh()->password));
+    }
+
+    public function test_admin_session_timeout_setting_is_applied_to_the_session_configuration(): void
+    {
+        $admin = $this->user(['role' => User::ROLE_ADMIN]);
+
+        $this->actingAs($admin)->put(route('settings.retention'), [
+            'session_timeout_minutes' => 25,
+            'audit_retention_days' => 180,
+        ])->assertRedirect(route('settings.security'));
+
+        $this->assertSame('25', Setting::get('session_timeout_minutes'));
+        $this->assertSame(25, config('session.lifetime'));
     }
 
     public function test_preferences_theme_locale_and_notifications(): void
@@ -209,16 +229,32 @@ class SettingsFeaturesTest extends TestCase
         $response->assertRedirect(route('two-factor.show'));
         $this->assertGuest();
         $this->assertNotEmpty(Session::get('two_factor_pending_user'));
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'auth.two_factor_challenge_started',
+            'entity_id' => $user->id,
+        ]);
+        $this->assertDatabaseMissing('audit_logs', [
+            'action' => 'auth.login_succeeded',
+            'user_id' => $user->id,
+        ]);
 
         // Wrong 2FA code rejected.
         $this->post(route('two-factor.verify'), ['code' => '000000'])->assertSessionHasErrors('code');
         $this->assertGuest();
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'auth.two_factor_failed',
+            'entity_id' => $user->id,
+        ]);
 
         // Right 2FA code signs in.
         $valid = (new Google2FA())->getCurrentOtp($user->two_factor_secret);
         $this->post(route('two-factor.verify'), ['code' => $valid])->assertRedirect('/home');
         $this->assertAuthenticatedAs($user);
         $this->assertNull(Session::get('two_factor_pending_user'));
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'auth.login_succeeded',
+            'user_id' => $user->id,
+        ]);
 
         // Turning it off restores plain password login.
         $this->actingAs($user)->post(route('settings.2fa.disable'));

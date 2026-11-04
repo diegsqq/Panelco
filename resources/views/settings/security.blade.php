@@ -40,7 +40,7 @@
 <div class="card card-p3 p-4 h-100">
 <div class="d-flex align-items-center gap-2 mb-3">
 <span class="stat-icon" style="background:#e6f3ea;color:var(--p3-navy)"><i class="bi bi-key"></i></span>
-<div><div class="fw-semibold">{{ __('settings.change_password') }}</div><small class="text-muted">Min 8 characters. Use a mix of letters and numbers.</small></div>
+<div><div class="fw-semibold">{{ __('settings.change_password') }}</div><small class="text-muted">At least 12 characters with uppercase and lowercase letters, a number, and a symbol.</small></div>
 </div>
 <form method="POST" action="{{ route('settings.password') }}">
 @csrf
@@ -54,7 +54,7 @@
 <div class="mb-3">
 <label class="form-label">{{ __('settings.new_password') }} <span class="text-muted small">{{ __('settings.new_password_hint') }}</span></label>
 <div class="input-group"><span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-<input type="password" name="password" id="newPw" class="form-control" required minlength="8" autocomplete="new-password">
+<input type="password" name="password" id="newPw" class="form-control" required minlength="12" autocomplete="new-password">
 <button type="button" class="btn btn-outline-secondary pw-toggle" aria-label="Show password"><i class="bi bi-eye"></i></button></div>
 <div class="pw-meter mt-2" aria-hidden="true">
 <div class="pw-track"><div class="pw-fill" id="pwFill"></div></div>
@@ -64,7 +64,7 @@
 <div class="mb-1">
 <label class="form-label">{{ __('settings.confirm_password') }}</label>
 <div class="input-group"><span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-<input type="password" name="password_confirmation" class="form-control" required minlength="8" autocomplete="new-password">
+<input type="password" name="password_confirmation" class="form-control" required minlength="12" autocomplete="new-password">
 <button type="button" class="btn btn-outline-secondary pw-toggle" aria-label="Show password"><i class="bi bi-eye"></i></button></div>
 </div>
 <button class="btn btn-outline-success mt-3 px-4"><i class="bi bi-key me-1"></i>{{ __('settings.password_btn') }}</button>
@@ -180,10 +180,10 @@
         var v = pw.value;
         if (!v) { fill.style.width = '0'; label.textContent = '{{ __('settings.new_password_hint') }}'; return; }
         var score = 0;
-        if (v.length >= 8) score = 1;
-        if (v.length >= 10 && /[A-Za-z]/.test(v) && /[0-9]/.test(v)) score = 2;
-        if (v.length >= 12) score = 3;
-        if (v.length >= 14 && /[^A-Za-z0-9]/.test(v) && /[A-Z]/.test(v)) score = 4;
+        if (v.length >= 12) score = 1;
+        if (v.length >= 12 && /[a-z]/.test(v) && /[A-Z]/.test(v)) score = 2;
+        if (v.length >= 12 && /[a-z]/.test(v) && /[A-Z]/.test(v) && /[0-9]/.test(v)) score = 3;
+        if (v.length >= 12 && /[a-z]/.test(v) && /[A-Z]/.test(v) && /[0-9]/.test(v) && /[^A-Za-z0-9]/.test(v)) score = 4;
         var lvl = levels[score];
         fill.style.width = lvl.w + '%';
         fill.style.background = lvl.c;
@@ -208,7 +208,7 @@
 <div class="col-md-6">
 <label class="form-label">Session Timeout (minutes)</label>
 <div class="input-group"><span class="input-group-text"><i class="bi bi-clock"></i></span>
-<input name="session_timeout_minutes" type="number" min="5" max="1440" class="form-control" value="{{ old('session_timeout_minutes', $val('session_timeout_minutes', '120')) }}" required></div>
+<input name="session_timeout_minutes" type="number" min="5" max="1440" class="form-control" value="{{ old('session_timeout_minutes', $val('session_timeout_minutes', config('session.lifetime'))) }}" required></div>
 <small class="text-muted">5 – 1440 minutes. Users are signed out after this idle period.</small>
 </div>
 <div class="col-md-6">

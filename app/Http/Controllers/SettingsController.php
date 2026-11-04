@@ -6,6 +6,7 @@ use App\Mail\ProfileVerificationCode;
 use App\Models\AuditLog;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\PasswordRules;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -335,7 +336,7 @@ class SettingsController extends Controller
 
         $data = $request->validate([
             'current_password' => ['required', 'string'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => [...PasswordRules::newPassword(), 'confirmed'],
         ]);
 
         if (! Hash::check($data['current_password'], $user->password)) {
@@ -495,6 +496,7 @@ class SettingsController extends Controller
             'session_timeout_minutes' => (string) $data['session_timeout_minutes'],
             'audit_retention_days' => (string) $data['audit_retention_days'],
         ]);
+        config(['session.lifetime' => (int) $data['session_timeout_minutes']]);
 
         return redirect()->route('settings.security')->with('status', 'Retention settings saved.');
     }

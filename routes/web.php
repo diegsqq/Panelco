@@ -31,6 +31,7 @@ Route::middleware('auth')->group(function () {
 Route::get('/library/{document}/pdf', [App\Http\Controllers\DocumentController::class, 'toPdf'])->name('documents.pdf');
     Route::get('/library/{document}/thumb', [App\Http\Controllers\DocumentController::class, 'thumb'])->name('documents.thumb');
     Route::post('/library/{document}/retry', [App\Http\Controllers\DocumentController::class, 'retry'])->name('documents.retry');
+    Route::post('/library/{document}/ask', [App\Http\Controllers\ChatController::class, 'askDocument'])->name('documents.ask');
     Route::post('/library/{document}/approve', [App\Http\Controllers\DocumentController::class, 'approve'])->name('documents.approve');
     Route::delete('/library/{document}', [App\Http\Controllers\DocumentController::class, 'destroy'])->name('documents.destroy');
     Route::get('/queue', [App\Http\Controllers\DocumentController::class, 'queue'])->name('queue.index');
@@ -63,9 +64,10 @@ Route::get('/library/{document}/pdf', [App\Http\Controllers\DocumentController::
 
 // Second login step when 2FA is enabled (guest; password already checked).
 Route::get('/two-factor', [App\Http\Controllers\TwoFactorController::class, 'show'])->name('two-factor.show');
-Route::post('/two-factor', [App\Http\Controllers\TwoFactorController::class, 'verify'])->name('two-factor.verify');
+Route::post('/two-factor', [App\Http\Controllers\TwoFactorController::class, 'verify'])->middleware('throttle:5,1')->name('two-factor.verify');
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::patch('users/{user}/status', [UserController::class, 'updateStatus'])->name('users.status');
     Route::resource('users', UserController::class)->except(['show']);
     Route::resource('departments', DepartmentController::class)->except(['show']);
     Route::resource('categories', DocumentCategoryController::class)->except(['show']);

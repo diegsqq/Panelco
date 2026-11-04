@@ -17,6 +17,7 @@ class Document extends Model
         'uploaded_by', 'title', 'original_filename', 'storage_path',
         'mime_type', 'file_size', 'document_type', 'department_id',
         'category_id', 'suggested_category_id', 'suggested_department_id',
+        'department_classification_confidence',
         'document_date', 'summary', 'keywords', 'extracted_text',
         'processing_status', 'processing_error', 'classification_confidence',
         'approved_at', 'approved_by',
@@ -28,6 +29,7 @@ class Document extends Model
             'document_date' => 'date',
             'approved_at' => 'datetime',
             'classification_confidence' => 'decimal:4',
+            'department_classification_confidence' => 'decimal:4',
         ];
     }
 

@@ -22,7 +22,7 @@ return array (
   'change_password' => 'Palitan ang Password',
   'current_password' => 'Kasalukuyang Password',
   'new_password' => 'Bagong Password',
-  'new_password_hint' => '(8 karakter pataas)',
+  'new_password_hint' => '(12+ karakter, malaking/maliit na titik, numero, at simbolo)',
   'confirm_password' => 'Kumpirmahin ang Bagong Password',
   'password_btn' => 'Palitan ang Password',
   'preferences' => 'Mga Kagustuhan',

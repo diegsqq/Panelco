@@ -30,7 +30,10 @@ class OpenAiCompatibleProviderTest extends TestCase
 
             return str_contains($system, 'Document Summary, Important Details, and Corrective Actions')
                 && str_contains($system, 'correct wording while preserving the original meaning')
-                && str_contains($system, 'Never invent replacement facts');
+                && str_contains($system, 'Never invent replacement facts')
+                && str_contains($system, 'responsible person and deadline')
+                && str_contains($system, 'compare only details present in the passages')
+                && str_contains($system, 'translate the supported source content into the requested language');
         });
     }
 }

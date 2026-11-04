@@ -10,6 +10,7 @@
 <div>
 <div class="fw-semibold">{{ $user->name }}</div>
 <small class="text-muted">Update the account details below.</small>
+<span class="badge ms-2 {{ $user->is_active ? 'text-bg-success' : 'text-bg-secondary' }}">{{ $user->is_active ? 'Active' : 'Inactive' }}</span>
 </div>
 </div>
 <form method="POST" action="{{ route('admin.users.update', $user) }}">
@@ -26,12 +27,12 @@
 </div>
 <div class="col-md-6">
 <label class="form-label">New Password <span class="text-muted small">(leave blank to keep current)</span></label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-lock"></i></span><input name="password" type="password" class="form-control"></div>
-<small class="text-muted">Minimum 8 characters.</small>
+<div class="input-group"><span class="input-group-text"><i class="bi bi-lock"></i></span><input name="password" type="password" class="form-control" minlength="12"></div>
+<small class="text-muted">12+ characters, uppercase and lowercase, number, and symbol.</small>
 </div>
 <div class="col-md-6">
 <label class="form-label">Confirm New Password</label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-lock-fill"></i></span><input name="password_confirmation" type="password" class="form-control"></div>
+<div class="input-group"><span class="input-group-text"><i class="bi bi-lock-fill"></i></span><input name="password_confirmation" type="password" class="form-control" minlength="12"></div>
 </div>
 <div class="col-md-4">
 <label class="form-label">Role</label>
@@ -60,6 +61,22 @@
 <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary px-4">Cancel</a>
 </div>
 </form>
+</div>
+<div class="card card-p3 p-3 mt-4">
+<div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+<div>
+<div class="fw-semibold">Account access</div>
+<small class="text-muted">{{ $user->is_active ? 'Active accounts can sign in and use their assigned permissions.' : 'Inactive accounts cannot sign in or continue using an existing session.' }}</small>
+</div>
+<form method="POST" action="{{ route('admin.users.status', $user) }}">
+@csrf
+@method('PATCH')
+<input type="hidden" name="is_active" value="{{ $user->is_active ? '0' : '1' }}">
+<button class="btn {{ $user->is_active ? 'btn-outline-danger' : 'btn-outline-success' }}" @if((int) $user->id === (int) auth()->id() && $user->is_active) disabled title="You cannot deactivate your own account" @endif>
+<i class="bi {{ $user->is_active ? 'bi-person-slash' : 'bi-person-check' }} me-1"></i>{{ $user->is_active ? 'Deactivate Account' : 'Activate Account' }}
+</button>
+</form>
+</div>
 </div>
 <div class="card card-p3 p-3 mt-4 border-danger">
 <div class="d-flex justify-content-between align-items-center">

@@ -52,9 +52,9 @@
                 <small class="text-muted">{{ number_format($documents->total()) }} {{ \Illuminate\Support\Str::plural('document', $documents->total()) }}</small>
             </div>
             <form method="GET" action="{{ route('documents.library') }}" class="d-flex flex-wrap align-items-center gap-2 ms-auto" role="search">
-                <div class="input-group input-group-sm" style="width:min(16rem, 55vw)">
+                <div class="input-group input-group-sm" style="width:min(18rem, 55vw)">
                     <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-                    <input type="search" name="q" value="{{ $search }}" class="form-control" placeholder="Search documents" aria-label="Search documents">
+                    <input type="search" name="q" value="{{ $search }}" class="form-control" placeholder="Title, keywords, or content" aria-label="Search title, keywords, or content">
                 </div>
                 <select name="status" class="form-select form-select-sm" aria-label="Filter by processing status" style="width:auto" onchange="this.form.submit()">
                     <option value="">All statuses</option>
@@ -62,8 +62,35 @@
                         <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
                     @endforeach
                 </select>
-                <button type="submit" class="btn btn-sm btn-outline-secondary" aria-label="Search"><i class="bi bi-search"></i></button>
-                @if($search !== '' || request()->filled('status'))
+                <select name="category_id" class="form-select form-select-sm" aria-label="Filter by category" style="width:auto">
+                    <option value="">All categories</option>
+                    @foreach($categories as $category)
+                        <option value="{{ $category->id }}" @selected((string) request('category_id') === (string) $category->id)>{{ $category->name }}</option>
+                    @endforeach
+                </select>
+                <select name="department_id" class="form-select form-select-sm" aria-label="Filter by department" style="width:auto">
+                    <option value="">All departments</option>
+                    @foreach($departments as $department)
+                        <option value="{{ $department->id }}" @selected((string) request('department_id') === (string) $department->id)>{{ $department->name }}</option>
+                    @endforeach
+                </select>
+                @if(auth()->user()->isManager())
+                    <select name="uploader_id" class="form-select form-select-sm" aria-label="Filter by uploader" style="width:auto">
+                        <option value="">All uploaders</option>
+                        @foreach($uploaders as $uploader)
+                            <option value="{{ $uploader->id }}" @selected((string) request('uploader_id') === (string) $uploader->id)>{{ $uploader->name }}</option>
+                        @endforeach
+                    </select>
+                @endif
+                <input type="date" name="date_from" value="{{ $validated['date_from'] ?? '' }}" class="form-control form-control-sm" aria-label="Document date from" title="Document date from" style="width:auto">
+                <input type="date" name="date_to" value="{{ $validated['date_to'] ?? '' }}" class="form-control form-control-sm" aria-label="Document date to" title="Document date to" style="width:auto">
+                <select name="sort" class="form-select form-select-sm" aria-label="Sort documents" style="width:auto">
+                    <option value="newest" @selected($sort === 'newest')>Newest</option>
+                    <option value="oldest" @selected($sort === 'oldest')>Oldest</option>
+                    <option value="alphabetical" @selected($sort === 'alphabetical')>A–Z</option>
+                </select>
+                <button type="submit" class="btn btn-sm btn-outline-secondary">Apply</button>
+                @if(collect($validated)->filter(fn ($value) => $value !== null && $value !== '' && $value !== 'newest')->isNotEmpty())
                     <a href="{{ route('documents.library') }}" class="btn btn-sm btn-outline-secondary">Clear</a>
                 @endif
             </form>
@@ -109,7 +136,7 @@
                                 </div>
                             </td>
                             <td>{{ $fileType[0] }}</td>
-                            <td>{{ $doc->department?->name ?? '—' }}</td>
+                            <td>{{ $doc->department?->name ?? $doc->suggestedDepartment?->name ?? '—' }}</td>
                             <td><span class="lib-category">{{ $doc->category?->name ?? $doc->suggestedCategory?->name ?? 'Uncategorized' }}</span></td>
 
                             <td>

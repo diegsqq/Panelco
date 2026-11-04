@@ -65,6 +65,44 @@ class DashboardVisibilityTest extends TestCase
             ->assertSee('4 docs');
     }
 
+    public function test_department_distribution_is_scoped_and_uses_document_suggestions(): void
+    {
+        $this->seed();
+        $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $otherEmployee = User::factory()->create(['role' => User::ROLE_EMPLOYEE]);
+        $it = $employee->department;
+        $administration = $admin->department;
+
+        $this->createDocument($employee, 'Assigned employee document', [
+            'department_id' => $it->id,
+        ]);
+        $this->createDocument($employee, 'Suggested employee document', [
+            'suggested_department_id' => $administration->id,
+        ]);
+        $this->createDocument($otherEmployee, 'Other employee document', [
+            'department_id' => $administration->id,
+        ]);
+
+        $this->actingAs($employee)->get(route('dashboard'))
+            ->assertOk()
+            ->assertViewHas('departmentDistribution', function ($distribution) use ($it, $administration) {
+                return $distribution->pluck('total', 'department_name')->all() === [
+                    $administration->name => 1,
+                    $it->name => 1,
+                ];
+            });
+
+        $this->actingAs($admin)->get(route('dashboard'))
+            ->assertOk()
+            ->assertViewHas('departmentDistribution', function ($distribution) use ($it, $administration) {
+                return $distribution->pluck('total', 'department_name')->all() === [
+                    $administration->name => 2,
+                    $it->name => 1,
+                ];
+            });
+    }
+
     private function createDocument(User $uploader, string $title, array $attributes = []): Document
     {
         return Document::create(array_merge([

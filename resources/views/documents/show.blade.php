@@ -20,7 +20,7 @@
 <dl class="row small mb-0">
 <dt class="col-sm-4"><i class="bi bi-file-earmark me-1" style="color:#00A868"></i>Type</dt><dd class="col-sm-8">{{ $document->document_type ?? '—' }}</dd>
 <dt class="col-sm-4"><i class="bi bi-tags me-1" style="color:#00A868"></i>Category</dt><dd class="col-sm-8">{{ $document->category?->name ?? $document->suggestedCategory?->name ?? '—' }}@if(!$document->category && $document->suggestedCategory) <span class="text-muted">suggested{{ $document->classification_confidence !== null ? ' · ' . round($document->classification_confidence * 100) . '%' : '' }}</span>@endif</dd>
-<dt class="col-sm-4"><i class="bi bi-building me-1" style="color:#00A868"></i>Department</dt><dd class="col-sm-8">{{ $document->department?->name ?? '—' }}</dd>
+<dt class="col-sm-4"><i class="bi bi-building me-1" style="color:#00A868"></i>Department</dt><dd class="col-sm-8">{{ $document->department?->name ?? $document->suggestedDepartment?->name ?? '—' }}@if(!$document->department && $document->suggestedDepartment) <span class="text-muted">suggested{{ $document->department_classification_confidence !== null ? ' · ' . round($document->department_classification_confidence * 100) . '% match' : '' }}</span>@endif</dd>
 <dt class="col-sm-4"><i class="bi bi-calendar me-1" style="color:#00A868"></i>Document date</dt><dd class="col-sm-8">{{ $document->document_date?->format('Y-m-d') ?? '—' }}</dd>
 <dt class="col-sm-4"><i class="bi bi-cloud-upload me-1" style="color:#00A868"></i>Uploaded</dt><dd class="col-sm-8">{{ $document->created_at->format('M d, Y') }} by {{ $document->uploader?->name ?? '—' }}</dd>
 <dt class="col-sm-4"><i class="bi bi-check-circle me-1" style="color:#00A868"></i>Approved</dt><dd class="col-sm-8">{{ $document->approved_at ? $document->approved_at->format('M d, Y') . ' by ' . ($document->approver?->name ?? '—') : '—' }}</dd>
@@ -140,11 +140,16 @@
 
 <div class="card card-p3 p-3">
 <h6 class="fw-bold"><i class="bi bi-lightning-charge-fill me-1" style="color:#00A868"></i>Ask Lightning about this document</h6>
-<div class="d-flex flex-wrap gap-2">
-<a class="btn btn-sm btn-outline-success" href="{{ route('chat.index', ['document_id' => $document->id, 'q' => 'Summarize this document in vertical sections: Document Summary, Important Details, and Corrective Actions. Use only facts from the document.']) }}">Summarize it</a>
-<a class="btn btn-sm btn-outline-success" href="{{ route('chat.index', ['document_id' => $document->id, 'q' => 'What are the important details in this document?']) }}">Important details</a>
-<a class="btn btn-sm btn-outline-success" href="{{ route('chat.index', ['document_id' => $document->id, 'q' => 'What corrective actions were recorded in this document?']) }}">Corrective actions</a>
+<div class="d-flex flex-wrap gap-2" id="askChips">
+<button type="button" class="btn btn-sm btn-outline-success ask-chip" data-question="Summarize this document in vertical sections: Document Summary, Important Details, and Corrective Actions. Use only facts from the document.">Summarize it</button>
+<button type="button" class="btn btn-sm btn-outline-success ask-chip" data-question="What are the important details in this document?">Important details</button>
+<button type="button" class="btn btn-sm btn-outline-success ask-chip" data-question="What corrective actions were recorded in this document?">Corrective actions</button>
 </div>
+<div class="d-flex gap-2 mt-2">
+<input type="text" id="askInput" class="form-control form-control-sm" maxlength="2000" placeholder="Ask anything about this document…" aria-label="Ask about this document">
+<button type="button" class="btn btn-sm" id="askSendBtn" style="background:#ffffff;color:#00A868;border:1px solid #00A868" aria-label="Send"><i class="bi bi-send-fill"></i></button>
+</div>
+<div id="askResult" class="d-none mt-3"></div>
 </div>
 </div>
 
@@ -183,6 +188,75 @@
 </div>
 </div>
 </div>
+<script>
+(function () {
+    var askUrl = @json(route('documents.ask', $document));
+    var csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    var result = document.getElementById('askResult');
+    var input = document.getElementById('askInput');
+    var sendBtn = document.getElementById('askSendBtn');
+    var chips = document.querySelectorAll('.ask-chip');
+    if (!result) return;
+    var busy = false;
+
+    function esc(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
+    function ask(question) {
+        if (busy || !question) return;
+        busy = true;
+        chips.forEach(function (c) { c.disabled = true; });
+        if (sendBtn) sendBtn.disabled = true;
+        result.classList.remove('d-none');
+        result.innerHTML = '<div class="d-flex align-items-center gap-2 small text-muted"><span class="spinner-border spinner-border-sm" style="width:.85rem;height:.85rem"></span>Lightning is reading this document…</div>';
+
+        fetch(askUrl, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: question })
+        })
+            .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+            .then(function (res) {
+                var sources = (res.body.sources || []).map(function (s, i) {
+                    return '<li class="mb-1"><span class="fw-semibold">' + esc(s.title) + '</span>'
+                        + (s.page ? ' <span class="text-muted">(p. ' + esc(s.page) + ')</span>' : '')
+                        + '<div class="text-muted" style="font-size:.78rem">' + esc(s.excerpt) + '</div></li>';
+                }).join('');
+
+                result.innerHTML =
+                    '<div class="p-3" style="background:#f7fbf8;border:1px solid #d5e8db;border-radius:.75rem">'
+                    + '<div class="d-flex align-items-center gap-2 mb-2 small fw-semibold" style="color:#00743F"><i class="bi bi-lightning-charge-fill"></i>Lightning</div>'
+                    + '<div class="ask-answer" style="font-size:.88rem;color:#2f3b35">' + (res.ok && res.body.answer ? res.body.answer : '<span class="text-danger">Could not reach the server. Try again.</span>') + '</div>'
+                    + (sources ? '<div class="mt-3 pt-2 border-top small"><div class="fw-semibold text-muted mb-1" style="font-size:.72rem">SOURCES</div><ul class="ps-3 mb-0">' + sources + '</ul></div>' : '')
+                    + '</div>';
+            })
+            .catch(function () {
+                result.innerHTML = '<div class="p-3 small text-danger" style="background:#fdeaea;border:1px solid #f5c2c2;border-radius:.75rem"><i class="bi bi-exclamation-triangle me-1"></i>Could not reach the server. Try again.</div>';
+            })
+            .then(function () {
+                busy = false;
+                chips.forEach(function (c) { c.disabled = false; });
+                if (sendBtn) sendBtn.disabled = false;
+            });
+    }
+
+    chips.forEach(function (c) {
+        c.addEventListener('click', function () { ask(c.getAttribute('data-question')); });
+    });
+
+    function sendTyped() {
+        var q = (input && input.value || '').trim();
+        if (!q) return;
+        ask(q);
+        if (input) input.value = '';
+    }
+    if (sendBtn) sendBtn.addEventListener('click', sendTyped);
+    if (input) input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); sendTyped(); } });
+})();
+</script>
 <script>
 (function () {
     var modal = document.getElementById('viewerModal');

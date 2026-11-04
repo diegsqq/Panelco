@@ -6,12 +6,12 @@
 </div>
 <div class="card card-p3 p-0 overflow-hidden">
 <table class="table mb-0">
-<thead class="table-light"><tr><th>Name</th><th>Description</th><th>Users</th><th>Documents</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+<thead class="table-light"><tr><th>Name</th><th>Description</th><th>Classification keywords</th><th>Users</th><th>Documents</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
 <tbody>
 @forelse ($departments as $d)
-<tr><td class="fw-semibold">{{ $d->name }}</td><td><small class="text-muted">{{ \Illuminate\Support\Str::limit($d->description ?: '—', 80) }}</small></td><td>{{ $d->users_count }}</td><td>{{ $d->documents_count }}</td><td class="text-end"><a href="{{ route('admin.departments.edit', $d) }}" class="btn btn-sm btn-outline-success">Edit</a></td></tr>
+<tr><td class="fw-semibold">{{ $d->name }}</td><td><small class="text-muted">{{ \Illuminate\Support\Str::limit($d->description ?: '—', 80) }}</small></td><td><small class="text-muted" title="{{ $d->keywords }}">{{ \Illuminate\Support\Str::limit($d->keywords ?: 'Not configured', 80) }}</small></td><td>{{ $d->users_count }}</td><td>{{ $d->documents_count }}</td><td class="text-end"><a href="{{ route('admin.departments.edit', $d) }}" class="btn btn-sm btn-outline-success">Edit</a></td></tr>
 @empty
-<tr><td colspan="5" class="text-center text-muted p-4">No departments yet.</td></tr>
+<tr><td colspan="6" class="text-center text-muted p-4">No departments yet.</td></tr>
 @endforelse
 </tbody>
 </table>

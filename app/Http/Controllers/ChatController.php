@@ -9,6 +9,8 @@ use App\Models\MessageSource;
 use App\Models\User;
 use App\Services\Ai\AiProvider;
 use App\Services\DocumentRetrievalService;
+use App\Support\MarkdownLite;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -90,22 +92,44 @@ class ChatController extends Controller
 
     private function ask(Conversation $conversation, string $question, ?Document $document = null): void
     {
-        $user = auth()->user();
-
         $conversation->messages()->create(['role' => 'user', 'content' => $question]);
-
-        // Small talk carries no factual claims about documents, so it is
-        // answered directly without touching the document index.
-        if ($reply = $this->smallTalk($question)) {
-            $conversation->messages()->create(['role' => 'assistant', 'content' => $reply]);
-
-            return;
-        }
 
         // Follow-up memory: short follow-ups ("what about the second one?",
         // "and the dates?") inherit terms from the previous question so
         // retrieval stays in context. The answer still cites fresh evidence.
         $searchQuestion = $this->withFollowUpContext($conversation, $question);
+
+        $answer = $this->generateAnswer(auth()->user(), $searchQuestion, $document, $question);
+
+        $assistant = $conversation->messages()->create(['role' => 'assistant', 'content' => $answer['content']]);
+
+        // Citations are built server-side from the actual retrieval hits,
+        // so every source ID is guaranteed to belong to the evidence set.
+        foreach ($answer['chunks'] as $hit) {
+            MessageSource::create([
+                'chat_message_id' => $assistant->id,
+                'document_id' => $hit['document']->id,
+                'document_chunk_id' => $hit['chunk']->id,
+                'page_number' => $hit['chunk']->page_number,
+                'supporting_excerpt' => $hit['excerpt'],
+                'relevance_score' => min(1, $hit['score'] / 10),
+            ]);
+        }
+    }
+
+    /**
+     * Answer a question from the document index. Shared by the chat pages
+     * and the inline "Ask Lightning" button on the document page.
+     *
+     * @return array{content: string, chunks: list<array{chunk: \App\Models\DocumentChunk, document: Document, score: int, excerpt: string}>}
+     */
+    private function generateAnswer(User $user, string $searchQuestion, ?Document $document, string $question): array
+    {
+        // Small talk carries no factual claims about documents, so it is
+        // answered directly without touching the document index.
+        if ($reply = $this->smallTalk($question)) {
+            return ['content' => $reply, 'chunks' => []];
+        }
 
         $result = app(DocumentRetrievalService::class)->retrieve($user, $searchQuestion, documentId: $document?->id);
 
@@ -115,9 +139,7 @@ class ChatController extends Controller
                 ? 'This document is still being processed and is not available for searching yet. Please try again after processing is complete.'
                 : DocumentRetrievalService::statusMessage($result['status']);
 
-            $conversation->messages()->create(['role' => 'assistant', 'content' => $message]);
-
-            return;
+            return ['content' => $message, 'chunks' => []];
         }
 
         $ai = app(AiProvider::class);
@@ -144,20 +166,33 @@ class ChatController extends Controller
                 . "\n\n_Showing direct excerpts — the AI service is temporarily unavailable, so no generated summary is provided._";
         }
 
-        $assistant = $conversation->messages()->create(['role' => 'assistant', 'content' => $content]);
+        return ['content' => $content, 'chunks' => $result['chunks']];
+    }
 
-        // Citations are built server-side from the actual retrieval hits,
-        // so every source ID is guaranteed to belong to the evidence set.
-        foreach ($result['chunks'] as $hit) {
-            MessageSource::create([
-                'chat_message_id' => $assistant->id,
-                'document_id' => $hit['document']->id,
-                'document_chunk_id' => $hit['chunk']->id,
-                'page_number' => $hit['chunk']->page_number,
-                'supporting_excerpt' => $hit['excerpt'],
-                'relevance_score' => min(1, $hit['score'] / 10),
-            ]);
-        }
+    /**
+     * Inline ask on the document page: same permission-first retrieval and
+     * answer generation as chat, returned as HTML for on-page rendering.
+     */
+    public function askDocument(Request $request, Document $document): JsonResponse
+    {
+        $this->authorize('view', $document);
+
+        $data = $request->validate([
+            'question' => ['required', 'string', 'max:2000'],
+        ]);
+        $question = trim($data['question']);
+
+        $answer = $this->generateAnswer($request->user(), $question, $document, $question);
+
+        return response()->json([
+            'question' => $question,
+            'answer' => MarkdownLite::render($answer['content'])->toHtml(),
+            'sources' => array_values(array_map(fn ($hit) => [
+                'title' => $hit['document']->title ?? $hit['document']->original_filename,
+                'page' => $hit['chunk']->page_number,
+                'excerpt' => $hit['excerpt'],
+            ], $answer['chunks'])),
+        ]);
     }
 
     private function smallTalk(string $question): ?string
@@ -177,7 +212,7 @@ class ChatController extends Controller
         }
 
         if (preg_match('/\bhelp\b|what can you do|how do (i|you) (use|work)/', $q)) {
-            return "I can:\n\n- Find documents by keywords (e.g. \"Find the maintenance report\")\n- Summarize a document (e.g. \"Summarize the weekly report\")\n- Pull out details with citations (e.g. \"What corrective actions were recorded?\")\n\nIf nothing relevant exists, I'll tell you plainly instead of guessing.";
+            return "I can:\n\n- Find and summarize relevant documents with citations\n- Extract action items, owners, and deadlines when stated\n- Compare findings across documents\n- Translate supported content into English or Filipino\n- Correct grammar while preserving the original meaning\n\nIf the documents don't support an answer, I'll tell you plainly instead of guessing.";
         }
 
         if (app(DocumentRetrievalService::class)->terms($question) === []) {

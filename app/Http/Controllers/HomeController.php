@@ -45,9 +45,23 @@ class HomeController extends Controller
             ->groupBy('resolved_category.name')
             ->get();
 
+        $departmentDistribution = (clone $documentQuery)
+            ->leftJoin('departments as resolved_department', function ($join) {
+                $join->on(
+                    'resolved_department.id',
+                    '=',
+                    DB::raw('COALESCE(documents.department_id, documents.suggested_department_id)')
+                );
+            })
+            ->selectRaw("COALESCE(resolved_department.name, 'Unassigned') as department_name, COUNT(documents.id) as total")
+            ->groupBy('resolved_department.name')
+            ->orderByDesc('total')
+            ->orderBy('department_name')
+            ->get();
+
         $recentConversations = Conversation::where('user_id', $user->id)
             ->latest()->limit(5)->get();
 
-        return view('home', compact('stats', 'recent', 'categoryDistribution', 'recentConversations'));
+        return view('home', compact('stats', 'recent', 'categoryDistribution', 'departmentDistribution', 'recentConversations'));
     }
 }

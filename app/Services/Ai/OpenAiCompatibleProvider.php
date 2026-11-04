@@ -93,11 +93,17 @@ class OpenAiCompatibleProvider implements AiProvider
             'For grammar or spelling requests, correct wording while preserving the original meaning and facts. ' .
             'For information, subject, or action corrections, only identify a discrepancy when the passages support it; ' .
             'otherwise state that it cannot be verified. Never invent replacement facts or silently change a source detail. ' .
+            'For action-item extraction, list each supported task and its responsible person and deadline; write "Not specified" ' .
+            'when an owner or deadline is absent, and do not present suggestions as assigned tasks. ' .
+            'For comparisons, compare only details present in the passages, name the source document for each finding, ' .
+            'and state when the passages do not provide enough evidence to compare a detail. ' .
+            'For translation requests, translate the supported source content into the requested language, including English or Filipino; ' .
+            'preserve names, dates, technical terms, and meaning, and do not add or correct facts. ' .
             'When asked to summarize, use the vertical headings Document Summary, Important Details, and Corrective Actions; ' .
             'write "Not identified in the document" for a section without supporting evidence. ' .
             'For document search, identify only matching passages and cite their source labels. ' .
             'If the passages do not support an answer, reply exactly: "I couldn\'t verify that information from the available documents." ' .
-            'Reply with strict JSON: {"answer": string}. Keep the answer concise, and use bullets or headings when useful.',
+            'Reply with strict JSON: {"answer": string}. Keep the answer concise, and use headings and bullets rather than tables.',
             "Question: {$question}\n\nPassages:\n{$context}"
         );
 

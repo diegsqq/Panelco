@@ -70,8 +70,14 @@ class DocumentController extends Controller
         $validated = $request->validate([
             'q' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', Rule::in(['pending', 'processing', 'completed', 'failed'])],
+            'category_id' => ['nullable', 'integer', 'exists:document_categories,id'],
+            'department_id' => ['nullable', 'integer', 'exists:departments,id'],
+            'uploader_id' => ['nullable', 'integer', 'exists:users,id'],
+            'date_from' => ['nullable', 'date'],
+            'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
+            'sort' => ['nullable', Rule::in(['newest', 'oldest', 'alphabetical'])],
         ]);
-        $query = $this->visibleToUser($request)->with('suggestedCategory');
+        $query = $this->visibleToUser($request)->with(['suggestedCategory', 'suggestedDepartment']);
 
         $search = trim((string) ($validated['q'] ?? ''));
         if ($search !== '') {
@@ -79,18 +85,72 @@ class DocumentController extends Controller
             $query->where(function ($q) use ($like) {
                 $q->where('title', 'like', $like)
                     ->orWhere('original_filename', 'like', $like)
+                    ->orWhere('keywords', 'like', $like)
+                    ->orWhere('extracted_text', 'like', $like)
                     ->orWhereHas('category', fn ($c) => $c->where('name', 'like', $like))
                     ->orWhereHas('suggestedCategory', fn ($c) => $c->where('name', 'like', $like));
             });
+        }
+
+        if (! empty($validated['category_id'])) {
+            $query->whereRaw('COALESCE(documents.category_id, documents.suggested_category_id) = ?', [
+                (int) $validated['category_id'],
+            ]);
+        }
+
+        if (! empty($validated['department_id'])) {
+            $query->whereRaw('COALESCE(documents.department_id, documents.suggested_department_id) = ?', [
+                (int) $validated['department_id'],
+            ]);
+        }
+
+        if (! empty($validated['uploader_id'])) {
+            $query->where('uploaded_by', $validated['uploader_id']);
+        }
+
+        if (! empty($validated['date_from'])) {
+            $query->whereDate('document_date', '>=', $validated['date_from']);
+        }
+
+        if (! empty($validated['date_to'])) {
+            $query->whereDate('document_date', '<=', $validated['date_to']);
         }
 
         if (! empty($validated['status'])) {
             $query->where('processing_status', $validated['status']);
         }
 
+        $sort = $validated['sort'] ?? 'newest';
+        match ($sort) {
+            'oldest' => $query->orderBy('created_at')->orderBy('id'),
+            'alphabetical' => $query->orderByRaw("COALESCE(NULLIF(title, ''), original_filename) asc")->orderBy('id'),
+            default => $query->orderByDesc('created_at')->orderByDesc('id'),
+        };
+
+        $visibleIds = (clone $this->visibleToUser($request))->reorder()->select('documents.id');
+        $categoryIds = Document::query()->whereIn('id', $visibleIds)
+            ->where(function ($q) {
+                $q->whereNotNull('category_id')->orWhereNotNull('suggested_category_id');
+            })
+            ->selectRaw('COALESCE(category_id, suggested_category_id) as category_id')
+            ->distinct()->pluck('category_id');
+        $departmentIds = Document::query()->whereIn('id', $visibleIds)
+            ->where(function ($q) {
+                $q->whereNotNull('department_id')->orWhereNotNull('suggested_department_id');
+            })
+            ->selectRaw('COALESCE(department_id, suggested_department_id) as department_id')
+            ->distinct()->pluck('department_id');
+        $uploaderIds = Document::query()->whereIn('id', $visibleIds)
+            ->whereNotNull('uploaded_by')->distinct()->pluck('uploaded_by');
+        $categories = DocumentCategory::whereIn('id', $categoryIds)->orderBy('name')->get();
+        $departments = Department::whereIn('id', $departmentIds)->orderBy('name')->get();
+        $uploaders = \App\Models\User::whereIn('id', $uploaderIds)->orderBy('name')->get();
+
         $documents = $query->paginate(15)->withQueryString();
 
-        return view('documents.index', compact('documents', 'search'));
+        return view('documents.index', compact(
+            'documents', 'search', 'categories', 'departments', 'uploaders', 'validated', 'sort'
+        ));
     }
 
     public function create(): View

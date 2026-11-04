@@ -264,6 +264,9 @@ class Phase7ChatTest extends TestCase
 
         $this->actingAs($emp)->get(route('chat.index', ['q' => 'Summarize it']))
             ->assertOk()
-            ->assertSee('What corrective actions were recorded?');
+            ->assertSee('What corrective actions were recorded?')
+            ->assertSee('Extract action items, owners, and deadlines')
+            ->assertSee('Compare transformer maintenance findings across documents')
+            ->assertSee('Translate the maintenance report to Filipino');
     }
 }

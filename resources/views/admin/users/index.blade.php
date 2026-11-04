@@ -27,12 +27,12 @@
 </div>
 <div class="col-md-6">
 <label class="form-label">Password</label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-lock"></i></span><input name="password" type="password" class="form-control" required></div>
-<small class="text-muted">Minimum 8 characters.</small>
+<div class="input-group"><span class="input-group-text"><i class="bi bi-lock"></i></span><input name="password" type="password" class="form-control" minlength="12" required></div>
+<small class="text-muted">12+ characters, uppercase and lowercase, number, and symbol.</small>
 </div>
 <div class="col-md-6">
 <label class="form-label">Confirm Password</label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-lock-fill"></i></span><input name="password_confirmation" type="password" class="form-control" required></div>
+<div class="input-group"><span class="input-group-text"><i class="bi bi-lock-fill"></i></span><input name="password_confirmation" type="password" class="form-control" minlength="12" required></div>
 </div>
 <div class="col-md-4">
 <label class="form-label">Role</label>
@@ -65,17 +65,18 @@
 </div>
 <div class="card card-p3 p-0 overflow-hidden">
 <table class="table mb-0 align-middle">
-<thead class="table-light"><tr><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+<thead class="table-light"><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Department</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
 <tbody>
 @forelse ($users as $u)
 <tr>
 <td class="fw-semibold">{{ $u->name }}</td><td class="text-break">{{ $u->email }}</td>
 <td><span class="badge text-capitalize" style="background:#e6f3ea;color:var(--p3-navy)">{{ \App\Models\User::roleLabel($u->role) }}</span></td>
+<td><span class="badge {{ $u->is_active ? 'text-bg-success' : 'text-bg-secondary' }}">{{ $u->is_active ? 'Active' : 'Inactive' }}</span></td>
 <td>{{ $u->department?->name ?? '—' }}</td>
 <td class="text-end"><a href="{{ route('admin.users.edit', $u) }}" class="btn btn-sm btn-outline-success">Edit</a></td>
 </tr>
 @empty
-<tr><td colspan="5" class="text-center text-muted p-4">No users yet.</td></tr>
+<tr><td colspan="6" class="text-center text-muted p-4">No users yet.</td></tr>
 @endforelse
 </tbody>
 </table>

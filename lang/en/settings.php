@@ -22,7 +22,7 @@ return array (
   'change_password' => 'Change Password',
   'current_password' => 'Current Password',
   'new_password' => 'New Password',
-  'new_password_hint' => '(min 8 characters)',
+  'new_password_hint' => '(12+ characters, uppercase and lowercase, number, and symbol)',
   'confirm_password' => 'Confirm New Password',
   'password_btn' => 'Change Password',
   'preferences' => 'Preferences',

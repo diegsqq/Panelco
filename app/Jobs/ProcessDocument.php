@@ -9,6 +9,7 @@ use App\Models\DocumentCategory;
 use App\Services\Ai\AiProvider;
 use App\Services\DocumentChunker;
 use App\Services\DocumentExtractionService;
+use App\Services\DepartmentRecommender;
 use App\Services\ExtractionFailedException;
 use App\Services\UploadSuggester;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -21,7 +22,7 @@ class ProcessDocument implements ShouldQueue
 
     public function __construct(public int $documentId) {}
 
-    public function handle(DocumentExtractionService $extractor, DocumentChunker $chunker, AiProvider $ai, UploadSuggester $suggester): void
+    public function handle(DocumentExtractionService $extractor, DocumentChunker $chunker, AiProvider $ai, UploadSuggester $suggester, DepartmentRecommender $departmentRecommender): void
     {
         $document = Document::find($this->documentId);
         if (! $document || $document->processing_status === 'completed') {
@@ -51,6 +52,7 @@ class ProcessDocument implements ShouldQueue
 
         $chunker->chunk($document, $result['text'], $result['pages']);
         $metadata = $suggester->suggestFromText($result['text']);
+        $departmentSuggestion = $departmentRecommender->suggest($result['text']);
 
         // Rule-based suggestions always run; AI refines them when available.
         $updates = [
@@ -60,6 +62,8 @@ class ProcessDocument implements ShouldQueue
                 : ($metadata['title'] ?? $suggester->titleFromFilename($document->original_filename)),
             'document_type' => $document->document_type ?? $this->guessType($document),
             'suggested_category_id' => $metadata['category_id'],
+            'suggested_department_id' => $departmentSuggestion['department_id'] ?? null,
+            'department_classification_confidence' => $departmentSuggestion['confidence'] ?? null,
             'processing_status' => 'completed',
             'processing_error' => null,
         ];

@@ -22,6 +22,14 @@ class LoginController extends Controller
 
     use AuthenticatesUsers;
 
+    protected function credentials($request)
+    {
+        return array_merge(
+            $request->only($this->username(), 'password'),
+            ['is_active' => true]
+        );
+    }
+
     /**
      * When the password is correct but 2FA is ON, do not start the
      * session yet: park the pending user id and ask for the code.
@@ -31,8 +39,8 @@ class LoginController extends Controller
         $user = $request->user();
 
         if ($user && $user->two_factor_enabled && $user->two_factor_secret) {
-            auth()->logout();
             session(['two_factor_pending_user' => $user->id]);
+            auth()->logout();
 
             return redirect()->route('two-factor.show');
         }

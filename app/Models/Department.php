@@ -11,7 +11,7 @@ class Department extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'description'];
+    protected $fillable = ['name', 'description', 'keywords'];
 
     public function users(): BelongsToMany
     {

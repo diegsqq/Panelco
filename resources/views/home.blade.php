@@ -81,6 +81,30 @@
 
         </div>
         <div class="card card-p3 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="fw-semibold" style="color:#00A868">Department distribution</span>
+                <span class="text-muted small">{{ $departmentDistribution->sum('total') }} docs</span>
+            </div>
+            @if($departmentDistribution->isNotEmpty())
+                @php $maxDepartmentCount = max(1, (int) $departmentDistribution->max('total')); @endphp
+                <div class="d-flex flex-column gap-3">
+                    @foreach($departmentDistribution as $department)
+                        <div>
+                            <div class="d-flex justify-content-between gap-2 small mb-1">
+                                <span class="text-truncate">{{ $department->department_name }}</span>
+                                <span class="text-muted flex-shrink-0">{{ $department->total }}</span>
+                            </div>
+                            <div class="progress" role="progressbar" aria-label="{{ $department->department_name }}" aria-valuenow="{{ $department->total }}" aria-valuemin="0" aria-valuemax="{{ $maxDepartmentCount }}" style="height:6px">
+                                <div class="progress-bar" style="width:{{ round(((int) $department->total / $maxDepartmentCount) * 100) }}%;background:#00A868"></div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="text-muted mb-0">No department data yet.</p>
+            @endif
+        </div>
+        <div class="card card-p3 p-4">
             <h5 class="fw-bold mb-2">Recent conversations</h5>
             @forelse ($recentConversations as $c)
                 <div class="border-bottom py-2"><a href="{{ route('chat.show', $c) }}" class="text-decoration-none" style="color:#00743F;font-size:1rem">{{ $c->title }}</a> <span class="text-muted">· {{ $c->created_at->diffForHumans() }}</span></div>

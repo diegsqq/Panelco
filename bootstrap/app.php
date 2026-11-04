@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // After session start → picks the signed-in user's language.
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
+            \App\Http\Middleware\EnsureUserIsActive::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

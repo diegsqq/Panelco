@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Jobs\ProcessDocument;
 use App\Models\Document;
+use App\Models\Department;
+use App\Models\DocumentCategory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -137,6 +139,135 @@ class Phase3UploadTest extends TestCase
             ->assertDontSeeText('Pending plan');
     }
 
+    public function test_library_searches_title_keywords_and_extracted_content(): void
+    {
+        $this->seed();
+        $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
+
+        foreach ([
+            ['title' => 'Transformer Maintenance Plan', 'keywords' => 'inspection,oil testing', 'extracted_text' => 'Routine checks completed.'],
+            ['title' => 'Asset Report', 'keywords' => 'equipment', 'extracted_text' => 'Transformer maintenance is scheduled for next week.'],
+            ['title' => 'Unrelated Memo', 'keywords' => 'staff meeting', 'extracted_text' => 'The meeting starts at nine.'],
+        ] as $index => $attributes) {
+            Document::create(array_merge([
+                'uploaded_by' => $admin->id,
+                'original_filename' => 'search-' . $index . '.txt',
+                'storage_path' => 'documents/search-' . $index . '.txt',
+                'mime_type' => 'text/plain',
+                'file_size' => 100,
+                'processing_status' => 'completed',
+            ], $attributes));
+        }
+
+        $this->actingAs($admin)->get(route('documents.library', ['q' => 'transformer maintenance']))
+            ->assertOk()
+            ->assertSeeText('Transformer Maintenance Plan')
+            ->assertSeeText('Asset Report')
+            ->assertDontSeeText('Unrelated Memo');
+    }
+
+    public function test_library_filters_category_department_uploader_and_document_date(): void
+    {
+        $this->seed();
+        $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $otherEmployee = User::factory()->create(['role' => User::ROLE_EMPLOYEE]);
+        $category = DocumentCategory::where('name', 'Maintenance Reports')->firstOrFail();
+        $department = Department::where('name', 'IT Services')->firstOrFail();
+
+        $matching = Document::create([
+            'uploaded_by' => $employee->id,
+            'title' => 'Maintenance Inspection',
+            'original_filename' => 'inspection.txt',
+            'storage_path' => 'documents/inspection.txt',
+            'mime_type' => 'text/plain',
+            'file_size' => 100,
+            'category_id' => $category->id,
+            'department_id' => $department->id,
+            'document_date' => '2025-03-15',
+            'processing_status' => 'completed',
+        ]);
+        Document::create([
+            'uploaded_by' => $employee->id,
+            'title' => 'Older maintenance inspection',
+            'original_filename' => 'old-inspection.txt',
+            'storage_path' => 'documents/old-inspection.txt',
+            'mime_type' => 'text/plain',
+            'file_size' => 100,
+            'category_id' => $category->id,
+            'department_id' => $department->id,
+            'document_date' => '2024-03-15',
+            'processing_status' => 'completed',
+        ]);
+        Document::create([
+            'uploaded_by' => $otherEmployee->id,
+            'title' => 'Other uploader inspection',
+            'original_filename' => 'other-inspection.txt',
+            'storage_path' => 'documents/other-inspection.txt',
+            'mime_type' => 'text/plain',
+            'file_size' => 100,
+            'category_id' => $category->id,
+            'department_id' => $department->id,
+            'document_date' => '2025-03-15',
+            'processing_status' => 'completed',
+        ]);
+
+        $library = $this->actingAs($admin);
+        $categoryResponse = $library->get(route('documents.library', ['category_id' => $category->id]));
+        $categoryResponse->assertOk()->assertSeeText('Maintenance Inspection');
+        $library->get(route('documents.library', ['department_id' => $department->id]))
+            ->assertOk()->assertSeeText('Maintenance Inspection');
+        $library->get(route('documents.library', ['uploader_id' => $employee->id]))
+            ->assertOk()->assertSeeText('Maintenance Inspection');
+        $library->get(route('documents.library', [
+            'date_from' => '2025-03-01',
+            'date_to' => '2025-03-31',
+        ]))->assertOk()->assertSeeText('Maintenance Inspection');
+
+        $library->get(route('documents.library', [
+            'category_id' => $category->id,
+            'department_id' => $department->id,
+            'uploader_id' => $employee->id,
+            'date_from' => '2025-03-01',
+            'date_to' => '2025-03-31',
+            'sort' => 'alphabetical',
+        ]))->assertOk()
+            ->assertSeeText('Maintenance Inspection')
+            ->assertDontSeeText('Older maintenance inspection')
+            ->assertDontSeeText('Other uploader inspection');
+
+        $this->assertNotNull($matching->id);
+    }
+
+    public function test_employee_filter_options_and_results_are_limited_to_own_documents(): void
+    {
+        $this->seed();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $otherEmployee = User::factory()->create(['role' => User::ROLE_EMPLOYEE]);
+
+        foreach ([
+            [$employee, 'Employee Owned Document'],
+            [$otherEmployee, 'Another Employee Document'],
+        ] as [$uploader, $title]) {
+            Document::create([
+                'uploaded_by' => $uploader->id,
+                'title' => $title,
+                'original_filename' => $title . '.txt',
+                'storage_path' => 'documents/' . str_replace(' ', '-', strtolower($title)) . '.txt',
+                'mime_type' => 'text/plain',
+                'file_size' => 100,
+                'processing_status' => 'completed',
+            ]);
+        }
+
+        $this->actingAs($employee)->get(route('documents.library'))
+            ->assertOk()
+            ->assertSeeText('Employee Owned Document')
+            ->assertDontSeeText('Another Employee Document')
+            ->assertDontSeeText($otherEmployee->name)
+            ->assertDontSee('name="uploader_id"', false);
+    }
+
     public function test_employee_library_and_document_access_are_owner_only(): void
     {
         $this->seed();
@@ -196,6 +327,6 @@ class Phase3UploadTest extends TestCase
             ->assertSeeText('Important Details')
             ->assertSeeText('Corrective Actions')
             ->assertSeeText('repaired the damaged transformer')
-            ->assertSee('document_id=' . $doc->id, false);
+            ->assertSee(str_replace('/', '\\/', route('documents.ask', $doc)), false);
     }
 }

@@ -7,6 +7,7 @@ use App\Models\Document;
 use App\Models\DocumentCategory;
 use App\Models\User;
 use App\Services\Ai\AiProvider;
+use App\Services\DepartmentRecommender;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -65,6 +66,32 @@ class Phase5AiTest extends TestCase
         $this->assertNull($doc->classification_confidence);
         $this->assertEquals('Maintenance Reports', $doc->suggestedCategory->name);
         $this->assertNull($doc->category_id);
+    }
+
+    public function test_rule_suggestion_identifies_department_and_returns_confidence(): void
+    {
+        $this->seed();
+        $department = \App\Models\Department::where('name', 'IT Services')->firstOrFail();
+        $department->update(['keywords' => 'network operations,server maintenance']);
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $document = $this->makeTxt($employee, 'Network operations completed server maintenance for the records system.');
+
+        app()->call([new ProcessDocument($document->id), 'handle']);
+
+        $document->refresh();
+        $this->assertSame($department->id, $document->suggested_department_id);
+        $this->assertGreaterThan(0, (float) $document->department_classification_confidence);
+        $this->assertLessThanOrEqual(1, (float) $document->department_classification_confidence);
+        $this->assertSame($employee->department_id, $document->department_id);
+    }
+
+    public function test_department_recommender_omits_tied_suggestions(): void
+    {
+        $this->seed();
+        \App\Models\Department::where('name', 'IT Services')->update(['keywords' => 'network operations']);
+        \App\Models\Department::where('name', 'Administration')->update(['keywords' => 'network operations']);
+
+        $this->assertNull(app(DepartmentRecommender::class)->suggest('Network operations review completed.'));
     }
 
     public function test_fake_ai_adds_summary_and_confidence(): void

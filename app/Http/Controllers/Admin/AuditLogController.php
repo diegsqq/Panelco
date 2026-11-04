@@ -16,6 +16,7 @@ class AuditLogController extends Controller
 
     public function index(Request $request): View
     {
+        $request->validate(['action' => ['nullable', 'string', 'max:128']]);
         $logs = AuditLog::with('user')->latest();
         if ($request->filled('action')) {
             $logs->where('action', 'like', '%' . $request->get('action') . '%');

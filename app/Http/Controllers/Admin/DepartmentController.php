@@ -34,6 +34,7 @@ class DepartmentController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:departments,name'],
             'description' => ['nullable', 'string'],
+            'keywords' => ['nullable', 'string'],
         ]);
         $dept = Department::create($data);
         AuditLog::create(['user_id' => auth()->id(), 'action' => 'department.created', 'entity_type' => Department::class, 'entity_id' => $dept->id, 'metadata' => ['name' => $dept->name]]);
@@ -51,6 +52,7 @@ class DepartmentController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('departments')->ignore($department->id)],
             'description' => ['nullable', 'string'],
+            'keywords' => ['nullable', 'string'],
         ]);
         $department->update($data);
         AuditLog::create(['user_id' => auth()->id(), 'action' => 'department.updated', 'entity_type' => Department::class, 'entity_id' => $department->id, 'metadata' => ['name' => $department->name]]);
