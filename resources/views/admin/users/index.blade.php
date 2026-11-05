@@ -42,18 +42,18 @@
 <label class="form-label">Primary Department</label>
 <select name="department_id" class="form-select"><option value="">— None —</option>@foreach ($departments as $d)<option value="{{ $d->id }}" {{ (string) old('department_id') === (string) $d->id ? 'selected' : '' }}>{{ $d->name }}</option>@endforeach</select>
 </div>
-<div class="col-md-4">
+<div class="col-md-4" id="createAddDeptField">
 <label class="form-label">Additional Departments</label>
 <div class="border rounded p-2 d-flex flex-wrap gap-2" style="min-height:44px;background:#fff">
 @forelse ($departments as $d)
 <label class="btn btn-sm p3-dept-pill">
-<input type="checkbox" name="departments[]" value="{{ $d->id }}" class="d-none" {{ in_array($d->id, old('departments', [])) ? 'checked' : '' }}>{{ $d->name }}
+<input type="checkbox" name="departments[]" value="{{ $d->id }}" class="form-check-input me-1" {{ in_array($d->id, old('departments', [])) ? 'checked' : '' }}>{{ $d->name }}
 </label>
 @empty
 <small class="text-muted align-self-center">No departments yet.</small>
 @endforelse
 </div>
-<small class="text-muted">Click a department to toggle it.</small>
+<small class="text-muted">Select or clear a checkbox to add or remove a department.</small>
 </div>
 </div>
 <div class="d-flex gap-2 mt-4">
@@ -82,4 +82,14 @@
 </table>
 </div>
 <div class="mt-3">{{ $users->links() }}</div>
+<script>
+(function () {
+    var role = document.querySelector('#userCreateForm select[name="role"]');
+    var field = document.getElementById('createAddDeptField');
+    if (!role || !field) return;
+    function sync() { field.classList.toggle('d-none', role.value === @json(\App\Models\User::ROLE_ADMIN)); }
+    role.addEventListener('change', sync);
+    sync();
+})();
+</script>
 @endsection

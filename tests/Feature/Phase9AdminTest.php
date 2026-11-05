@@ -151,6 +151,32 @@ class Phase9AdminTest extends TestCase
         $this->assertDatabaseMissing('users', ['id' => $created->id]);
     }
 
+    public function test_admin_can_remove_additional_departments_from_a_user(): void
+    {
+        $this->seed();
+        $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $primary = Department::where('name', 'IT Services')->firstOrFail();
+        $additional = Department::create(['name' => 'Additional Department']);
+        $employee->departments()->sync([$additional->id]);
+
+        $payload = [
+            'name' => $employee->name,
+            'email' => $employee->email,
+            'role' => User::ROLE_EMPLOYEE,
+            'department_id' => $primary->id,
+        ];
+
+        $this->actingAs($admin)
+            ->put(route('admin.users.update', $employee), $payload)
+            ->assertRedirect(route('admin.users.index'));
+
+        $this->assertDatabaseMissing('department_user', [
+            'user_id' => $employee->id,
+            'department_id' => $additional->id,
+        ]);
+    }
+
     public function test_admin_can_deactivate_and_reactivate_employee_accounts(): void
     {
         $this->seed();
@@ -218,6 +244,67 @@ class Phase9AdminTest extends TestCase
 
         $this->delete(route('admin.users.destroy', $admin))->assertSessionHasErrors('user');
         $this->assertDatabaseHas('users', ['id' => $admin->id, 'role' => User::ROLE_ADMIN]);
+    }
+
+    public function test_editing_own_account_explains_why_delete_is_unavailable(): void
+    {
+        $this->seed();
+        $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.edit', $admin))
+            ->assertOk()
+            ->assertSee('You cannot delete your own account. Sign in as a different administrator to delete this account.')
+            ->assertSee('data-bs-target="#deleteUserModal" disabled', false);
+    }
+
+    public function test_another_administrator_can_delete_system_administrator_after_admin_handoff(): void
+    {
+        $this->seed();
+        $systemAdministrator = User::where('email', 'admin@panelco3.local')->firstOrFail();
+        $replacementAdmin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $this->actingAs($replacementAdmin)
+            ->delete(route('admin.users.destroy', $systemAdministrator))
+            ->assertRedirect(route('admin.users.index'));
+
+        $this->assertDatabaseMissing('users', ['id' => $systemAdministrator->id]);
+    }
+
+    public function test_system_administrator_edit_hides_delete_access_and_additional_departments(): void
+    {
+        $this->seed();
+        $systemAdministrator = User::where('email', 'admin@panelco3.local')->firstOrFail();
+        $otherAdmin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $department = Department::create(['name' => 'Locked Department']);
+        $systemAdministrator->departments()->sync([$department->id]);
+
+        $this->actingAs($otherAdmin)
+            ->get(route('admin.users.edit', $systemAdministrator))
+            ->assertOk()
+            ->assertSee('The System Administrator account cannot be deleted.')
+            ->assertSee('data-bs-target="#deleteUserModal" disabled', false)
+            ->assertDontSee('Account access')
+            ->assertDontSee('Additional Departments');
+
+        // Saving must not wipe departments hidden behind the removed field.
+        $this->actingAs($otherAdmin)
+            ->put(route('admin.users.update', $systemAdministrator), [
+                'name' => $systemAdministrator->name,
+                'email' => $systemAdministrator->email,
+                'role' => User::ROLE_ADMIN,
+            ])
+            ->assertRedirect(route('admin.users.index'));
+
+        $this->assertDatabaseHas('department_user', [
+            'user_id' => $systemAdministrator->id,
+            'department_id' => $department->id,
+        ]);
+
+        // Account access is gone: deactivating a System Administrator is refused.
+        $this->patch(route('admin.users.status', $systemAdministrator), ['is_active' => false])
+            ->assertSessionHasErrors('user');
+        $this->assertTrue($systemAdministrator->fresh()->is_active);
     }
 
     public function test_dashboard_shows_permission_filtered_metrics(): void

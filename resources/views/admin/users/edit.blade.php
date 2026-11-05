@@ -42,19 +42,21 @@
 <label class="form-label">Primary Department</label>
 <select name="department_id" class="form-select"><option value="">— None —</option>@foreach ($departments as $d)<option value="{{ $d->id }}" {{ (string) old('department_id', $user->department_id) === (string) $d->id ? 'selected' : '' }}>{{ $d->name }}</option>@endforeach</select>
 </div>
+@unless ($user->isAdmin())
 <div class="col-md-4">
 <label class="form-label">Additional Departments</label>
 <div class="border rounded p-2 d-flex flex-wrap gap-2" style="min-height:44px;background:#fff">
 @forelse ($departments as $d)
 <label class="btn btn-sm p3-dept-pill">
-<input type="checkbox" name="departments[]" value="{{ $d->id }}" class="d-none" {{ in_array($d->id, old('departments', $user->departments->pluck('id')->toArray())) ? 'checked' : '' }}>{{ $d->name }}
+<input type="checkbox" name="departments[]" value="{{ $d->id }}" class="form-check-input me-1" {{ in_array($d->id, old('departments', $user->departments->pluck('id')->toArray())) ? 'checked' : '' }}>{{ $d->name }}
 </label>
 @empty
 <small class="text-muted align-self-center">No departments yet.</small>
 @endforelse
 </div>
-<small class="text-muted">Click a department to toggle it.</small>
+<small class="text-muted">Select or clear a checkbox to add or remove a department.</small>
 </div>
+@endunless
 </div>
 <div class="d-flex gap-2 mt-4">
 <button class="btn btn-outline-success px-4"><i class="bi bi-check-lg me-1"></i>Save Changes</button>
@@ -62,6 +64,7 @@
 </div>
 </form>
 </div>
+@unless ($user->isAdmin())
 <div class="card card-p3 p-3 mt-4">
 <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
 <div>
@@ -78,13 +81,15 @@
 </form>
 </div>
 </div>
+@endunless
 <div class="card card-p3 p-3 mt-4 border-danger">
 <div class="d-flex justify-content-between align-items-center">
 <div>
 <div class="fw-semibold text-danger">Danger Zone</div>
 <small class="text-muted">Deleting removes the user and revokes document access. This cannot be undone.</small>
+@if ($deleteBlockReason)<div class="small text-danger mt-1">{{ $deleteBlockReason }}</div>@endif
 </div>
-<form method="POST" action="{{ route('admin.users.destroy', $user) }}" id="deleteUserForm">@csrf @method('DELETE')<button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal"><i class="bi bi-trash me-1"></i>Delete User</button></form>
+<form method="POST" action="{{ route('admin.users.destroy', $user) }}" id="deleteUserForm">@csrf @method('DELETE')<button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal" @disabled($deleteBlockReason)><i class="bi bi-trash me-1"></i>Delete User</button></form>
 </div>
 </div>
 <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-hidden="true">

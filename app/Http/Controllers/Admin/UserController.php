@@ -70,8 +70,10 @@ class UserController extends Controller
     public function edit(User $user): View
     {
         $departments = Department::orderBy('name')->get();
+        $deleteBlockReason = $this->deleteBlockReason($user, (int) auth()->id())
+            ?? ($user->isAdmin() ? 'The System Administrator account cannot be deleted.' : null);
 
-        return view('admin.users.edit', compact('user', 'departments'));
+        return view('admin.users.edit', compact('user', 'departments', 'deleteBlockReason'));
     }
 
     public function update(Request $request, User $user): RedirectResponse
@@ -92,6 +94,10 @@ class UserController extends Controller
             return back()->withErrors(['role' => 'The last active administrator cannot be demoted. Activate or assign another administrator first.'])->withInput();
         }
 
+        // The Additional Departments field is hidden for System Administrator
+        // accounts, so skip the sync there or saving would wipe their departments.
+        $departmentsFieldShown = ! $user->isAdmin();
+
         $user->fill([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -103,7 +109,9 @@ class UserController extends Controller
             $user->password = Hash::make($data['password']);
         }
         $user->save();
-        $user->departments()->sync($data['departments'] ?? []);
+        if ($departmentsFieldShown) {
+            $user->departments()->sync($data['departments'] ?? []);
+        }
 
         AuditLog::create([
             'user_id' => auth()->id(),
@@ -127,9 +135,9 @@ class UserController extends Controller
             return back()->withErrors(['user' => 'You cannot deactivate your own account.']);
         }
 
-        if (! $isActive && $user->is_active && $user->isAdmin()
-            && User::where('role', User::ROLE_ADMIN)->where('is_active', true)->count() === 1) {
-            return back()->withErrors(['user' => 'The last active administrator cannot be deactivated.']);
+        // Account access is not offered for System Administrator accounts.
+        if (! $isActive && $user->isAdmin()) {
+            return back()->withErrors(['user' => 'The System Administrator account cannot be deactivated.']);
         }
 
         if ($user->is_active === $isActive) {
@@ -150,13 +158,8 @@ class UserController extends Controller
 
     public function destroy(User $user): RedirectResponse
     {
-        if ((int) $user->id === (int) auth()->id()) {
-            return back()->withErrors(['user' => 'You cannot delete your own account.']);
-        }
-
-        if ($user->is_active && $user->isAdmin()
-            && User::where('role', User::ROLE_ADMIN)->where('is_active', true)->count() === 1) {
-            return back()->withErrors(['user' => 'The last active administrator cannot be deleted. Activate or assign another administrator first.']);
+        if ($reason = $this->deleteBlockReason($user, (int) auth()->id())) {
+            return back()->withErrors(['user' => $reason]);
         }
 
         $userId = $user->id;
@@ -173,5 +176,19 @@ class UserController extends Controller
         ]);
 
         return redirect()->route('admin.users.index')->with('status', 'User deleted successfully.');
+    }
+
+    private function deleteBlockReason(User $user, int $actorId): ?string
+    {
+        if ((int) $user->id === $actorId) {
+            return 'You cannot delete your own account. Sign in as a different administrator to delete this account.';
+        }
+
+        if ($user->is_active && $user->isAdmin()
+            && User::where('role', User::ROLE_ADMIN)->where('is_active', true)->count() === 1) {
+            return 'The last active administrator cannot be deleted. Activate or assign another administrator first.';
+        }
+
+        return null;
     }
 }
