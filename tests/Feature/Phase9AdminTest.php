@@ -315,6 +315,43 @@ class Phase9AdminTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_admin_can_filter_dormant_accounts_without_automatically_deactivating_them(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN, 'name' => 'Admin User']);
+        $neverSignedIn = User::factory()->create(['name' => 'Never Signed In']);
+        $dormant = User::factory()->create(['name' => 'Dormant Account']);
+        $recent = User::factory()->create(['name' => 'Recent Account']);
+        $dormantSignIn = AuditLog::create([
+            'user_id' => $dormant->id,
+            'action' => 'auth.login_succeeded',
+            'entity_type' => User::class,
+            'entity_id' => $dormant->id,
+        ]);
+        $dormantSignIn->forceFill(['created_at' => now()->subDays(91)])->saveQuietly();
+        $recentSignIn = AuditLog::create([
+            'user_id' => $recent->id,
+            'action' => 'auth.login_succeeded',
+            'entity_type' => User::class,
+            'entity_id' => $recent->id,
+        ]);
+        $recentSignIn->forceFill(['created_at' => now()->subDays(30)])->saveQuietly();
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.index', ['access_review' => 'dormant']))
+            ->assertOk()
+            ->assertSee('No sign-in in 90+ days')
+            ->assertSee('Showing accounts with no recorded successful sign-in')
+            ->assertSee('Never Signed In')
+            ->assertSee('Dormant Account')
+            ->assertSee('Never')
+            ->assertDontSee('Recent Account');
+
+        $this->assertTrue($neverSignedIn->fresh()->is_active);
+        $this->assertTrue($dormant->fresh()->is_active);
+        $this->get(route('admin.users.index', ['access_review' => 'invalid']))
+            ->assertSessionHasErrors('access_review');
+    }
+
     public function test_admin_can_reset_another_users_two_factor_with_audit_and_email(): void
     {
         Mail::fake();

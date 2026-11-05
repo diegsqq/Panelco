@@ -26,12 +26,32 @@ class UserController extends Controller
     {
         $filters = $request->validate([
             'two_factor' => ['nullable', Rule::in(['enabled', 'disabled'])],
+            'access_review' => ['nullable', Rule::in(['dormant'])],
         ]);
-        $query = User::with(['department', 'departments'])->latest();
+        $lastSuccessfulSignIn = AuditLog::query()
+            ->select('created_at')
+            ->where('entity_type', User::class)
+            ->whereColumn('entity_id', 'users.id')
+            ->where('action', 'auth.login_succeeded')
+            ->latest()
+            ->limit(1);
+        $query = User::with(['department', 'departments'])
+            ->select('users.*')
+            ->selectSub($lastSuccessfulSignIn, 'last_successful_sign_in_at')
+            ->latest('users.created_at');
         if (($filters['two_factor'] ?? null) === 'enabled') {
             $query->where('two_factor_enabled', true);
         } elseif (($filters['two_factor'] ?? null) === 'disabled') {
             $query->where('two_factor_enabled', false);
+        }
+        if (($filters['access_review'] ?? null) === 'dormant') {
+            $recentSuccessfulSignIns = AuditLog::query()
+                ->select('entity_id')
+                ->where('entity_type', User::class)
+                ->where('action', 'auth.login_succeeded')
+                ->whereNotNull('entity_id')
+                ->where('created_at', '>=', now()->subDays(90));
+            $query->whereNotIn('users.id', $recentSuccessfulSignIns);
         }
 
         $users = $query->paginate(15)->withQueryString();

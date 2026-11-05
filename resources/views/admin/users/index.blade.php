@@ -5,6 +5,11 @@
 <h4 class="mb-0">User Management</h4>
 <div class="d-flex align-items-center gap-2 ms-auto">
 <form method="GET" action="{{ route('admin.users.index') }}" class="d-flex align-items-center gap-2">
+<label for="accessReviewFilter" class="small text-muted text-nowrap">Access review</label>
+<select name="access_review" id="accessReviewFilter" class="form-select form-select-sm" onchange="this.form.submit()">
+<option value="">All accounts</option>
+<option value="dormant" @selected(($filters['access_review'] ?? '') === 'dormant')>No sign-in in 90+ days</option>
+</select>
 <label for="twoFactorFilter" class="small text-muted text-nowrap">2FA</label>
 <select name="two_factor" id="twoFactorFilter" class="form-select form-select-sm" onchange="this.form.submit()">
 <option value="">All users</option>
@@ -16,6 +21,9 @@
 <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#newUserModal"><i class="bi bi-person-plus-fill me-1"></i>New User</button>
 </div>
 </div>
+@if (($filters['access_review'] ?? '') === 'dormant')
+<div class="alert alert-info py-2">Showing accounts with no recorded successful sign-in within the last 90 days, including accounts with no sign-in history. Review each account before changing its access; no accounts are automatically deactivated.</div>
+@endif
 <div class="modal fade" id="newUserModal" tabindex="-1" aria-hidden="true">
 <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
 <div class="modal-content" style="border-radius:1rem;overflow:hidden">
@@ -70,7 +78,7 @@
 </div>
 <div class="card card-p3 p-0 overflow-hidden">
 <table class="table mb-0 align-middle">
-<thead class="table-light"><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>2FA</th><th>Department</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+<thead class="table-light"><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>2FA</th><th>Department</th><th>Last sign-in</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
 <tbody>
 @forelse ($users as $u)
 <tr>
@@ -78,11 +86,11 @@
 <td><span class="badge text-capitalize" style="background:#e6f3ea;color:var(--p3-navy)">{{ \App\Models\User::roleLabel($u->role) }}</span></td>
 <td><span class="badge {{ $u->is_active ? 'text-bg-success' : 'text-bg-secondary' }}">{{ $u->is_active ? 'Active' : 'Inactive' }}</span></td>
 <td><span class="badge {{ $u->two_factor_enabled ? 'text-bg-success' : 'text-bg-warning' }}">{{ $u->two_factor_enabled ? 'Enabled' : 'Not enabled' }}</span></td>
-<td>{{ $u->department?->name ?? '—' }}</td>
+<td>{{ $u->department?->name ?? '—' }}</td><td class="text-nowrap">{{ $u->last_successful_sign_in_at ? \Illuminate\Support\Carbon::parse($u->last_successful_sign_in_at)->format('M d, Y') : 'Never' }}</td>
 <td class="text-end"><a href="{{ route('admin.users.edit', $u) }}" class="btn btn-sm btn-outline-success">Edit</a></td>
 </tr>
 @empty
-<tr><td colspan="7" class="text-center text-muted p-4">No users yet.</td></tr>
+<tr><td colspan="8" class="text-center text-muted p-4">No users match these filters.</td></tr>
 @endforelse
 </tbody>
 </table>
