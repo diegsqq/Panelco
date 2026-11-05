@@ -38,6 +38,77 @@ class Phase3UploadTest extends TestCase
         Queue::assertPushed(ProcessDocument::class);
     }
 
+    public function test_exact_duplicate_upload_is_skipped_with_a_clear_warning(): void
+    {
+        $this->seed();
+        Storage::fake('private');
+        Queue::fake();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $contents = "Identical document contents for duplicate detection.\n";
+
+        $this->actingAs($employee)->post(route('documents.store'), [
+            'file' => UploadedFile::fake()->createWithContent('original.txt', $contents),
+        ])->assertRedirect(route('documents.library'));
+
+        $original = Document::where('original_filename', 'original.txt')->firstOrFail();
+        $this->assertSame(hash('sha256', $contents), $original->file_hash);
+
+        $this->actingAs($employee)->post(route('documents.store'), [
+            'file' => UploadedFile::fake()->createWithContent('renamed-copy.txt', $contents),
+        ])->assertRedirect(route('documents.library'))
+            ->assertSessionHas('warning', 'No new documents were uploaded. Skipped identical file(s): renamed-copy.txt.');
+
+        $this->assertSame(1, Document::count());
+        Queue::assertPushed(ProcessDocument::class, 1);
+    }
+
+    public function test_duplicate_files_in_a_batch_only_create_one_document(): void
+    {
+        $this->seed();
+        Storage::fake('private');
+        Queue::fake();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $contents = "Same document selected twice in one batch.";
+
+        $this->actingAs($employee)->post(route('documents.store'), [
+            'file' => [
+                UploadedFile::fake()->createWithContent('first.txt', $contents),
+                UploadedFile::fake()->createWithContent('second.txt', $contents),
+            ],
+        ])->assertRedirect(route('documents.library'))
+            ->assertSessionHas('status', 'Document uploaded and queued for processing.')
+            ->assertSessionHas('warning', 'Skipped identical file(s): second.txt.');
+
+        $this->assertSame(1, Document::count());
+        Queue::assertPushed(ProcessDocument::class, 1);
+    }
+
+    public function test_duplicate_detection_backfills_hash_for_legacy_document(): void
+    {
+        $this->seed();
+        Storage::fake('private');
+        Queue::fake();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $contents = 'Existing stored document with no hash yet.';
+        Storage::disk('private')->put('documents/legacy.txt', $contents);
+        $legacy = Document::create([
+            'uploaded_by' => $employee->id,
+            'original_filename' => 'legacy.txt',
+            'storage_path' => 'documents/legacy.txt',
+            'mime_type' => 'text/plain',
+            'file_size' => strlen($contents),
+            'processing_status' => 'completed',
+        ]);
+
+        $this->actingAs($employee)->post(route('documents.store'), [
+            'file' => UploadedFile::fake()->createWithContent('legacy-copy.txt', $contents),
+        ])->assertRedirect(route('documents.library'))
+            ->assertSessionHas('warning');
+
+        $this->assertSame(hash('sha256', $contents), $legacy->fresh()->file_hash);
+        $this->assertSame(1, Document::count());
+    }
+
     public function test_unsupported_file_rejected(): void
     {
         $this->seed();

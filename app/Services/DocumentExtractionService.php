@@ -65,19 +65,53 @@ class DocumentExtractionService
         }
 
         $pages = [];
+        $scannedPages = [];
         foreach ($pdf->getPages() as $i => $page) {
             $text = trim(preg_replace('/\s+/', ' ', (string) $page->getText()));
             if ($text !== '') {
                 $pages[$i + 1] = $text;
+            } else {
+                $scannedPages[] = $i + 1;
             }
         }
 
+        if ($scannedPages !== []) {
+            if (! $this->pdfOcrAvailable()) {
+                if ($pages === []) {
+                    throw new ExtractionFailedException(
+                        'This PDF appears to be a scanned document, but OCR is unavailable. Install Tesseract OCR and Poppler (pdftoppm), then retry.'
+                    );
+                }
+
+                throw new ExtractionFailedException(
+                    'Some PDF pages appear to be scanned, but OCR is unavailable. Install Tesseract OCR and Poppler (pdftoppm), then retry.'
+                );
+            }
+
+            foreach ($scannedPages as $pageNumber) {
+                $imagePath = $this->renderPdfPage($path, $pageNumber);
+                if ($imagePath !== null) {
+                    try {
+                        $text = $this->ocrFile($imagePath);
+                    } finally {
+                        @unlink($imagePath);
+                    }
+
+                    if ($text !== '') {
+                        $pages[$pageNumber] = trim(preg_replace('/\s+/', ' ', $text));
+                    }
+                }
+            }
+        }
+
+        ksort($pages);
         $full = trim(implode("\n\n", $pages));
 
         if ($full === '') {
             throw new ExtractionFailedException(
-                'The document was found, but its contents could not be extracted. It may be a scanned image — ' .
-                'please upload a readable (text-based) copy or scan it again.'
+                $scannedPages !== []
+                    ? 'The scanned PDF could not be read by OCR. Please upload a clearer scan.'
+                    : 'The document was found, but its contents could not be extracted. Please upload a readable copy.'
             );
         }
 
@@ -170,6 +204,50 @@ class DocumentExtractionService
     public function ocrAvailable(): bool
     {
         return $this->ocrBinary() !== null;
+    }
+
+    public function pdfOcrAvailable(): bool
+    {
+        return $this->ocrBinary() !== null && $this->pdfRendererBinary() !== null;
+    }
+
+    private function renderPdfPage(string $path, int $pageNumber): ?string
+    {
+        $binary = $this->pdfRendererBinary();
+        if ($binary === null) {
+            return null;
+        }
+
+        $prefix = tempnam(sys_get_temp_dir(), 'pdfocr');
+        if ($prefix === false) {
+            throw new ExtractionFailedException('A temporary file could not be created for PDF OCR.');
+        }
+        @unlink($prefix);
+
+        $output = [];
+        $code = 0;
+        $command = escapeshellarg($binary)
+            . ' -f ' . $pageNumber
+            . ' -l ' . $pageNumber
+            . ' -singlefile -png -r 300 '
+            . escapeshellarg($path) . ' '
+            . escapeshellarg($prefix) . ' 2>&1';
+
+        try {
+            exec($command, $output, $code);
+        } catch (\Throwable $e) {
+            throw new ExtractionFailedException('The PDF page could not be rendered for OCR.');
+        }
+
+        $imagePath = $prefix . '.png';
+        if ($code !== 0 || ! is_file($imagePath)) {
+            @unlink($imagePath);
+            throw new ExtractionFailedException(
+                'PDF page ' . $pageNumber . ' could not be rendered for OCR. Verify the Poppler (pdftoppm) installation and retry.'
+            );
+        }
+
+        return $imagePath;
     }
 
     private function ocrFile(string $path): string
@@ -283,5 +361,19 @@ class DocumentExtractionService
         @exec('tesseract --version 2>&1', $probe, $code);
 
         return $code === 0 ? 'tesseract' : null;
+    }
+
+    private function pdfRendererBinary(): ?string
+    {
+        $configured = config('smartdocs.ocr.pdf_renderer_binary');
+        if (is_string($configured) && $configured !== '' && is_file($configured)) {
+            return $configured;
+        }
+
+        $probe = [];
+        $code = 0;
+        @exec('pdftoppm -v 2>&1', $probe, $code);
+
+        return $code === 0 ? 'pdftoppm' : null;
     }
 }

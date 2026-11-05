@@ -41,6 +41,7 @@ class UploadSuggester
         $result = [
             'title' => $this->titleFromFilename($file->getClientOriginalName()),
             'category_id' => null,
+            'category_reason' => null,
             'document_date' => $this->creationDate($file, $clientTimestamp),
             'text_found' => false,
         ];
@@ -61,23 +62,52 @@ class UploadSuggester
         $metadata = $this->suggestFromText($text);
         $result['title'] = $metadata['title'] ?? $result['title'];
         $result['category_id'] = $metadata['category_id'];
+        $result['category_reason'] = $metadata['category_reason'];
         $result['document_date'] = $metadata['document_date'] ?? $result['document_date'];
 
         return $result;
     }
 
     /**
-     * @return array{title: ?string, category_id: ?int, document_date: ?string}
+     * @return array{title: ?string, category_id: ?int, category_reason: ?string, document_date: ?string, reference_number: ?string, sender: ?string, recipient: ?string}
      */
     public function suggestFromText(string $text): array
     {
         $text = trim($text);
+        $categorySuggestion = $text !== '' ? $this->recommender->suggest($text) : null;
 
         return [
             'title' => $text !== '' ? $this->titleFromText($text) : null,
-            'category_id' => $text !== '' ? ($this->recommender->suggest($text)['category_id'] ?? null) : null,
+            'category_id' => $categorySuggestion['category_id'] ?? null,
+            'category_reason' => ! empty($categorySuggestion['matched_keywords'])
+                ? 'Matched extracted text keywords: ' . implode(', ', $categorySuggestion['matched_keywords'])
+                : null,
             'document_date' => $text !== '' ? $this->detectDate($text) : null,
+            'reference_number' => $this->extractLabeledValue($text, [
+                'reference\\s*(?:no\\.?|number|#)',
+                'ref\\.?\\s*(?:no\\.?|#)',
+            ]),
+            'sender' => $this->extractLabeledValue($text, ['sender', 'from']),
+            'recipient' => $this->extractLabeledValue($text, ['recipient', 'to']),
         ];
+    }
+
+    /**
+     * Extract a value only when the document explicitly labels it.
+     *
+     * @param  list<string>  $labels
+     */
+    private function extractLabeledValue(string $text, array $labels): ?string
+    {
+        foreach ($labels as $label) {
+            if (preg_match('/^\\s*(?:' . $label . ')\\s*[:#-]\\s*(.{1,255}?)\\s*$/im', $text, $match)) {
+                $value = trim($match[1], " \t\n\r\0\x0B:;#-");
+
+                return $value !== '' ? $value : null;
+            }
+        }
+
+        return null;
     }
 
     /**

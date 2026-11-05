@@ -33,6 +33,7 @@ Route::get('/library/{document}/pdf', [App\Http\Controllers\DocumentController::
     Route::post('/library/{document}/retry', [App\Http\Controllers\DocumentController::class, 'retry'])->name('documents.retry');
     Route::post('/library/{document}/ask', [App\Http\Controllers\ChatController::class, 'askDocument'])->name('documents.ask');
     Route::post('/library/{document}/approve', [App\Http\Controllers\DocumentController::class, 'approve'])->name('documents.approve');
+    Route::post('/library/{document}/reject-classification', [App\Http\Controllers\DocumentController::class, 'rejectClassification'])->name('documents.reject-classification');
     Route::delete('/library/{document}', [App\Http\Controllers\DocumentController::class, 'destroy'])->name('documents.destroy');
     Route::get('/queue', [App\Http\Controllers\DocumentController::class, 'queue'])->name('queue.index');
 

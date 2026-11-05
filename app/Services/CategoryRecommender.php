@@ -12,7 +12,7 @@ use App\Models\DocumentCategory;
 class CategoryRecommender
 {
     /**
-     * @return array{category_id: ?int, score: int}|null
+     * @return array{category_id: ?int, score: int, matched_keywords: list<string>}|null
      */
     public function suggest(string $text): ?array
     {
@@ -31,20 +31,24 @@ class CategoryRecommender
                 $normalizedKeyword = $this->normalize($kw);
                 if ($normalizedKeyword !== '' && ! isset($matched[$normalizedKeyword])
                     && str_contains($normalizedText, ' '.$normalizedKeyword.' ')) {
-                    $matched[$normalizedKeyword] = true;
+                    $matched[$normalizedKeyword] = trim($kw);
                     $score += mb_strlen($normalizedKeyword);
                 }
             }
 
             if ($score > 0 && ($best === null || $score > $best['score'])) {
-                $best = ['category_id' => $category->id, 'score' => $score];
+                $best = [
+                    'category_id' => $category->id,
+                    'score' => $score,
+                    'matched_keywords' => array_values($matched),
+                ];
             }
         }
 
         if ($best === null) {
             $other = DocumentCategory::where('name', 'Other Documents')->first();
             if ($other) {
-                return ['category_id' => $other->id, 'score' => 0];
+                return ['category_id' => $other->id, 'score' => 0, 'matched_keywords' => []];
             }
         }
 

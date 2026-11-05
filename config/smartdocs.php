@@ -18,6 +18,7 @@ return [
     // Leave null to auto-detect `tesseract` on PATH.
     'ocr' => [
         'binary' => env('OCR_BINARY'),
+        'pdf_renderer_binary' => env('PDF_RENDERER_BINARY'),
     ],
 
     'chunk' => [

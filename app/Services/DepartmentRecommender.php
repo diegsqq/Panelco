@@ -7,12 +7,13 @@ use App\Models\Department;
 class DepartmentRecommender
 {
     /**
-     * @return array{department_id: int, confidence: float}|null
+     * @return array{department_id: int, confidence: float, matched_keywords: list<string>}|null
      */
     public function suggest(string $text): ?array
     {
         $normalizedText = ' '.$this->normalize($text).' ';
         $scores = [];
+        $matchedKeywords = [];
 
         foreach (Department::query()->whereNotNull('keywords')->get() as $department) {
             $score = 0;
@@ -22,13 +23,14 @@ class DepartmentRecommender
                 $normalizedKeyword = $this->normalize($keyword);
                 if ($normalizedKeyword !== '' && ! isset($matched[$normalizedKeyword])
                     && str_contains($normalizedText, ' '.$normalizedKeyword.' ')) {
-                    $matched[$normalizedKeyword] = true;
+                    $matched[$normalizedKeyword] = trim($keyword);
                     $score += mb_strlen($normalizedKeyword);
                 }
             }
 
             if ($score > 0) {
                 $scores[$department->id] = $score;
+                $matchedKeywords[$department->id] = array_values($matched);
             }
         }
 
@@ -50,6 +52,7 @@ class DepartmentRecommender
         return [
             'department_id' => $departmentId,
             'confidence' => round($confidence, 4),
+            'matched_keywords' => $matchedKeywords[$departmentId],
         ];
     }
 

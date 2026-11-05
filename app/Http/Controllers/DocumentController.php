@@ -7,6 +7,7 @@ use App\Models\AuditLog;
 use App\Models\Department;
 use App\Models\Document;
 use App\Models\DocumentCategory;
+use App\Services\DuplicateDocumentDetector;
 use App\Services\UploadSuggester;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -180,6 +181,9 @@ class DocumentController extends Controller
             'category_id' => ['nullable', 'exists:document_categories,id'],
             'department_id' => ['nullable', 'exists:departments,id'],
             'document_date' => ['nullable', 'date'],
+            'reference_number' => ['nullable', 'string', 'max:255'],
+            'sender' => ['nullable', 'string', 'max:255'],
+            'recipient' => ['nullable', 'string', 'max:255'],
         ]);
 
         // Department drives who can see the document — only managers/admins
@@ -188,6 +192,9 @@ class DocumentController extends Controller
             'title' => trim((string) ($data['title'] ?? '')) !== '' ? $data['title'] : null,
             'category_id' => $data['category_id'] ?? null,
             'document_date' => $data['document_date'] ?? null,
+            'reference_number' => $data['reference_number'] ?? null,
+            'sender' => $data['sender'] ?? null,
+            'recipient' => $data['recipient'] ?? null,
         ];
         if ($request->user()->isManager()) {
             $payload['department_id'] = $data['department_id'] ?? null;
@@ -257,7 +264,16 @@ class DocumentController extends Controller
         }
 
         $count = 0;
+        $duplicates = [];
+        $duplicateDetector = app(DuplicateDocumentDetector::class);
         foreach ($files as $file) {
+            $fileHash = $duplicateDetector->hash($file);
+            if ($duplicateDetector->exists($fileHash, $file->getSize())) {
+                $duplicates[] = $file->getClientOriginalName();
+
+                continue;
+            }
+
             $path = $file->store('documents/' . now()->format('Y/m'), 'private');
 
             $docTitle = $single && $title !== '' ? $title : null;
@@ -267,6 +283,7 @@ class DocumentController extends Controller
                 'title' => $docTitle,
                 'original_filename' => $file->getClientOriginalName(),
                 'storage_path' => $path,
+                'file_hash' => $fileHash,
                 'mime_type' => $file->getMimeType(),
                 'file_size' => $file->getSize(),
                 'department_id' => $request->user()->department_id,
@@ -289,17 +306,32 @@ class DocumentController extends Controller
             $count++;
         }
 
-        return redirect()->route('documents.library')
-            ->with('status', $count === 1
+        $response = redirect()->route('documents.library');
+        if ($count > 0) {
+            $response->with('status', $count === 1
                 ? 'Document uploaded and queued for processing.'
                 : $count . ' documents uploaded and queued for processing.');
+        }
+        if ($duplicates !== []) {
+            $response->with('warning', ($count === 0 ? 'No new documents were uploaded. ' : '')
+                . 'Skipped identical file(s): ' . implode(', ', $duplicates) . '.');
+        }
+
+        return $response;
     }
 
     public function show(Document $document): View
     {
         $this->authorize('view', $document);
-        $document->load(['category', 'suggestedCategory', 'department', 'suggestedDepartment', 'uploader', 'approver', 'chunks']);
+        $document->load(['category', 'suggestedCategory', 'department', 'suggestedDepartment', 'uploader', 'approver', 'classificationReviewer', 'chunks']);
         $categories = DocumentCategory::orderBy('name')->get();
+        $departmentQuery = Department::orderBy('name');
+        if (! auth()->user()->isAdmin()) {
+            $allowedDepartmentIds = auth()->user()->departments()->pluck('departments.id')
+                ->push(auth()->user()->department_id)->filter()->unique()->values();
+            $departmentQuery->whereIn('id', $allowedDepartmentIds);
+        }
+        $departments = $departmentQuery->get();
 
         $highlightedHtml = null;
         if ($document->extracted_text) {
@@ -328,7 +360,7 @@ class DocumentController extends Controller
                 ->verify($document->summary, $document->extracted_text);
         }
 
-        return view('documents.show', compact('document', 'categories', 'highlightedHtml', 'details', 'correctiveActions', 'tables', 'summaryCheck'));
+        return view('documents.show', compact('document', 'categories', 'departments', 'highlightedHtml', 'details', 'correctiveActions', 'tables', 'summaryCheck'));
     }
 
     public function download(Document $document): StreamedResponse
@@ -476,24 +508,93 @@ class DocumentController extends Controller
         $this->authorize('approve', $document);
 
         $data = $request->validate([
-            'category_id' => ['required', 'exists:document_categories,id'],
+            'category_id' => ['nullable', 'required_without:department_id', 'exists:document_categories,id'],
+            'department_id' => ['nullable', 'required_without:category_id', 'exists:departments,id'],
+            'review_note' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $document->update([
-            'category_id' => $data['category_id'],
-            'approved_at' => now(),
+        if (! $request->user()->isAdmin() && ! empty($data['department_id'])
+            && ! $request->user()->canAccessDepartment((int) $data['department_id'])) {
+            return back()->withErrors([
+                'department_id' => 'You cannot assign this document to a department you cannot access.',
+            ])->withInput();
+        }
+
+        $reviewedAt = now();
+        $updates = [
+            'approved_at' => $reviewedAt,
             'approved_by' => $request->user()->id,
-        ]);
+            'classification_review_status' => 'approved',
+            'classification_reviewed_at' => $reviewedAt,
+            'classification_reviewed_by' => $request->user()->id,
+            'classification_review_note' => $data['review_note'] ?? null,
+        ];
+        if (array_key_exists('category_id', $data)) {
+            $updates['category_id'] = $data['category_id'];
+        }
+        if (array_key_exists('department_id', $data)) {
+            $updates['department_id'] = $data['department_id'];
+        }
+        $document->update($updates);
 
         AuditLog::create([
             'user_id' => $request->user()->id,
             'action' => 'document.classification_approved',
             'entity_type' => Document::class,
             'entity_id' => $document->id,
-            'metadata' => ['category_id' => $data['category_id']],
+            'metadata' => [
+                'suggested_category_id' => $document->suggested_category_id,
+                'suggested_department_id' => $document->suggested_department_id,
+                'suggested_category_reason' => $document->suggested_category_reason,
+                'suggested_department_reason' => $document->suggested_department_reason,
+                'category_confidence' => $document->classification_confidence,
+                'department_confidence' => $document->department_classification_confidence,
+                'category_id' => $document->category_id,
+                'department_id' => $document->department_id,
+                'review_note' => $data['review_note'] ?? null,
+            ],
         ]);
 
-        return back()->with('status', 'Classification approved.');
+        return back()->with('status', 'Classification review saved.');
+    }
+
+    public function rejectClassification(Request $request, Document $document): RedirectResponse
+    {
+        $this->authorize('approve', $document);
+
+        if ($document->suggested_category_id === null && $document->suggested_department_id === null) {
+            return back()->withErrors(['classification' => 'There are no suggestions to reject.']);
+        }
+
+        $data = $request->validate([
+            'review_note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $reviewedAt = now();
+        $document->update([
+            'classification_review_status' => 'rejected',
+            'classification_reviewed_at' => $reviewedAt,
+            'classification_reviewed_by' => $request->user()->id,
+            'classification_review_note' => $data['review_note'] ?? null,
+        ]);
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'document.classification_rejected',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+            'metadata' => [
+                'suggested_category_id' => $document->suggested_category_id,
+                'suggested_department_id' => $document->suggested_department_id,
+                'category_confidence' => $document->classification_confidence,
+                'department_confidence' => $document->department_classification_confidence,
+                'suggested_category_reason' => $document->suggested_category_reason,
+                'suggested_department_reason' => $document->suggested_department_reason,
+                'review_note' => $data['review_note'] ?? null,
+            ],
+        ]);
+
+        return back()->with('status', 'Classification suggestions rejected.');
     }
 
     public function destroy(Document $document): RedirectResponse

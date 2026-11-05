@@ -94,6 +94,22 @@ class Phase4ExtractionTest extends TestCase
         $this->assertEquals('Maintenance Reports', $doc->suggestedCategory->name);
     }
 
+    public function test_processing_extracts_labeled_reference_sender_and_recipient(): void
+    {
+        $this->seed();
+        $emp = User::where('email', 'employee@panelco3.local')->first();
+        $text = "Office Memorandum\nReference No.: ADM-2026-041\nFrom: Administration Office\nTo: Records Unit\nDate: March 5, 2026\n";
+        $doc = $this->makeDoc($emp, 'metadata.txt', $text, 'text/plain');
+
+        $this->runJob($doc);
+
+        $doc->refresh();
+        $this->assertSame('ADM-2026-041', $doc->reference_number);
+        $this->assertSame('Administration Office', $doc->sender);
+        $this->assertSame('Records Unit', $doc->recipient);
+        $this->assertSame('2026-03-05', $doc->document_date->toDateString());
+    }
+
     public function test_pdf_extracts_with_page_numbers(): void
     {
         $this->seed();
@@ -179,5 +195,22 @@ class Phase4ExtractionTest extends TestCase
         } else {
             $this->assertContains($doc->processing_status, ['completed', 'failed']);
         }
+    }
+
+    public function test_scanned_pdf_without_ocr_tools_reports_the_missing_requirements(): void
+    {
+        if (app(DocumentExtractionService::class)->pdfOcrAvailable()) {
+            $this->markTestSkipped('This environment has PDF OCR tools installed.');
+        }
+
+        $this->seed();
+        $emp = User::where('email', 'employee@panelco3.local')->first();
+        $doc = $this->makeDoc($emp, 'scanned.pdf', $this->minimalPdf(''), 'application/pdf');
+
+        $this->runJob($doc);
+
+        $doc->refresh();
+        $this->assertSame('failed', $doc->processing_status);
+        $this->assertStringContainsString('Tesseract OCR and Poppler (pdftoppm)', $doc->processing_error);
     }
 }

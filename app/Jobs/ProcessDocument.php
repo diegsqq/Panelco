@@ -62,8 +62,19 @@ class ProcessDocument implements ShouldQueue
                 : ($metadata['title'] ?? $suggester->titleFromFilename($document->original_filename)),
             'document_type' => $document->document_type ?? $this->guessType($document),
             'suggested_category_id' => $metadata['category_id'],
+            'suggested_category_reason' => $metadata['category_reason'],
             'suggested_department_id' => $departmentSuggestion['department_id'] ?? null,
+            'suggested_department_reason' => ! empty($departmentSuggestion['matched_keywords'])
+                ? 'Matched department keywords in extracted text: ' . implode(', ', $departmentSuggestion['matched_keywords'])
+                : null,
+            'reference_number' => $document->reference_number ?: $metadata['reference_number'],
+            'sender' => $document->sender ?: $metadata['sender'],
+            'recipient' => $document->recipient ?: $metadata['recipient'],
             'department_classification_confidence' => $departmentSuggestion['confidence'] ?? null,
+            'classification_review_status' => 'pending',
+            'classification_reviewed_at' => null,
+            'classification_reviewed_by' => null,
+            'classification_review_note' => null,
             'processing_status' => 'completed',
             'processing_error' => null,
         ];
@@ -97,6 +108,7 @@ class ProcessDocument implements ShouldQueue
                     if ($match) {
                         $updates['suggested_category_id'] = $match->id;
                         $updates['classification_confidence'] = $classified['confidence'];
+                        $updates['suggested_category_reason'] = 'AI model recommendation based on extracted document text.';
                     }
                 }
             } catch (\Throwable $e) {

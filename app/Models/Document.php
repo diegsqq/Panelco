@@ -14,13 +14,16 @@ class Document extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'uploaded_by', 'title', 'original_filename', 'storage_path',
+        'uploaded_by', 'title', 'original_filename', 'storage_path', 'file_hash',
         'mime_type', 'file_size', 'document_type', 'department_id',
         'category_id', 'suggested_category_id', 'suggested_department_id',
         'department_classification_confidence',
         'document_date', 'summary', 'keywords', 'extracted_text',
         'processing_status', 'processing_error', 'classification_confidence',
-        'approved_at', 'approved_by',
+        'approved_at', 'approved_by', 'classification_review_status',
+        'classification_reviewed_at', 'classification_reviewed_by', 'classification_review_note',
+        'suggested_category_reason', 'suggested_department_reason',
+        'reference_number', 'sender', 'recipient',
     ];
 
     protected function casts(): array
@@ -28,6 +31,7 @@ class Document extends Model
         return [
             'document_date' => 'date',
             'approved_at' => 'datetime',
+            'classification_reviewed_at' => 'datetime',
             'classification_confidence' => 'decimal:4',
             'department_classification_confidence' => 'decimal:4',
         ];
@@ -51,6 +55,11 @@ class Document extends Model
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function classificationReviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'classification_reviewed_by');
     }
 
     public function department(): BelongsTo

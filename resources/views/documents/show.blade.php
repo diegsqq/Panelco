@@ -22,8 +22,17 @@
 <dt class="col-sm-4"><i class="bi bi-tags me-1" style="color:#00A868"></i>Category</dt><dd class="col-sm-8">{{ $document->category?->name ?? $document->suggestedCategory?->name ?? '—' }}@if(!$document->category && $document->suggestedCategory) <span class="text-muted">suggested{{ $document->classification_confidence !== null ? ' · ' . round($document->classification_confidence * 100) . '%' : '' }}</span>@endif</dd>
 <dt class="col-sm-4"><i class="bi bi-building me-1" style="color:#00A868"></i>Department</dt><dd class="col-sm-8">{{ $document->department?->name ?? $document->suggestedDepartment?->name ?? '—' }}@if(!$document->department && $document->suggestedDepartment) <span class="text-muted">suggested{{ $document->department_classification_confidence !== null ? ' · ' . round($document->department_classification_confidence * 100) . '% match' : '' }}</span>@endif</dd>
 <dt class="col-sm-4"><i class="bi bi-calendar me-1" style="color:#00A868"></i>Document date</dt><dd class="col-sm-8">{{ $document->document_date?->format('Y-m-d') ?? '—' }}</dd>
+@if($document->reference_number)<dt class="col-sm-4"><i class="bi bi-hash me-1" style="color:#00A868"></i>Reference number</dt><dd class="col-sm-8">{{ $document->reference_number }}</dd>@endif
+@if($document->sender)<dt class="col-sm-4"><i class="bi bi-send me-1" style="color:#00A868"></i>Sender</dt><dd class="col-sm-8">{{ $document->sender }}</dd>@endif
+@if($document->recipient)<dt class="col-sm-4"><i class="bi bi-inbox me-1" style="color:#00A868"></i>Recipient</dt><dd class="col-sm-8">{{ $document->recipient }}</dd>@endif
 <dt class="col-sm-4"><i class="bi bi-cloud-upload me-1" style="color:#00A868"></i>Uploaded</dt><dd class="col-sm-8">{{ $document->created_at->format('M d, Y') }} by {{ $document->uploader?->name ?? '—' }}</dd>
-<dt class="col-sm-4"><i class="bi bi-check-circle me-1" style="color:#00A868"></i>Approved</dt><dd class="col-sm-8">{{ $document->approved_at ? $document->approved_at->format('M d, Y') . ' by ' . ($document->approver?->name ?? '—') : '—' }}</dd>
+@if($document->suggestedCategory || $document->suggestedDepartment || $document->classification_reviewed_at)
+<dt class="col-sm-4"><i class="bi bi-check-circle me-1" style="color:#00A868"></i>Classification review</dt><dd class="col-sm-8">
+<span class="badge {{ $document->classification_review_status === 'approved' ? 'text-bg-success' : ($document->classification_review_status === 'rejected' ? 'text-bg-secondary' : 'text-bg-warning') }}">{{ ucfirst($document->classification_review_status ?? 'pending') }}</span>
+@if($document->classification_reviewed_at)<span class="text-muted"> · {{ $document->classification_reviewed_at->format('M d, Y') }} by {{ $document->classificationReviewer?->name ?? '—' }}</span>@endif
+@if($document->classification_review_note)<div class="text-muted mt-1">{{ $document->classification_review_note }}</div>@endif
+</dd>
+@endif
 <dt class="col-sm-4"><i class="bi bi-key me-1" style="color:#00A868"></i>Keywords</dt><dd class="col-sm-8">@if($document->keywords)@foreach(array_filter(array_map('trim', explode(',', $document->keywords))) as $kw)<span class="badge me-1 mb-1" style="background:#e6f3ea;color:#00743F">{{ $kw }}</span>@endforeach @endif</dd>
 @if ($document->processing_error)<dt class="col-sm-4"><i class="bi bi-exclamation-triangle me-1" style="color:#dc3545"></i>Error</dt><dd class="col-sm-8 text-danger">{{ $document->processing_error }}</dd>@endif
 </dl>
@@ -137,6 +146,53 @@
 @can('delete', $document)<form method="POST" action="{{ route('documents.destroy', $document) }}" id="deleteDocForm">@csrf @method('DELETE')<button type="button" class="btn btn-outline-danger btn-sm w-100" data-bs-toggle="modal" data-bs-target="#deleteDocModal"><i class="bi bi-trash me-1"></i>Delete</button></form>@endcan
 </div>
 </div>
+
+@if ($document->suggestedCategory || $document->suggestedDepartment)
+@can('approve', $document)
+<div class="card card-p3 p-3">
+<h6 class="fw-bold"><i class="bi bi-clipboard-check me-1" style="color:#00A868"></i>Classification review</h6>
+<p class="small text-muted mb-3">Suggestions are based on extracted document text and configured matching signals. Confidence is a guide, not a guarantee. Review the document before confirming.</p>
+@if ($document->suggestedCategory)
+<div class="small mb-1"><span class="fw-semibold">Suggested category:</span> {{ $document->suggestedCategory->name }}
+@if ($document->classification_confidence !== null)<span class="text-muted"> · {{ round($document->classification_confidence * 100) }}% confidence</span>@else<span class="text-muted"> · keyword suggestion</span>@endif
+@if ($document->suggested_category_reason)<div class="text-muted">{{ $document->suggested_category_reason }}</div>@endif
+</div>
+@endif
+@if ($document->suggestedDepartment)
+<div class="small mb-3"><span class="fw-semibold">Suggested department:</span> {{ $document->suggestedDepartment->name }}
+@if ($document->department_classification_confidence !== null)<span class="text-muted"> · {{ round($document->department_classification_confidence * 100) }}% match</span>@endif
+@if ($document->suggested_department_reason)<div class="text-muted">{{ $document->suggested_department_reason }}</div>@endif
+</div>
+@endif
+<form method="POST" action="{{ route('documents.approve', $document) }}" class="mb-2">
+@csrf
+<label class="form-label small fw-semibold" for="review_category_id">Confirm or correct category</label>
+<select id="review_category_id" name="category_id" class="form-select form-select-sm mb-2">
+<option value="">— No category —</option>
+@foreach ($categories as $category)
+<option value="{{ $category->id }}" @selected((string) old('category_id', $document->suggested_category_id ?? $document->category_id) === (string) $category->id)>{{ $category->name }}</option>
+@endforeach
+</select>
+<label class="form-label small fw-semibold" for="review_department_id">Confirm or correct department</label>
+<select id="review_department_id" name="department_id" class="form-select form-select-sm mb-2">
+<option value="">— No department —</option>
+@foreach ($departments as $department)
+<option value="{{ $department->id }}" @selected((string) old('department_id', $document->suggested_department_id ?? $document->department_id) === (string) $department->id)>{{ $department->name }}</option>
+@endforeach
+</select>
+<label class="form-label small fw-semibold" for="approval_review_note">Review note (optional)</label>
+<textarea id="approval_review_note" name="review_note" class="form-control form-control-sm mb-2" rows="2" maxlength="1000">{{ old('review_note') }}</textarea>
+<button class="btn btn-sm btn-outline-success w-100"><i class="bi bi-check-lg me-1"></i>Approve classification</button>
+</form>
+<form method="POST" action="{{ route('documents.reject-classification', $document) }}">
+@csrf
+<label class="form-label small fw-semibold" for="rejection_review_note">Reason for rejection (optional)</label>
+<textarea id="rejection_review_note" name="review_note" class="form-control form-control-sm mb-2" rows="2" maxlength="1000"></textarea>
+<button class="btn btn-sm btn-outline-secondary w-100"><i class="bi bi-x-lg me-1"></i>Reject suggestions</button>
+</form>
+</div>
+@endcan
+@endif
 
 <div class="card card-p3 p-3">
 <h6 class="fw-bold"><i class="bi bi-lightning-charge-fill me-1" style="color:#00A868"></i>Ask Lightning about this document</h6>

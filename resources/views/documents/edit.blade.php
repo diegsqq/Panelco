@@ -55,6 +55,21 @@
                     <input id="document_date" name="document_date" type="date" class="form-control @error('document_date') is-invalid @enderror" value="{{ old('document_date', $document->document_date?->format('Y-m-d')) }}">
                     @error('document_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="reference_number">Reference number</label>
+                    <input id="reference_number" name="reference_number" class="form-control @error('reference_number') is-invalid @enderror" value="{{ old('reference_number', $document->reference_number) }}" maxlength="255">
+                    @error('reference_number')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="sender">Sender</label>
+                    <input id="sender" name="sender" class="form-control @error('sender') is-invalid @enderror" value="{{ old('sender', $document->sender) }}" maxlength="255">
+                    @error('sender')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="recipient">Recipient</label>
+                    <input id="recipient" name="recipient" class="form-control @error('recipient') is-invalid @enderror" value="{{ old('recipient', $document->recipient) }}" maxlength="255">
+                    @error('recipient')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
             </div>
 
             <div class="d-flex flex-wrap gap-2 mt-4">
