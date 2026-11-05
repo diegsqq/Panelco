@@ -15,7 +15,7 @@
     </div>
 
     <div class="card card-p3 p-4">
-        <form method="POST" action="{{ route('documents.update', $document) }}">
+        <form method="POST" action="{{ route('documents.update', $document) }}" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -56,6 +56,12 @@
                     @error('document_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="expiration_date">Expiration date <span class="text-muted fw-normal">(optional)</span></label>
+                    <input id="expiration_date" name="expiration_date" type="date" class="form-control @error('expiration_date') is-invalid @enderror" value="{{ old('expiration_date', $document->expiration_date?->format('Y-m-d')) }}">
+                    @error('expiration_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <div class="form-text">Set a reminder date; SmartDocs will not automatically archive or delete the document.</div>
+                </div>
+                <div class="col-md-6">
                     <label class="form-label fw-semibold" for="reference_number">Reference number</label>
                     <input id="reference_number" name="reference_number" class="form-control @error('reference_number') is-invalid @enderror" value="{{ old('reference_number', $document->reference_number) }}" maxlength="255">
                     @error('reference_number')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -72,6 +78,13 @@
                 </div>
             </div>
 
+            <div class="mt-4">
+                <label class="form-label fw-semibold" for="file">Replace file <span class="text-muted fw-normal">(optional)</span></label>
+                <input id="file" name="file" type="file" class="form-control @error('file') is-invalid @enderror" accept=".{{ implode(',.', config('smartdocs.upload.allowed_extensions')) }}">
+                @error('file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                <div class="form-text">The current file will be retained in version history. Replacing it resets extracted results and queues the new version for processing.</div>
+            </div>
+
             <div class="d-flex flex-wrap gap-2 mt-4">
                 <button class="btn px-4" style="background:#ffffff;color:#00A868;border:1px solid #00A868;font-weight:700"><i class="bi bi-check-lg me-1"></i>Save changes</button>
                 <a href="{{ route('documents.show', $document) }}" class="btn btn-link">Cancel</a>
@@ -82,12 +95,13 @@
     <div class="card card-p3 p-4 mt-3">
         <h6 class="fw-bold mb-3">File</h6>
         <dl class="row small mb-0">
+            <dt class="col-sm-4 text-muted">Version</dt><dd class="col-sm-8">{{ $document->version_number }}</dd>
             <dt class="col-sm-4 text-muted">Filename</dt><dd class="col-sm-8">{{ $document->original_filename }}</dd>
             <dt class="col-sm-4 text-muted">Type</dt><dd class="col-sm-8">{{ $document->mime_type ?? '—' }}</dd>
             <dt class="col-sm-4 text-muted">Size</dt><dd class="col-sm-8">{{ number_format($document->file_size / 1024, 1) }} KB</dd>
             <dt class="col-sm-4 text-muted">Status</dt><dd class="col-sm-8">{{ ucfirst($document->processing_status ?? 'pending') }}</dd>
         </dl>
-        <div class="form-text mt-2">The uploaded file itself cannot be replaced here — upload a new document to swap the file.</div>
+        <div class="form-text mt-2">Previous files remain available from the document's version history.</div>
     </div>
 
 </div>

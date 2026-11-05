@@ -51,6 +51,9 @@
                 <h3 class="fw-bold mb-0">{{ auth()->user()->role === \App\Models\User::ROLE_EMPLOYEE ? 'Your documents' : 'Documents' }}</h3>
                 <small class="text-muted">{{ number_format($documents->total()) }} {{ \Illuminate\Support\Str::plural('document', $documents->total()) }}</small>
             </div>
+            @if(auth()->user()->isManager())
+                <a href="{{ route('documents.trash') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-trash3 me-1"></i>Recycle bin</a>
+            @endif
             <form method="GET" action="{{ route('documents.library') }}" class="d-flex flex-wrap align-items-center gap-2 ms-auto" role="search">
                 <div class="input-group input-group-sm" style="width:min(18rem, 55vw)">
                     <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>

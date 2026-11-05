@@ -11,7 +11,7 @@ class Conversation extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'title', 'document_id'];
+    protected $fillable = ['user_id', 'title', 'document_id', 'comparison_document_id'];
 
     public function user(): BelongsTo
     {
@@ -21,6 +21,11 @@ class Conversation extends Model
     public function document(): BelongsTo
     {
         return $this->belongsTo(Document::class);
+    }
+
+    public function comparisonDocument(): BelongsTo
+    {
+        return $this->belongsTo(Document::class, 'comparison_document_id');
     }
 
     public function messages(): HasMany

@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\EnsureUserIsActive::class,
+            \App\Http\Middleware\EnsurePasswordSessionIsCurrent::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

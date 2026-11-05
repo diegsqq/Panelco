@@ -1,9 +1,20 @@
 @extends('layouts.app')
 @section('content')
 @php $openForm = $errors->any() || count(old()) > 0; @endphp
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
 <h4 class="mb-0">User Management</h4>
+<div class="d-flex align-items-center gap-2 ms-auto">
+<form method="GET" action="{{ route('admin.users.index') }}" class="d-flex align-items-center gap-2">
+<label for="twoFactorFilter" class="small text-muted text-nowrap">2FA</label>
+<select name="two_factor" id="twoFactorFilter" class="form-select form-select-sm" onchange="this.form.submit()">
+<option value="">All users</option>
+<option value="enabled" @selected(($filters['two_factor'] ?? '') === 'enabled')>Enabled</option>
+<option value="disabled" @selected(($filters['two_factor'] ?? '') === 'disabled')>Not enabled</option>
+</select>
+<noscript><button class="btn btn-sm btn-outline-secondary">Filter</button></noscript>
+</form>
 <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#newUserModal"><i class="bi bi-person-plus-fill me-1"></i>New User</button>
+</div>
 </div>
 <div class="modal fade" id="newUserModal" tabindex="-1" aria-hidden="true">
 <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
@@ -59,18 +70,19 @@
 </div>
 <div class="card card-p3 p-0 overflow-hidden">
 <table class="table mb-0 align-middle">
-<thead class="table-light"><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Department</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+<thead class="table-light"><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>2FA</th><th>Department</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
 <tbody>
 @forelse ($users as $u)
 <tr>
 <td class="fw-semibold">{{ $u->name }}</td><td class="text-break">{{ $u->email }}</td>
 <td><span class="badge text-capitalize" style="background:#e6f3ea;color:var(--p3-navy)">{{ \App\Models\User::roleLabel($u->role) }}</span></td>
 <td><span class="badge {{ $u->is_active ? 'text-bg-success' : 'text-bg-secondary' }}">{{ $u->is_active ? 'Active' : 'Inactive' }}</span></td>
+<td><span class="badge {{ $u->two_factor_enabled ? 'text-bg-success' : 'text-bg-warning' }}">{{ $u->two_factor_enabled ? 'Enabled' : 'Not enabled' }}</span></td>
 <td>{{ $u->department?->name ?? '—' }}</td>
 <td class="text-end"><a href="{{ route('admin.users.edit', $u) }}" class="btn btn-sm btn-outline-success">Edit</a></td>
 </tr>
 @empty
-<tr><td colspan="6" class="text-center text-muted p-4">No users yet.</td></tr>
+<tr><td colspan="7" class="text-center text-muted p-4">No users yet.</td></tr>
 @endforelse
 </tbody>
 </table>

@@ -3,15 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\ProcessDocument;
+use App\Mail\DocumentApprovalNotification;
 use App\Models\AuditLog;
 use App\Models\Department;
 use App\Models\Document;
 use App\Models\DocumentCategory;
+use App\Models\DocumentVersion;
 use App\Services\DuplicateDocumentDetector;
 use App\Services\UploadSuggester;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -177,10 +181,12 @@ class DocumentController extends Controller
         $this->authorize('update', $document);
 
         $data = $request->validate([
+            'file' => ['sometimes', 'required', 'file', 'mimes:' . implode(',', config('smartdocs.upload.allowed_extensions')), 'max:' . config('smartdocs.upload.max_kb', self::MAX_KB)],
             'title' => ['nullable', 'string', 'max:255'],
             'category_id' => ['nullable', 'exists:document_categories,id'],
             'department_id' => ['nullable', 'exists:departments,id'],
             'document_date' => ['nullable', 'date'],
+            'expiration_date' => ['nullable', 'date'],
             'reference_number' => ['nullable', 'string', 'max:255'],
             'sender' => ['nullable', 'string', 'max:255'],
             'recipient' => ['nullable', 'string', 'max:255'],
@@ -192,6 +198,7 @@ class DocumentController extends Controller
             'title' => trim((string) ($data['title'] ?? '')) !== '' ? $data['title'] : null,
             'category_id' => $data['category_id'] ?? null,
             'document_date' => $data['document_date'] ?? null,
+            'expiration_date' => $data['expiration_date'] ?? null,
             'reference_number' => $data['reference_number'] ?? null,
             'sender' => $data['sender'] ?? null,
             'recipient' => $data['recipient'] ?? null,
@@ -200,7 +207,85 @@ class DocumentController extends Controller
             $payload['department_id'] = $data['department_id'] ?? null;
         }
 
-        $document->update($payload);
+        $file = $request->file('file');
+        if ($file !== null) {
+            $duplicateDetector = app(DuplicateDocumentDetector::class);
+            $fileHash = $duplicateDetector->hash($file);
+            $isCurrentFile = $document->file_hash !== null && hash_equals($document->file_hash, $fileHash);
+
+            if (! $isCurrentFile && $duplicateDetector->exists($fileHash, $file->getSize())) {
+                $currentDocument = $document->fresh();
+                $isCurrentFile = $currentDocument?->file_hash !== null
+                    && hash_equals($currentDocument->file_hash, $fileHash);
+
+                if (! $isCurrentFile) {
+                    return back()->withErrors(['file' => 'This exact file is already stored in the library.'])->withInput();
+                }
+            }
+            if ($isCurrentFile) {
+                $file = null;
+            }
+        }
+
+        if ($file !== null) {
+            $newPath = $file->store('documents/' . now()->format('Y/m'), 'private');
+            if (! is_string($newPath)) {
+                abort(500, 'The replacement file could not be saved to private storage.');
+            }
+
+            try {
+                DB::transaction(function () use ($document, $payload, $file, $fileHash, $newPath, $request) {
+                    DocumentVersion::create([
+                        'document_id' => $document->id,
+                        'version_number' => $document->version_number,
+                        'uploaded_by' => $document->current_version_uploaded_by ?? $document->uploaded_by,
+                        'original_filename' => $document->original_filename,
+                        'storage_path' => $document->storage_path,
+                        'file_hash' => $document->file_hash,
+                        'mime_type' => $document->mime_type,
+                        'file_size' => $document->file_size,
+                    ]);
+
+                    $document->chunks()->delete();
+                    $document->update(array_merge($payload, [
+                        'original_filename' => $file->getClientOriginalName(),
+                        'storage_path' => $newPath,
+                        'file_hash' => $fileHash,
+                        'mime_type' => $file->getMimeType(),
+                        'file_size' => $file->getSize(),
+                        'version_number' => $document->version_number + 1,
+                        'current_version_uploaded_by' => $request->user()->id,
+                        'document_type' => null,
+                        'summary' => null,
+                        'keywords' => null,
+                        'extracted_text' => null,
+                        'processing_status' => 'pending',
+                        'processing_error' => null,
+                        'classification_confidence' => null,
+                        'suggested_category_id' => null,
+                        'suggested_category_reason' => null,
+                        'suggested_department_id' => null,
+                        'suggested_department_reason' => null,
+                        'department_classification_confidence' => null,
+                        'classification_review_status' => 'pending',
+                        'classification_reviewed_at' => null,
+                        'classification_reviewed_by' => null,
+                        'classification_review_note' => null,
+                        'approved_at' => null,
+                        'approved_by' => null,
+                        'approval_status' => 'pending',
+                        'approval_reviewed_at' => null,
+                        'approval_reviewed_by' => null,
+                        'approval_review_note' => null,
+                    ]));
+                });
+            } catch (\Throwable $exception) {
+                Storage::disk('private')->delete($newPath);
+                throw $exception;
+            }
+        } else {
+            $document->update($payload);
+        }
 
         AuditLog::create([
             'user_id' => $request->user()->id,
@@ -209,6 +294,23 @@ class DocumentController extends Controller
             'entity_id' => $document->id,
             'metadata' => ['fields' => array_keys($data)],
         ]);
+
+        if ($file !== null) {
+            ProcessDocument::dispatch($document->id, $document->version_number);
+
+            AuditLog::create([
+                'user_id' => $request->user()->id,
+                'action' => 'document.version_uploaded',
+                'entity_type' => Document::class,
+                'entity_id' => $document->id,
+                'metadata' => [
+                    'version_number' => $document->version_number,
+                    'previous_version_number' => $document->version_number - 1,
+                    'filename' => $document->original_filename,
+                    'size' => $document->file_size,
+                ],
+            ]);
+        }
 
         return redirect()->route('documents.show', $document)->with('status', 'Document updated.');
     }
@@ -284,6 +386,7 @@ class DocumentController extends Controller
                 'original_filename' => $file->getClientOriginalName(),
                 'storage_path' => $path,
                 'file_hash' => $fileHash,
+                'current_version_uploaded_by' => $request->user()->id,
                 'mime_type' => $file->getMimeType(),
                 'file_size' => $file->getSize(),
                 'department_id' => $request->user()->department_id,
@@ -293,7 +396,7 @@ class DocumentController extends Controller
                 'processing_status' => 'pending',
             ]);
 
-            ProcessDocument::dispatch($document->id);
+            ProcessDocument::dispatch($document->id, $document->version_number);
 
             AuditLog::create([
                 'user_id' => $request->user()->id,
@@ -323,7 +426,16 @@ class DocumentController extends Controller
     public function show(Document $document): View
     {
         $this->authorize('view', $document);
-        $document->load(['category', 'suggestedCategory', 'department', 'suggestedDepartment', 'uploader', 'approver', 'classificationReviewer', 'chunks']);
+        $document->load(['category', 'suggestedCategory', 'department', 'suggestedDepartment', 'uploader', 'currentVersionUploader', 'approver', 'approvalReviewer', 'classificationReviewer', 'chunks', 'versions.uploader']);
+        $similarCandidates = $this->visibleToUser(request())
+            ->where('processing_status', 'completed')
+            ->whereNotNull('extracted_text')
+            ->where('id', '!=', $document->id)
+            ->orderByDesc('created_at')
+            ->limit(250)
+            ->get(['id', 'title', 'original_filename', 'document_date', 'extracted_text']);
+        $similarDocuments = app(\App\Services\SimilarDocumentDetector::class)
+            ->findSimilar((string) $document->extracted_text, $similarCandidates, (int) $document->id);
         $categories = DocumentCategory::orderBy('name')->get();
         $departmentQuery = Department::orderBy('name');
         if (! auth()->user()->isAdmin()) {
@@ -360,7 +472,30 @@ class DocumentController extends Controller
                 ->verify($document->summary, $document->extracted_text);
         }
 
-        return view('documents.show', compact('document', 'categories', 'departments', 'highlightedHtml', 'details', 'correctiveActions', 'tables', 'summaryCheck'));
+        return view('documents.show', compact('document', 'categories', 'departments', 'highlightedHtml', 'details', 'correctiveActions', 'tables', 'summaryCheck', 'similarDocuments'));
+    }
+
+    public function downloadVersion(Document $document, DocumentVersion $version): StreamedResponse
+    {
+        $this->authorize('download', $document);
+        abort_unless((int) $version->document_id === (int) $document->id, 404);
+
+        if (! Storage::disk('private')->exists($version->storage_path)) {
+            abort(404, 'Version file not found in private storage.');
+        }
+
+        AuditLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'document.version_downloaded',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+            'metadata' => [
+                'version_number' => $version->version_number,
+                'filename' => $version->original_filename,
+            ],
+        ]);
+
+        return Storage::disk('private')->download($version->storage_path, $version->original_filename);
     }
 
     public function download(Document $document): StreamedResponse
@@ -490,7 +625,7 @@ class DocumentController extends Controller
 
         // No duplicate records or chunks: reuse the same row.
         $document->update(['processing_status' => 'pending', 'processing_error' => null]);
-        ProcessDocument::dispatch($document->id);
+        ProcessDocument::dispatch($document->id, $document->version_number);
 
         AuditLog::create([
             'user_id' => auth()->id(),
@@ -522,8 +657,6 @@ class DocumentController extends Controller
 
         $reviewedAt = now();
         $updates = [
-            'approved_at' => $reviewedAt,
-            'approved_by' => $request->user()->id,
             'classification_review_status' => 'approved',
             'classification_reviewed_at' => $reviewedAt,
             'classification_reviewed_by' => $request->user()->id,
@@ -601,7 +734,6 @@ class DocumentController extends Controller
     {
         $this->authorize('delete', $document);
 
-        Storage::disk('private')->delete($document->storage_path);
         $docId = $document->id;
         $document->delete();
 
@@ -613,7 +745,58 @@ class DocumentController extends Controller
             'metadata' => [],
         ]);
 
-        return redirect()->route('documents.library')->with('status', 'Document deleted.');
+        return redirect()->route('documents.library')->with('status', 'Document moved to the recycle bin.');
+    }
+
+    public function trash(Request $request): View
+    {
+        abort_unless($request->user()->isManager(), 403);
+
+        $query = Document::onlyTrashed()
+            ->with(['department', 'uploader'])
+            ->latest('deleted_at');
+        $user = $request->user();
+        if (! $user->isAdmin()) {
+            $allowedDeptIds = $user->departments()->pluck('departments.id')
+                ->push($user->department_id)->filter()->unique()->values();
+            $query->where(function ($q) use ($user, $allowedDeptIds) {
+                $q->where('uploaded_by', $user->id)
+                    ->orWhereIn('department_id', $allowedDeptIds)
+                    ->orWhereNull('department_id')
+                    ->orWhereIn('id', $user->authorizedDocuments()->withTrashed()->pluck('documents.id'));
+            });
+        }
+
+        $documents = $query->paginate(20);
+
+        return view('documents.trash', compact('documents'));
+    }
+
+    public function restore(Request $request, Document $document): RedirectResponse
+    {
+        $this->authorize('restore', $document);
+        abort_unless($document->trashed(), 404);
+
+        $storagePaths = $document->versions()->pluck('storage_path')
+            ->prepend($document->storage_path);
+        foreach ($storagePaths as $storagePath) {
+            if (! Storage::disk('private')->exists($storagePath)) {
+                return back()->withErrors([
+                    'document' => 'This document cannot be restored because one or more stored files are missing.',
+                ]);
+            }
+        }
+
+        $document->restore();
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'document.restored',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+            'metadata' => [],
+        ]);
+
+        return redirect()->route('documents.trash')->with('status', 'Document restored.');
     }
 
     public function queue(Request $request): View
@@ -629,5 +812,122 @@ class DocumentController extends Controller
             ->paginate(15)->withQueryString();
 
         return view('queue.index', compact('stats', 'items'));
+    }
+
+    public function approvals(Request $request): View
+    {
+        abort_unless($request->user()->isManager(), 403);
+
+        $documents = $this->visibleToUser($request)
+            ->where('processing_status', 'completed')
+            ->where('approval_status', 'pending')
+            ->with(['uploader', 'department'])
+            ->orderBy('created_at')
+            ->paginate(15);
+
+        return view('documents.approvals', compact('documents'));
+    }
+
+    public function classificationReviews(Request $request): View
+    {
+        abort_unless($request->user()->isManager(), 403);
+
+        $documents = $this->visibleToUser($request)
+            ->where('processing_status', 'completed')
+            ->where('classification_review_status', 'pending')
+            ->where(function ($query) {
+                $query->whereNotNull('suggested_category_id')
+                    ->orWhereNotNull('suggested_department_id');
+            })
+            ->with(['uploader', 'department', 'suggestedCategory', 'suggestedDepartment'])
+            ->orderBy('created_at')
+            ->paginate(15);
+
+        return view('documents.classification-reviews', compact('documents'));
+    }
+
+    public function approveDocument(Request $request, Document $document): RedirectResponse
+    {
+        $this->authorize('approve', $document);
+
+        if ($document->processing_status !== 'completed') {
+            return back()->withErrors(['approval' => 'Only processed documents can be approved.']);
+        }
+
+        $data = $request->validate([
+            'review_note' => ['nullable', 'string', 'max:1000'],
+        ]);
+        $reviewedAt = now();
+        $document->update([
+            'approval_status' => 'approved',
+            'approved_at' => $reviewedAt,
+            'approved_by' => $request->user()->id,
+            'approval_reviewed_at' => $reviewedAt,
+            'approval_reviewed_by' => $request->user()->id,
+            'approval_review_note' => $data['review_note'] ?? null,
+        ]);
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'document.approved',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+            'metadata' => ['review_note' => $data['review_note'] ?? null],
+        ]);
+        $this->notifyUploaderOfApproval($document, $request, true, $data['review_note'] ?? null);
+
+        return back()->with('status', 'Document approved.');
+    }
+
+    public function rejectDocument(Request $request, Document $document): RedirectResponse
+    {
+        $this->authorize('approve', $document);
+
+        if ($document->processing_status !== 'completed') {
+            return back()->withErrors(['approval' => 'Only processed documents can be rejected.']);
+        }
+
+        $data = $request->validate([
+            'review_note' => ['required', 'string', 'max:1000'],
+        ]);
+        $reviewedAt = now();
+        $document->update([
+            'approval_status' => 'rejected',
+            'approved_at' => null,
+            'approved_by' => null,
+            'approval_reviewed_at' => $reviewedAt,
+            'approval_reviewed_by' => $request->user()->id,
+            'approval_review_note' => $data['review_note'],
+        ]);
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'document.rejected',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+            'metadata' => ['review_note' => $data['review_note']],
+        ]);
+        $this->notifyUploaderOfApproval($document, $request, false, $data['review_note']);
+
+        return back()->with('status', 'Document rejected.');
+    }
+
+    private function notifyUploaderOfApproval(Document $document, Request $request, bool $approved, ?string $reviewNote): void
+    {
+        $uploader = $document->uploader;
+        if (! $uploader || ! $uploader->notify_doc_approval) {
+            return;
+        }
+
+        try {
+            Mail::to($uploader->email)->send(new DocumentApprovalNotification(
+                $document,
+                $request->user()->name,
+                $approved,
+                $reviewNote
+            ));
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 }

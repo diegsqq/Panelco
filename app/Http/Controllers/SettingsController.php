@@ -36,9 +36,31 @@ class SettingsController extends Controller
     /** Settings > Security (sidebar): change password + 2FA + retention. */
     public function security(): View
     {
+        $user = auth()->user();
+        $authenticationActions = [
+            'auth.login_succeeded',
+            'auth.login_failed',
+            'auth.login_locked_out',
+            'auth.two_factor_challenge_started',
+            'auth.two_factor_failed',
+            'auth.logged_out',
+        ];
+        $loginHistory = AuditLog::query()
+            ->whereIn('action', $authenticationActions)
+            ->where(function ($query) use ($user) {
+                $query->where(function ($ownedEvents) use ($user) {
+                    $ownedEvents->where('entity_type', User::class)
+                        ->where('entity_id', $user->id);
+                })->orWhere('metadata->identifier', $user->email);
+            })
+            ->latest()
+            ->limit(20)
+            ->get();
+
         return view('settings.security', [
             'settings' => Setting::allSettings(),
-            'isAdmin' => auth()->user()?->isAdmin() ?? false,
+            'isAdmin' => $user->isAdmin(),
+            'loginHistory' => $loginHistory,
         ]);
     }
 
@@ -433,6 +455,7 @@ class SettingsController extends Controller
         $user->update([
             'notify_doc_done' => $request->boolean('notify_doc_done'),
             'notify_doc_failed' => $request->boolean('notify_doc_failed'),
+            'notify_doc_approval' => $request->boolean('notify_doc_approval'),
             'notify_login_alert' => $request->boolean('notify_login_alert'),
         ]);
 

@@ -2,12 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Mail\SecurityAlert;
 use App\Models\AuditLog;
 use App\Models\Department;
 use App\Models\DocumentCategory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class Phase9AdminTest extends TestCase
@@ -93,8 +95,212 @@ class Phase9AdminTest extends TestCase
         $this->actingAs($admin)->get(route('admin.audit-logs.index'))->assertOk();
     }
 
+    public function test_admin_can_filter_audit_logs_by_security_category_and_action(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $employee = User::factory()->create(['email' => 'security@example.test']);
+        AuditLog::create([
+            'action' => 'auth.login_failed',
+            'entity_type' => User::class,
+            'entity_id' => $employee->id,
+            'metadata' => ['identifier' => $employee->email],
+        ]);
+        AuditLog::create([
+            'action' => 'auth.logged_out',
+            'user_id' => $employee->id,
+            'entity_type' => User::class,
+            'entity_id' => $employee->id,
+        ]);
+        AuditLog::create([
+            'action' => 'document.downloaded',
+            'entity_id' => 999,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.audit-logs.index', ['category' => 'auth', 'action' => 'failed']))
+            ->assertOk()
+            ->assertSee('Filter by event category')
+            ->assertSee('Auth.login Failed')
+            ->assertDontSee('logged out')
+            ->assertDontSee('downloaded');
+
+        $this->get(route('admin.audit-logs.index', ['category' => 'invalid']))
+            ->assertSessionHasErrors('category');
+    }
+
+    public function test_admin_user_edit_shows_only_that_accounts_sign_in_history(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $user = User::factory()->create(['email' => 'history@example.test']);
+        $otherUser = User::factory()->create(['email' => 'other@example.test']);
+
+        AuditLog::create([
+            'user_id' => $user->id,
+            'action' => 'auth.login_succeeded',
+            'entity_type' => User::class,
+            'entity_id' => $user->id,
+            'metadata' => ['ip' => '192.0.2.20', 'user_agent' => 'Example Browser'],
+        ]);
+        AuditLog::create([
+            'action' => 'auth.login_locked_out',
+            'metadata' => ['identifier' => $user->email, 'ip' => '192.0.2.21'],
+        ]);
+        AuditLog::create([
+            'user_id' => $otherUser->id,
+            'action' => 'auth.login_succeeded',
+            'entity_type' => User::class,
+            'entity_id' => $otherUser->id,
+            'metadata' => ['ip' => '198.51.100.20', 'user_agent' => 'Other Browser'],
+        ]);
+
+        $this->actingAs($admin)->get(route('admin.users.edit', $user))
+            ->assertOk()
+            ->assertSee('Recent sign-in activity')
+            ->assertSee('Signed in successfully')
+            ->assertSee('Sign-in temporarily locked')
+            ->assertSee('192.0.2.20')
+            ->assertSee('192.0.2.21')
+            ->assertDontSee('Other Browser')
+            ->assertDontSee('198.51.100.20');
+    }
+
+    public function test_admin_user_list_shows_two_factor_status_without_exposing_secret(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        User::factory()->create([
+            'name' => 'Protected User',
+            'two_factor_enabled' => true,
+            'two_factor_secret' => 'must-never-appear-in-user-list',
+        ]);
+        User::factory()->create([
+            'name' => 'Unprotected User',
+            'two_factor_enabled' => false,
+            'two_factor_secret' => null,
+        ]);
+
+        $this->actingAs($admin)->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertSee('2FA')
+            ->assertSee('Protected User')
+            ->assertSee('Unprotected User')
+            ->assertSee('Not enabled')
+            ->assertDontSee('must-never-appear-in-user-list');
+    }
+
+    public function test_admin_can_filter_user_list_by_two_factor_status(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN, 'name' => 'Admin User']);
+        User::factory()->create([
+            'name' => 'Protected User',
+            'two_factor_enabled' => true,
+        ]);
+        User::factory()->create([
+            'name' => 'Unprotected User',
+            'two_factor_enabled' => false,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.index', ['two_factor' => 'enabled']))
+            ->assertOk()
+            ->assertSee('Protected User')
+            ->assertDontSee('Unprotected User')
+            ->assertSee('value="enabled" selected', false);
+
+        $this->get(route('admin.users.index', ['two_factor' => 'disabled']))
+            ->assertOk()
+            ->assertSee('Unprotected User')
+            ->assertDontSee('Protected User')
+            ->assertSee('value="disabled" selected', false);
+
+        $this->get(route('admin.users.index', ['two_factor' => 'invalid']))
+            ->assertSessionHasErrors('two_factor');
+    }
+
+    public function test_admin_can_reset_another_users_two_factor_with_audit_and_email(): void
+    {
+        Mail::fake();
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $user = User::factory()->create([
+            'two_factor_enabled' => true,
+            'two_factor_secret' => 'private-two-factor-secret',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.edit', $user))
+            ->assertOk()
+            ->assertSee('Reset 2FA');
+
+        $this->post(route('admin.users.two-factor.reset', $user))
+            ->assertRedirect()
+            ->assertSessionHas('status', 'Two-factor authentication reset. The user was notified by email.');
+
+        $user->refresh();
+        $this->assertFalse($user->two_factor_enabled);
+        $this->assertNull($user->two_factor_secret);
+        $this->assertDatabaseHas('audit_logs', [
+            'user_id' => $admin->id,
+            'action' => 'user.two_factor_reset_by_admin',
+            'entity_type' => User::class,
+            'entity_id' => $user->id,
+        ]);
+        Mail::assertSent(SecurityAlert::class, function (SecurityAlert $mail) {
+            return $mail->subjectText === 'Two-factor authentication reset'
+                && str_contains($mail->bodyText, 'set up an authenticator app again');
+        });
+    }
+
+    public function test_admin_cannot_reset_own_two_factor_and_inactive_two_factor_is_unchanged(): void
+    {
+        Mail::fake();
+        $admin = User::factory()->create([
+            'role' => User::ROLE_ADMIN,
+            'two_factor_enabled' => true,
+            'two_factor_secret' => 'admin-two-factor-secret',
+        ]);
+        $this->actingAs($admin)
+            ->post(route('admin.users.two-factor.reset', $admin))
+            ->assertSessionHasErrors('two_factor');
+        $this->assertTrue($admin->fresh()->two_factor_enabled);
+
+        $user = User::factory()->create(['two_factor_enabled' => false, 'two_factor_secret' => null]);
+        $this->post(route('admin.users.two-factor.reset', $user))
+            ->assertSessionHas('status', 'Two-factor authentication is already disabled for this account.');
+        $this->assertFalse($user->fresh()->two_factor_enabled);
+        $this->assertFalse(AuditLog::where('action', 'user.two_factor_reset_by_admin')->exists());
+        Mail::assertNothingSent();
+    }
+
+    public function test_admin_password_reset_invalidates_the_users_existing_session(): void
+    {
+        Mail::fake();
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $user = User::factory()->create([
+            'role' => User::ROLE_EMPLOYEE,
+            'password' => Hash::make('Original-password-123!'),
+        ]);
+        $oldPasswordHash = $user->getAuthPassword();
+
+        $this->actingAs($user)
+            ->withSession(['password_hash_web' => $oldPasswordHash])
+            ->get(route('home'))
+            ->assertOk();
+
+        $this->actingAs($admin)->put(route('admin.users.update', $user), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => User::ROLE_EMPLOYEE,
+            'password' => 'New-secure-password-123!',
+            'password_confirmation' => 'New-secure-password-123!',
+        ])->assertRedirect(route('admin.users.index'));
+
+        $this->actingAs($user->fresh())->get(route('home'))
+            ->assertRedirect(route('login'));
+        $this->assertGuest();
+    }
+
     public function test_admin_can_create_update_and_delete_employee_accounts(): void
     {
+        Mail::fake();
         $this->seed();
         $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
         $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
@@ -145,6 +351,11 @@ class Phase9AdminTest extends TestCase
         ])->assertRedirect(route('admin.users.index'));
         $this->assertTrue(AuditLog::where('action', 'user.password_reset')
             ->where('entity_id', $created->id)->exists());
+        Mail::assertSent(SecurityAlert::class, function (SecurityAlert $mail) use ($payload) {
+            return $mail->subjectText === 'Your SmartDocs password was reset'
+                && $mail->hasTo($payload['email'])
+                && ! str_contains($mail->bodyText, 'Another-Password-123!');
+        });
 
         $this->actingAs($admin)->delete(route('admin.users.destroy', $created))
             ->assertRedirect(route('admin.users.index'));
@@ -177,11 +388,14 @@ class Phase9AdminTest extends TestCase
         ]);
     }
 
-    public function test_user_forms_have_no_additional_departments_field(): void
+    public function test_additional_department_access_can_be_removed_from_user_edit_form(): void
     {
         $this->seed();
         $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
         $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $first = Department::create(['name' => 'First Additional Department']);
+        $second = Department::create(['name' => 'Second Additional Department']);
+        $employee->departments()->sync([$first->id, $second->id]);
 
         $this->actingAs($admin)
             ->get(route('admin.users.index'))
@@ -198,8 +412,39 @@ class Phase9AdminTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.users.edit', $employee))
             ->assertOk()
-            ->assertDontSee('Additional Departments')
-            ->assertDontSee('name="departments[]"', false);
+            ->assertSee('Additional Departments')
+            ->assertSee('name="departments[]"', false)
+            ->assertSee('value="'.$first->id.'" checked', false)
+            ->assertSee('value="'.$second->id.'" checked', false);
+
+        $this->put(route('admin.users.update', $employee), [
+            'name' => $employee->name,
+            'email' => $employee->email,
+            'role' => User::ROLE_EMPLOYEE,
+            'manage_departments' => '1',
+            'departments' => [$second->id],
+        ])->assertRedirect(route('admin.users.index'));
+
+        $this->assertDatabaseMissing('department_user', [
+            'user_id' => $employee->id,
+            'department_id' => $first->id,
+        ]);
+        $this->assertDatabaseHas('department_user', [
+            'user_id' => $employee->id,
+            'department_id' => $second->id,
+        ]);
+
+        $this->put(route('admin.users.update', $employee), [
+            'name' => $employee->name,
+            'email' => $employee->email,
+            'role' => User::ROLE_EMPLOYEE,
+            'manage_departments' => '1',
+        ])->assertRedirect(route('admin.users.index'));
+
+        $this->assertDatabaseMissing('department_user', [
+            'user_id' => $employee->id,
+            'department_id' => $second->id,
+        ]);
     }
 
     public function test_admin_can_deactivate_and_reactivate_employee_accounts(): void
@@ -353,7 +598,7 @@ class Phase9AdminTest extends TestCase
         $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
 
         foreach (['index', 'create'] as $routeName) {
-            $html = $this->actingAs($admin)->get(route('admin.users.' . $routeName))->getContent();
+            $html = $this->actingAs($admin)->get(route('admin.users.'.$routeName))->getContent();
 
             $this->assertStringContainsString('autocomplete="off"', $html, "email autofill off missing on {$routeName}");
             $this->assertStringContainsString('autocomplete="new-password"', $html, "password new-password missing on {$routeName}");
@@ -372,7 +617,7 @@ class Phase9AdminTest extends TestCase
         $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
 
         foreach (['index', 'create'] as $routeName) {
-            $html = $this->actingAs($admin)->get(route('admin.users.' . $routeName))->getContent();
+            $html = $this->actingAs($admin)->get(route('admin.users.'.$routeName))->getContent();
 
             $this->assertStringNotContainsString('Suggest password', $html, "suggest text still present on {$routeName}");
             $this->assertStringNotContainsString('suggestPwLink', $html);

@@ -15,13 +15,16 @@ class Document extends Model
 
     protected $fillable = [
         'uploaded_by', 'title', 'original_filename', 'storage_path', 'file_hash',
+        'version_number', 'current_version_uploaded_by',
         'mime_type', 'file_size', 'document_type', 'department_id',
         'category_id', 'suggested_category_id', 'suggested_department_id',
         'department_classification_confidence',
         'document_date', 'summary', 'keywords', 'extracted_text',
+        'expiration_date',
         'processing_status', 'processing_error', 'classification_confidence',
         'approved_at', 'approved_by', 'classification_review_status',
         'classification_reviewed_at', 'classification_reviewed_by', 'classification_review_note',
+        'approval_status', 'approval_reviewed_at', 'approval_reviewed_by', 'approval_review_note',
         'suggested_category_reason', 'suggested_department_reason',
         'reference_number', 'sender', 'recipient',
     ];
@@ -30,8 +33,10 @@ class Document extends Model
     {
         return [
             'document_date' => 'date',
+            'expiration_date' => 'date',
             'approved_at' => 'datetime',
             'classification_reviewed_at' => 'datetime',
+            'approval_reviewed_at' => 'datetime',
             'classification_confidence' => 'decimal:4',
             'department_classification_confidence' => 'decimal:4',
         ];
@@ -52,9 +57,19 @@ class Document extends Model
         return $this->belongsTo(User::class, 'uploaded_by');
     }
 
+    public function currentVersionUploader(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'current_version_uploaded_by');
+    }
+
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function approvalReviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approval_reviewed_by');
     }
 
     public function classificationReviewer(): BelongsTo
@@ -75,6 +90,11 @@ class Document extends Model
     public function chunks(): HasMany
     {
         return $this->hasMany(DocumentChunk::class)->orderBy('chunk_index');
+    }
+
+    public function versions(): HasMany
+    {
+        return $this->hasMany(DocumentVersion::class)->orderByDesc('version_number');
     }
 
     public function authorizedUsers(): BelongsToMany

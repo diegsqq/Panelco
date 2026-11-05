@@ -17,10 +17,33 @@
 <form method="POST" action="{{ route('chat.store') }}" id="newChatForm">
 @csrf
 @if($document)<input type="hidden" name="document_id" value="{{ $document->id }}">@endif
+<div class="row g-2 mb-2">
+@unless($document)
+<div class="col-md-6">
+<label for="document_id" class="form-label small mb-1">First document (optional)</label>
+<select name="document_id" id="document_id" class="form-select form-select-sm">
+<option value="">Search all authorized documents</option>
+@foreach($availableDocuments as $item)
+<option value="{{ $item->id }}" @selected((string) old('document_id') === (string) $item->id)>{{ $item->title ?? $item->original_filename }}</option>
+@endforeach
+</select>
+</div>
+@endunless
+<div class="{{ $document ? 'col-12' : 'col-md-6' }}">
+<label for="comparison_document_id" class="form-label small mb-1">Compare with (optional)</label>
+<select name="comparison_document_id" id="comparison_document_id" class="form-select form-select-sm">
+<option value="">No comparison</option>
+@foreach($availableDocuments as $item)
+<option value="{{ $item->id }}" @selected((string) old('comparison_document_id') === (string) $item->id)>{{ $item->title ?? $item->original_filename }}</option>
+@endforeach
+</select>
+</div>
+</div>
 <div class="input-group input-group-sm">
 <input name="question" class="form-control" maxlength="2000" required placeholder="Ask about your documents…" value="{{ request('q') }}" aria-label="Ask about your documents">
 <button class="btn" style="background:#ffffff;color:#00A868;border:1px solid #00A868;font-weight:700">Send</button>
 </div>
+<small class="form-text text-muted">Choose two documents to compare them. Only documents you can access are listed.</small>
 </form>
 <div class="d-flex flex-wrap gap-2 mt-2">
 @foreach([

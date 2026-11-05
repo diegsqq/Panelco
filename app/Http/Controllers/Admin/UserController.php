@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\SecurityAlert;
 use App\Models\AuditLog;
 use App\Models\Department;
 use App\Models\User;
@@ -10,6 +11,7 @@ use App\Support\PasswordRules;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -20,12 +22,22 @@ class UserController extends Controller
         $this->middleware(['auth', 'role:admin']);
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $users = User::with(['department', 'departments'])->latest()->paginate(15);
+        $filters = $request->validate([
+            'two_factor' => ['nullable', Rule::in(['enabled', 'disabled'])],
+        ]);
+        $query = User::with(['department', 'departments'])->latest();
+        if (($filters['two_factor'] ?? null) === 'enabled') {
+            $query->where('two_factor_enabled', true);
+        } elseif (($filters['two_factor'] ?? null) === 'disabled') {
+            $query->where('two_factor_enabled', false);
+        }
+
+        $users = $query->paginate(15)->withQueryString();
         $departments = Department::orderBy('name')->get();
 
-        return view('admin.users.index', compact('users', 'departments'));
+        return view('admin.users.index', compact('users', 'departments', 'filters'));
     }
 
     public function create(): View
@@ -67,8 +79,31 @@ class UserController extends Controller
     public function edit(User $user): View
     {
         $departments = Department::orderBy('name')->get();
+        $selectedDepartmentIds = old('departments', $user->departments()->pluck('departments.id')->all());
+        $selectedDepartmentIds = is_array($selectedDepartmentIds)
+            ? array_map('intval', $selectedDepartmentIds)
+            : [];
+        $authenticationActions = [
+            'auth.login_succeeded',
+            'auth.login_failed',
+            'auth.login_locked_out',
+            'auth.two_factor_challenge_started',
+            'auth.two_factor_failed',
+            'auth.logged_out',
+        ];
+        $loginHistory = AuditLog::query()
+            ->whereIn('action', $authenticationActions)
+            ->where(function ($query) use ($user) {
+                $query->where(function ($ownedEvents) use ($user) {
+                    $ownedEvents->where('entity_type', User::class)
+                        ->where('entity_id', $user->id);
+                })->orWhere('metadata->identifier', $user->email);
+            })
+            ->latest()
+            ->limit(20)
+            ->get();
 
-        return view('admin.users.edit', compact('user', 'departments'));
+        return view('admin.users.edit', compact('user', 'departments', 'selectedDepartmentIds', 'loginHistory'));
     }
 
     public function update(Request $request, User $user): RedirectResponse
@@ -79,6 +114,9 @@ class UserController extends Controller
             'password' => [...PasswordRules::newPassword(false), 'confirmed'],
             'role' => ['required', Rule::in(User::ROLES)],
             'department_id' => ['nullable', 'exists:departments,id'],
+            'manage_departments' => ['sometimes', 'boolean'],
+            'departments' => ['sometimes', 'array'],
+            'departments.*' => ['integer', 'distinct', 'exists:departments,id'],
         ]);
 
         if ($user->is_active && $user->isAdmin()
@@ -87,9 +125,7 @@ class UserController extends Controller
             return back()->withErrors(['role' => 'The last active administrator cannot be demoted. Activate or assign another administrator first.'])->withInput();
         }
 
-        // Additional Departments no longer has a form field, so the existing
-        // department_user pivot is left untouched — saving must not wipe the
-        // departments that still drive document access.
+        $emailBeforeUpdate = $user->email;
         $user->fill([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -102,6 +138,10 @@ class UserController extends Controller
         }
         $user->save();
 
+        if (! $user->isAdmin() && ($data['manage_departments'] ?? false)) {
+            $user->departments()->sync($data['departments'] ?? []);
+        }
+
         AuditLog::create([
             'user_id' => auth()->id(),
             'action' => $passwordWasReset ? 'user.password_reset' : 'user.updated',
@@ -109,6 +149,23 @@ class UserController extends Controller
             'entity_id' => $user->id,
             'metadata' => ['email' => $user->email, 'role' => $user->role],
         ]);
+
+        if ($passwordWasReset) {
+            try {
+                Mail::to($emailBeforeUpdate)->send(new SecurityAlert(
+                    'Your SmartDocs password was reset',
+                    'An administrator reset the password for your SmartDocs account. If you did not expect this change, contact your system administrator immediately.'
+                ));
+            } catch (\Throwable $e) {
+                report($e);
+
+                return redirect()->route('admin.users.index')
+                    ->with('warning', 'User updated, but the password-reset notification could not be sent.');
+            }
+
+            return redirect()->route('admin.users.index')
+                ->with('status', 'User updated. A password-reset notification was sent to the account email.');
+        }
 
         return redirect()->route('admin.users.index')->with('status', 'User updated.');
     }
@@ -143,6 +200,43 @@ class UserController extends Controller
         ]);
 
         return back()->with('status', $isActive ? 'User account activated.' : 'User account deactivated.');
+    }
+
+    public function resetTwoFactor(Request $request, User $user): RedirectResponse
+    {
+        if ((int) $user->id === (int) $request->user()->id) {
+            return back()->withErrors(['two_factor' => 'Use your own Security settings to manage two-factor authentication.']);
+        }
+
+        if (! $user->two_factor_enabled || ! $user->two_factor_secret) {
+            return back()->with('status', 'Two-factor authentication is already disabled for this account.');
+        }
+
+        $user->update([
+            'two_factor_enabled' => false,
+            'two_factor_secret' => null,
+        ]);
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'user.two_factor_reset_by_admin',
+            'entity_type' => User::class,
+            'entity_id' => $user->id,
+            'metadata' => ['email' => $user->email],
+        ]);
+
+        try {
+            Mail::to($user->email)->send(new SecurityAlert(
+                'Two-factor authentication reset',
+                'An administrator reset two-factor authentication for your SmartDocs account. Sign in with your password and set up an authenticator app again from Settings > Security.'
+            ));
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('warning', 'Two-factor authentication was reset, but the account security email could not be sent.');
+        }
+
+        return back()->with('status', 'Two-factor authentication reset. The user was notified by email.');
     }
 
     public function destroy(User $user): RedirectResponse

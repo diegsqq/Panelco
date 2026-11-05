@@ -296,6 +296,9 @@
                 <a class="nav-link {{ request()->routeIs('dashboard','home') ? 'active' : '' }}" href="{{ route('dashboard') }}"><span class="nav-ico"><i class="bi bi-grid-1x2-fill"></i></span>{{ __('nav.dashboard') }}</a>
                 <a class="nav-link {{ request()->routeIs('documents.upload') ? 'active' : '' }}" href="{{ route('documents.upload') }}"><span class="nav-ico"><i class="bi bi-cloud-arrow-up-fill"></i></span>{{ __('nav.upload') }}</a>
                 <a class="nav-link {{ request()->routeIs('documents.library') ? 'active' : '' }}" href="{{ route('documents.library') }}"><span class="nav-ico"><i class="bi bi-folder-fill"></i></span>{{ __('nav.library') }}</a>
+                @if(auth()->user()->isManager())
+                <a class="nav-link {{ request()->routeIs('documents.approvals') ? 'active' : '' }}" href="{{ route('documents.approvals') }}"><span class="nav-ico"><i class="bi bi-clipboard-check-fill"></i></span>Document approvals</a>
+                @endif
                 <a class="nav-link {{ request()->routeIs('chat.*') ? 'active' : '' }}" href="{{ route('chat.index') }}"><span class="nav-ico"><i class="bi bi-lightning-charge-fill"></i></span>{{ __('nav.lightning') }}</a>
                 @php $settingsOpen = request()->routeIs('settings.*') || request()->routeIs('admin.*'); @endphp
                 <a class="nav-link {{ $settingsOpen ? 'active' : '' }}" data-bs-toggle="collapse" href="#settingsMenu" role="button" aria-expanded="{{ $settingsOpen ? 'true' : 'false' }}"><span class="nav-ico"><i class="bi bi-gear-fill"></i></span>{{ __('nav.settings') }}<i class="bi bi-chevron-down ms-auto small"></i></a>
@@ -307,6 +310,7 @@
                     <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}"><span class="nav-ico"><i class="bi bi-people-fill"></i></span>{{ __('nav.users') }}</a>
                     <a class="nav-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}" href="{{ route('admin.categories.index') }}"><span class="nav-ico"><i class="bi bi-tags-fill"></i></span>{{ __('nav.categories') }}</a>
                     <a class="nav-link {{ request()->routeIs('admin.departments.*') ? 'active' : '' }}" href="{{ route('admin.departments.index') }}"><span class="nav-ico"><i class="bi bi-diagram-3-fill"></i></span>{{ __('nav.departments') }}</a>
+                    <a class="nav-link {{ request()->routeIs('admin.system-health.*') ? 'active' : '' }}" href="{{ route('admin.system-health.index') }}"><span class="nav-ico"><i class="bi bi-heart-pulse-fill"></i></span>System health</a>
                     @endcan
                 </div>
             </nav>

@@ -2,7 +2,16 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
 <h4 class="mb-0">Audit Logs</h4>
-<form method="GET" class="d-flex gap-2"><input name="action" class="form-control form-control-sm" value="{{ request('action') }}" placeholder="Filter by action…"><button class="btn btn-sm btn-outline-success">Filter</button></form>
+<form method="GET" class="d-flex gap-2">
+<select name="category" class="form-select form-select-sm" aria-label="Filter by event category">
+<option value="">All activity</option>
+<option value="auth" {{ request('category') === 'auth' ? 'selected' : '' }}>Sign-in &amp; security</option>
+<option value="document" {{ request('category') === 'document' ? 'selected' : '' }}>Document activity</option>
+<option value="user" {{ request('category') === 'user' ? 'selected' : '' }}>User administration</option>
+</select>
+<input name="action" class="form-control form-control-sm" value="{{ request('action') }}" placeholder="Filter by action…">
+<button class="btn btn-sm btn-outline-success">Filter</button>
+</form>
 </div>
 <div class="card card-p3 p-0 overflow-hidden">
 <table class="table mb-0 small">

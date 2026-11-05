@@ -129,8 +129,10 @@ class Phase5AiTest extends TestCase
         $this->actingAs($manager)->post(route('documents.approve', $doc), ['category_id' => $cat->id])->assertRedirect();
         $doc->refresh();
         $this->assertEquals($cat->id, $doc->category_id);
-        $this->assertNotNull($doc->approved_at);
-        $this->assertEquals($manager->id, $doc->approved_by);
+        $this->assertSame('approved', $doc->classification_review_status);
+        $this->assertEquals($manager->id, $doc->classification_reviewed_by);
+        $this->assertNull($doc->approved_at);
+        $this->assertSame('pending', $doc->approval_status);
     }
 
     public function test_manager_can_correct_and_approve_category_and_department_suggestions(): void

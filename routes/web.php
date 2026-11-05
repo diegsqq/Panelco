@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\SystemHealthController;
 use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\DocumentCategoryController;
 use App\Http\Controllers\Admin\UserController;
@@ -25,6 +26,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/library', [App\Http\Controllers\DocumentController::class, 'index'])->name('documents.library');
     Route::get('/library/{document}/edit', [App\Http\Controllers\DocumentController::class, 'edit'])->name('documents.edit');
     Route::put('/library/{document}', [App\Http\Controllers\DocumentController::class, 'update'])->name('documents.update');
+    Route::get('/library/{document}/versions/{version}/download', [App\Http\Controllers\DocumentController::class, 'downloadVersion'])->name('documents.versions.download');
     Route::get('/library/{document}', [App\Http\Controllers\DocumentController::class, 'show'])->name('documents.show');
     Route::get('/library/{document}/download', [App\Http\Controllers\DocumentController::class, 'download'])->name('documents.download');
     Route::get('/library/{document}/view', [App\Http\Controllers\DocumentController::class, 'view'])->name('documents.view');
@@ -34,7 +36,13 @@ Route::get('/library/{document}/pdf', [App\Http\Controllers\DocumentController::
     Route::post('/library/{document}/ask', [App\Http\Controllers\ChatController::class, 'askDocument'])->name('documents.ask');
     Route::post('/library/{document}/approve', [App\Http\Controllers\DocumentController::class, 'approve'])->name('documents.approve');
     Route::post('/library/{document}/reject-classification', [App\Http\Controllers\DocumentController::class, 'rejectClassification'])->name('documents.reject-classification');
+    Route::get('/approvals', [App\Http\Controllers\DocumentController::class, 'approvals'])->name('documents.approvals');
+    Route::get('/classification-reviews', [App\Http\Controllers\DocumentController::class, 'classificationReviews'])->name('documents.classification-reviews');
+    Route::post('/library/{document}/approve-document', [App\Http\Controllers\DocumentController::class, 'approveDocument'])->name('documents.approve-document');
+    Route::post('/library/{document}/reject-document', [App\Http\Controllers\DocumentController::class, 'rejectDocument'])->name('documents.reject-document');
     Route::delete('/library/{document}', [App\Http\Controllers\DocumentController::class, 'destroy'])->name('documents.destroy');
+    Route::get('/trash', [App\Http\Controllers\DocumentController::class, 'trash'])->name('documents.trash');
+    Route::post('/trash/{document}/restore', [App\Http\Controllers\DocumentController::class, 'restore'])->withTrashed()->name('documents.restore');
     Route::get('/queue', [App\Http\Controllers\DocumentController::class, 'queue'])->name('queue.index');
 
     Route::get('/chat', [App\Http\Controllers\ChatController::class, 'index'])->name('chat.index');
@@ -69,9 +77,11 @@ Route::post('/two-factor', [App\Http\Controllers\TwoFactorController::class, 've
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::patch('users/{user}/status', [UserController::class, 'updateStatus'])->name('users.status');
+    Route::post('users/{user}/two-factor/reset', [UserController::class, 'resetTwoFactor'])->name('users.two-factor.reset');
     Route::resource('users', UserController::class)->except(['show']);
     Route::resource('departments', DepartmentController::class)->except(['show']);
     Route::resource('categories', DocumentCategoryController::class)->except(['show']);
     Route::post('categories/ai-keywords', [DocumentCategoryController::class, 'aiKeywords'])->name('categories.ai-keywords');
     Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+    Route::get('system-health', [SystemHealthController::class, 'index'])->name('system-health.index');
 });

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AuditLog;
+use App\Models\Document;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -76,6 +77,61 @@ class AuthenticationAuditTest extends TestCase
             'user_id' => $user->id,
             'action' => 'auth.logged_out',
         ]);
+    }
+
+    public function test_security_page_shows_only_the_current_users_authentication_history(): void
+    {
+        $user = User::factory()->create(['email' => 'history@example.test']);
+        $otherUser = User::factory()->create(['email' => 'other@example.test']);
+
+        $ownSuccess = AuditLog::create([
+            'user_id' => $user->id,
+            'action' => 'auth.login_succeeded',
+            'entity_type' => User::class,
+            'entity_id' => $user->id,
+            'metadata' => ['ip' => '192.0.2.10', 'user_agent' => 'Example Browser'],
+        ]);
+        AuditLog::create([
+            'action' => 'auth.login_failed',
+            'entity_type' => User::class,
+            'entity_id' => $user->id,
+            'metadata' => ['identifier' => $user->email, 'ip' => '192.0.2.11'],
+        ]);
+        AuditLog::create([
+            'action' => 'auth.login_locked_out',
+            'metadata' => ['identifier' => $user->email, 'ip' => '192.0.2.12'],
+        ]);
+        AuditLog::create([
+            'user_id' => $otherUser->id,
+            'action' => 'auth.login_succeeded',
+            'entity_type' => User::class,
+            'entity_id' => $otherUser->id,
+            'metadata' => ['ip' => '198.51.100.5', 'user_agent' => 'Private Browser'],
+        ]);
+        AuditLog::create([
+            'user_id' => $user->id,
+            'action' => 'document.downloaded',
+            'entity_type' => Document::class,
+            'entity_id' => 999,
+            'metadata' => ['filename' => 'private-document.pdf'],
+        ]);
+
+        $this->actingAs($user)->get(route('settings.security'))
+            ->assertOk()
+            ->assertSee('Recent sign-in activity')
+            ->assertSee('Signed in successfully')
+            ->assertSee('Failed sign-in attempt')
+            ->assertSee('Sign-in temporarily locked')
+            ->assertSee('192.0.2.10')
+            ->assertDontSee('Private Browser')
+            ->assertDontSee('198.51.100.5')
+            ->assertDontSee('private-document.pdf');
+
+        $this->actingAs($otherUser)->get(route('settings.security'))
+            ->assertOk()
+            ->assertDontSee('192.0.2.10')
+            ->assertDontSee($user->email);
+        $this->assertNotNull($ownSuccess->id);
     }
 
     public function test_invalid_two_factor_code_is_audited_without_recording_the_code(): void

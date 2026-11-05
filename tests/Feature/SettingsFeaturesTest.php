@@ -190,11 +190,13 @@ class SettingsFeaturesTest extends TestCase
         $this->actingAs($user)->post(route('settings.notifications'), [
             'notify_doc_done' => '1',
             'notify_doc_failed' => '0',
+            'notify_doc_approval' => '0',
             'notify_login_alert' => '1',
         ]);
         $u = $user->fresh();
         $this->assertTrue($u->notify_doc_done);
         $this->assertFalse($u->notify_doc_failed);
+        $this->assertFalse($u->notify_doc_approval);
         $this->assertTrue($u->notify_login_alert);
 
         $this->actingAs($user)->post(route('settings.theme'), ['theme' => 'neon'])->assertSessionHasErrors('theme');

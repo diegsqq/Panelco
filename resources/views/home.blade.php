@@ -80,6 +80,23 @@
             @endif
 
         </div>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-semibold" style="color:#00A868">Expiring documents</span>
+                <span class="small text-muted">Next 30 days</span>
+            </div>
+            @forelse($expiringDocuments as $document)
+                @php $daysUntilExpiration = now()->startOfDay()->diffInDays($document->expiration_date->startOfDay(), false); @endphp
+                <div class="d-flex justify-content-between align-items-center gap-2 border-bottom py-2 small">
+                    <a href="{{ route('documents.show', $document) }}" class="text-truncate text-decoration-none fw-semibold" style="color:#00743F">{{ $document->title ?? $document->original_filename }}</a>
+                    <span class="badge {{ $daysUntilExpiration < 0 ? 'text-bg-danger' : 'text-bg-warning' }} flex-shrink-0">
+                        {{ $daysUntilExpiration < 0 ? 'Expired' : ($daysUntilExpiration === 0 ? 'Today' : $daysUntilExpiration . 'd') }}
+                    </span>
+                </div>
+            @empty
+                <p class="text-muted small mb-0">No expired or soon-to-expire documents.</p>
+            @endforelse
+            <p class="form-text mt-2 mb-0">Reminders only; documents are not automatically archived or deleted.</p>
+        </div>
         <div class="card card-p3 p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <span class="fw-semibold" style="color:#00A868">Department distribution</span>
@@ -104,6 +121,86 @@
                 <p class="text-muted mb-0">No department data yet.</p>
             @endif
         </div>
+        <div class="card card-p3 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="fw-semibold" style="color:#00A868">Document upload trend</span>
+                <span class="text-muted small">Last 6 months</span>
+            </div>
+            <div class="d-flex align-items-end justify-content-between gap-2" style="height:105px" role="img" aria-label="Monthly document uploads for the last six months">
+                @foreach($monthlyUploads as $month)
+                    <div class="d-flex flex-column align-items-center justify-content-end gap-1 flex-fill h-100">
+                        <span class="small text-muted">{{ $month['count'] }}</span>
+                        <div class="w-100 rounded-top" style="height:{{ $month['count'] > 0 ? max(6, round(($month['count'] / $maxMonthlyUploads) * 70)) : 3 }}px;background:{{ $month['count'] > 0 ? '#00A868' : '#dfe9e3' }}" aria-hidden="true"></div>
+                        <span class="small text-muted">{{ $month['label'] }}</span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+        <div class="card card-p3 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-semibold" style="color:#00A868">Recent document activity</span>
+                <i class="bi bi-activity" aria-hidden="true"></i>
+            </div>
+            @forelse($recentActivity as $activity)
+                <div class="border-bottom py-2 small">
+                    <div>
+                        <span class="fw-semibold">{{ $activity['actor'] }}</span>
+                        {{ $activity['action'] }}
+                        <a href="{{ route('documents.show', $activity['document']) }}" class="text-decoration-none fw-semibold" style="color:#00743F">{{ $activity['document']->title ?? $activity['document']->original_filename }}</a>
+                    </div>
+                    <div class="text-muted">{{ $activity['created_at']->diffForHumans() }}</div>
+                </div>
+            @empty
+                <p class="text-muted small mb-0">No recent document activity.</p>
+            @endforelse
+        </div>
+        <div class="card card-p3 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-semibold" style="color:#00A868">Most accessed documents</span>
+                <i class="bi bi-bar-chart-line" aria-hidden="true"></i>
+            </div>
+            @forelse($mostAccessedDocuments as $item)
+                <div class="d-flex justify-content-between align-items-center gap-2 border-bottom py-2 small">
+                    <a href="{{ route('documents.show', $item['document']) }}" class="text-truncate text-decoration-none fw-semibold" style="color:#00743F">{{ $item['document']->title ?? $item['document']->original_filename }}</a>
+                    <span class="badge text-bg-secondary flex-shrink-0">{{ $item['access_count'] }} {{ \Illuminate\Support\Str::plural('access', $item['access_count']) }}</span>
+                </div>
+            @empty
+                <p class="text-muted small mb-0">No document views or downloads have been recorded yet.</p>
+            @endforelse
+        </div>
+        @if(auth()->user()->isManager())
+            <div class="card card-p3 p-4">
+                <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                    <span class="fw-semibold" style="color:#00A868">Pending approvals</span>
+                    <a href="{{ route('documents.approvals') }}" class="small text-decoration-none">View queue ({{ $pendingApprovalCount }})</a>
+                </div>
+                @forelse($pendingApprovals as $document)
+                    <div class="border-bottom py-2 small">
+                        <a href="{{ route('documents.show', $document) }}" class="text-decoration-none fw-semibold" style="color:#00743F">{{ $document->title ?? $document->original_filename }}</a>
+                        <div class="text-muted">Uploaded by {{ $document->uploader?->name ?? 'Former user' }}</div>
+                    </div>
+                @empty
+                    <p class="text-muted small mb-0">No documents are waiting for approval.</p>
+                @endforelse
+            </div>
+            <div class="card card-p3 p-4">
+                <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                    <span class="fw-semibold" style="color:#00A868">Classification suggestions to review</span>
+                    <a href="{{ route('documents.classification-reviews') }}" class="small text-decoration-none">View queue ({{ $pendingClassificationReviewCount }})</a>
+                </div>
+                @forelse($pendingClassificationReviews as $document)
+                    <div class="border-bottom py-2 small">
+                        <a href="{{ route('documents.show', $document) }}" class="text-decoration-none fw-semibold" style="color:#00743F">{{ $document->title ?? $document->original_filename }}</a>
+                        <div class="text-muted">
+                            Suggested: {{ $document->suggestedCategory?->name ?? 'No category' }}
+                            · {{ $document->suggestedDepartment?->name ?? 'No department' }}
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-muted small mb-0">No classification suggestions need review.</p>
+                @endforelse
+            </div>
+        @endif
         <div class="card card-p3 p-4">
             <h5 class="fw-bold mb-2">Recent conversations</h5>
             @forelse ($recentConversations as $c)

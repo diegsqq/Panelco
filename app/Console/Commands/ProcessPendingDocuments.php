@@ -23,7 +23,7 @@ class ProcessPendingDocuments extends Command
         }
 
         foreach ($docs as $doc) {
-            app()->call([new ProcessDocument($doc->id), 'handle']);
+            app()->call([new ProcessDocument($doc->id, $doc->version_number), 'handle']);
             $doc->refresh();
             $this->line("#{$doc->id} {$doc->original_filename} → {$doc->processing_status}");
         }

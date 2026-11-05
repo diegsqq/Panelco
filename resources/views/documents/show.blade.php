@@ -22,10 +22,24 @@
 <dt class="col-sm-4"><i class="bi bi-tags me-1" style="color:#00A868"></i>Category</dt><dd class="col-sm-8">{{ $document->category?->name ?? $document->suggestedCategory?->name ?? '—' }}@if(!$document->category && $document->suggestedCategory) <span class="text-muted">suggested{{ $document->classification_confidence !== null ? ' · ' . round($document->classification_confidence * 100) . '%' : '' }}</span>@endif</dd>
 <dt class="col-sm-4"><i class="bi bi-building me-1" style="color:#00A868"></i>Department</dt><dd class="col-sm-8">{{ $document->department?->name ?? $document->suggestedDepartment?->name ?? '—' }}@if(!$document->department && $document->suggestedDepartment) <span class="text-muted">suggested{{ $document->department_classification_confidence !== null ? ' · ' . round($document->department_classification_confidence * 100) . '% match' : '' }}</span>@endif</dd>
 <dt class="col-sm-4"><i class="bi bi-calendar me-1" style="color:#00A868"></i>Document date</dt><dd class="col-sm-8">{{ $document->document_date?->format('Y-m-d') ?? '—' }}</dd>
+@if($document->expiration_date)
+@php
+    $expirationDays = now()->startOfDay()->diffInDays($document->expiration_date->startOfDay(), false);
+@endphp
+<dt class="col-sm-4"><i class="bi bi-hourglass-split me-1" style="color:#00A868"></i>Expiration date</dt><dd class="col-sm-8">
+<span class="badge {{ $expirationDays < 0 ? 'text-bg-danger' : ($expirationDays <= 30 ? 'text-bg-warning' : 'text-bg-secondary') }}">{{ $document->expiration_date->format('Y-m-d') }}</span>
+<span class="text-muted">{{ $expirationDays < 0 ? ' · expired ' . abs($expirationDays) . ' day(s) ago' : ($expirationDays === 0 ? ' · expires today' : ($expirationDays <= 30 ? ' · expires in ' . $expirationDays . ' day(s)' : '')) }}</span>
+</dd>
+@endif
 @if($document->reference_number)<dt class="col-sm-4"><i class="bi bi-hash me-1" style="color:#00A868"></i>Reference number</dt><dd class="col-sm-8">{{ $document->reference_number }}</dd>@endif
 @if($document->sender)<dt class="col-sm-4"><i class="bi bi-send me-1" style="color:#00A868"></i>Sender</dt><dd class="col-sm-8">{{ $document->sender }}</dd>@endif
 @if($document->recipient)<dt class="col-sm-4"><i class="bi bi-inbox me-1" style="color:#00A868"></i>Recipient</dt><dd class="col-sm-8">{{ $document->recipient }}</dd>@endif
 <dt class="col-sm-4"><i class="bi bi-cloud-upload me-1" style="color:#00A868"></i>Uploaded</dt><dd class="col-sm-8">{{ $document->created_at->format('M d, Y') }} by {{ $document->uploader?->name ?? '—' }}</dd>
+<dt class="col-sm-4"><i class="bi bi-clipboard-check me-1" style="color:#00A868"></i>Document approval</dt><dd class="col-sm-8">
+<span class="badge {{ $document->approval_status === 'approved' ? 'text-bg-success' : ($document->approval_status === 'rejected' ? 'text-bg-danger' : 'text-bg-warning') }}">{{ ucfirst($document->approval_status ?? 'pending') }}</span>
+@if($document->approval_reviewed_at)<span class="text-muted"> · {{ $document->approval_reviewed_at->format('M d, Y') }} by {{ $document->approvalReviewer?->name ?? '—' }}</span>@endif
+@if($document->approval_review_note)<div class="text-muted mt-1">{{ $document->approval_review_note }}</div>@endif
+</dd>
 @if($document->suggestedCategory || $document->suggestedDepartment || $document->classification_reviewed_at)
 <dt class="col-sm-4"><i class="bi bi-check-circle me-1" style="color:#00A868"></i>Classification review</dt><dd class="col-sm-8">
 <span class="badge {{ $document->classification_review_status === 'approved' ? 'text-bg-success' : ($document->classification_review_status === 'rejected' ? 'text-bg-secondary' : 'text-bg-warning') }}">{{ ucfirst($document->classification_review_status ?? 'pending') }}</span>
@@ -146,6 +160,64 @@
 @can('delete', $document)<form method="POST" action="{{ route('documents.destroy', $document) }}" id="deleteDocForm">@csrf @method('DELETE')<button type="button" class="btn btn-outline-danger btn-sm w-100" data-bs-toggle="modal" data-bs-target="#deleteDocModal"><i class="bi bi-trash me-1"></i>Delete</button></form>@endcan
 </div>
 </div>
+
+<div class="card card-p3 p-3">
+<h6 class="fw-bold"><i class="bi bi-clock-history me-1" style="color:#00A868"></i>Version history</h6>
+<div class="small mb-2"><span class="badge text-bg-success">Current</span> Version {{ $document->version_number }} · {{ $document->original_filename }} · {{ $document->currentVersionUploader?->name ?? '—' }}</div>
+@forelse($document->versions as $version)
+<div class="border-top pt-2 mt-2 small">
+<div class="d-flex justify-content-between align-items-start gap-2">
+<div>
+<div class="fw-semibold">Version {{ $version->version_number }}</div>
+<div class="text-muted">{{ $version->original_filename }} · {{ number_format($version->file_size / 1024, 1) }} KB</div>
+<div class="text-muted">{{ $version->created_at->format('M d, Y H:i') }} · {{ $version->uploader?->name ?? '—' }}</div>
+</div>
+@can('download', $document)
+<a href="{{ route('documents.versions.download', [$document, $version]) }}" class="btn btn-sm btn-outline-success text-nowrap" aria-label="Download version {{ $version->version_number }}"><i class="bi bi-download"></i></a>
+@endcan
+</div>
+</div>
+@empty
+<p class="small text-muted mb-0">No previous versions. Replacing this file will add the current file to this history.</p>
+@endforelse
+</div>
+
+@if($similarDocuments->isNotEmpty())
+<div class="card card-p3 p-3">
+<h6 class="fw-bold"><i class="bi bi-files me-1" style="color:#00A868"></i>Potentially similar documents</h6>
+<p class="small text-muted">These documents you can access have substantially similar text. Similarity is a review aid, not proof of duplication.</p>
+@foreach($similarDocuments as $match)
+<div class="border-top pt-2 mt-2 small">
+<div class="d-flex justify-content-between gap-2">
+<a href="{{ route('documents.show', $match['document']) }}" class="fw-semibold text-decoration-none">{{ $match['document']->title ?? $match['document']->original_filename }}</a>
+<span class="badge text-bg-secondary flex-shrink-0">{{ $match['similarity'] }}% similarity</span>
+</div>
+<div class="text-muted">{{ $match['document']->original_filename }}{{ $match['document']->document_date ? ' · ' . $match['document']->document_date->format('Y-m-d') : '' }}</div>
+</div>
+@endforeach
+</div>
+@endif
+
+@can('approve', $document)
+@if($document->processing_status === 'completed')
+<div class="card card-p3 p-3">
+<h6 class="fw-bold"><i class="bi bi-clipboard-check me-1" style="color:#00A868"></i>Document approval</h6>
+<p class="small text-muted">This decision is separate from approving AI category and department suggestions.</p>
+<form method="POST" action="{{ route('documents.approve-document', $document) }}" class="mb-3">
+@csrf
+<label class="form-label small fw-semibold" for="document_approval_note">Approval note (optional)</label>
+<textarea id="document_approval_note" name="review_note" class="form-control form-control-sm mb-2" rows="2" maxlength="1000">{{ old('review_note') }}</textarea>
+<button class="btn btn-sm btn-outline-success w-100"><i class="bi bi-check-lg me-1"></i>Approve document</button>
+</form>
+<form method="POST" action="{{ route('documents.reject-document', $document) }}">
+@csrf
+<label class="form-label small fw-semibold" for="document_rejection_note">Reason for rejection</label>
+<textarea id="document_rejection_note" name="review_note" class="form-control form-control-sm mb-2" rows="2" maxlength="1000" required>{{ old('review_note') }}</textarea>
+<button class="btn btn-sm btn-outline-danger w-100"><i class="bi bi-x-lg me-1"></i>Reject document</button>
+</form>
+</div>
+@endif
+@endcan
 
 @if ($document->suggestedCategory || $document->suggestedDepartment)
 @can('approve', $document)

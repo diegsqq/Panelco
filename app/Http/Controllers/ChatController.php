@@ -34,14 +34,25 @@ class ChatController extends Controller
         }
 
         $conversations = Conversation::where('user_id', auth()->id())->latest()->paginate(12);
+        $availableDocuments = app(DocumentRetrievalService::class)
+            ->accessibleDocuments($request->user())
+            ->where('processing_status', 'completed')
+            ->orderByRaw("COALESCE(NULLIF(title, ''), original_filename)")
+            ->get(['id', 'title', 'original_filename']);
 
-        return view('chat.index', compact('conversations', 'document'));
+        return view('chat.index', compact('conversations', 'document', 'availableDocuments'));
     }
 
     public function show(Conversation $conversation): View
     {
         abort_unless((int) $conversation->user_id === (int) auth()->id(), 403, 'Access denied.');
-        $conversation->load(['document', 'messages.sources.document']);
+        $conversation->load(['document', 'comparisonDocument', 'messages.sources.document']);
+        if ($conversation->document !== null) {
+            $this->authorize('view', $conversation->document);
+        }
+        if ($conversation->comparisonDocument !== null) {
+            $this->authorize('view', $conversation->comparisonDocument);
+        }
 
         return view('chat.show', compact('conversation'));
     }
@@ -50,20 +61,28 @@ class ChatController extends Controller
     {
         $data = $request->validate([
             'question' => ['required', 'string', 'max:2000'],
-            'document_id' => ['nullable', 'integer', 'exists:documents,id'],
+            'document_id' => ['nullable', 'required_with:comparison_document_id', 'integer', 'exists:documents,id'],
+            'comparison_document_id' => ['nullable', 'integer', 'different:document_id', 'exists:documents,id'],
         ]);
         $document = isset($data['document_id']) ? Document::findOrFail($data['document_id']) : null;
+        $comparisonDocument = isset($data['comparison_document_id'])
+            ? Document::findOrFail($data['comparison_document_id'])
+            : null;
         if ($document !== null) {
             $this->authorize('view', $document);
+        }
+        if ($comparisonDocument !== null) {
+            $this->authorize('view', $comparisonDocument);
         }
 
         $conversation = Conversation::create([
             'user_id' => auth()->id(),
             'title' => mb_substr(trim($data['question']), 0, 40),
             'document_id' => $document?->id,
+            'comparison_document_id' => $comparisonDocument?->id,
         ]);
 
-        $this->ask($conversation, trim($data['question']), $document);
+        $this->ask($conversation, trim($data['question']), $document, $comparisonDocument);
 
         return redirect()->route('chat.show', $conversation);
     }
@@ -74,10 +93,19 @@ class ChatController extends Controller
         $data = $request->validate(['question' => ['required', 'string', 'max:2000']]);
 
         $document = $conversation->document;
+        $comparisonDocument = $conversation->comparisonDocument;
+        if ($conversation->comparison_document_id !== null && ($document === null || $comparisonDocument === null)) {
+            return back()->withErrors([
+                'question' => 'A selected comparison document is no longer available. Start a new comparison with available documents.',
+            ]);
+        }
         if ($document !== null) {
             $this->authorize('view', $document);
         }
-        $this->ask($conversation, trim($data['question']), $document);
+        if ($comparisonDocument !== null) {
+            $this->authorize('view', $comparisonDocument);
+        }
+        $this->ask($conversation, trim($data['question']), $document, $comparisonDocument);
 
         return redirect()->route('chat.show', $conversation);
     }
@@ -90,7 +118,12 @@ class ChatController extends Controller
         return redirect()->route('chat.index')->with('status', 'Conversation deleted.');
     }
 
-    private function ask(Conversation $conversation, string $question, ?Document $document = null): void
+    private function ask(
+        Conversation $conversation,
+        string $question,
+        ?Document $document = null,
+        ?Document $comparisonDocument = null
+    ): void
     {
         $conversation->messages()->create(['role' => 'user', 'content' => $question]);
 
@@ -99,7 +132,9 @@ class ChatController extends Controller
         // retrieval stays in context. The answer still cites fresh evidence.
         $searchQuestion = $this->withFollowUpContext($conversation, $question);
 
-        $answer = $this->generateAnswer(auth()->user(), $searchQuestion, $document, $question);
+        $answer = $comparisonDocument !== null
+            ? $this->generateComparisonAnswer(auth()->user(), $searchQuestion, $document, $comparisonDocument, $question)
+            : $this->generateAnswer(auth()->user(), $searchQuestion, $document, $question);
 
         $assistant = $conversation->messages()->create(['role' => 'assistant', 'content' => $answer['content']]);
 
@@ -115,6 +150,69 @@ class ChatController extends Controller
                 'relevance_score' => min(1, $hit['score'] / 10),
             ]);
         }
+    }
+
+    /**
+     * Compare evidence retrieved independently from each authorized document.
+     *
+     * @return array{content: string, chunks: list<array{chunk: \App\Models\DocumentChunk, document: Document, score: int, excerpt: string}>}
+     */
+    private function generateComparisonAnswer(
+        User $user,
+        string $searchQuestion,
+        Document $firstDocument,
+        Document $secondDocument,
+        string $question
+    ): array {
+        if ($reply = $this->smallTalk($question)) {
+            return ['content' => $reply, 'chunks' => []];
+        }
+
+        $retrieval = app(DocumentRetrievalService::class);
+        $first = $retrieval->retrieve($user, $searchQuestion, documentId: $firstDocument->id);
+        $second = $retrieval->retrieve($user, $searchQuestion, documentId: $secondDocument->id);
+
+        foreach ([$first, $second] as $result) {
+            if ($result['status'] !== DocumentRetrievalService::STATUS_OK) {
+                return [
+                    'content' => $result['status'] === DocumentRetrievalService::STATUS_DB_ERROR
+                        ? DocumentRetrievalService::statusMessage($result['status'])
+                        : 'Both selected documents must be processed and have searchable text before they can be compared.',
+                    'chunks' => [],
+                ];
+            }
+        }
+
+        $chunks = array_merge($first['chunks'], $second['chunks']);
+        $passages = array_map(fn ($hit) => [
+            'title' => $hit['document']->title ?? $hit['document']->original_filename,
+            'page' => $hit['chunk']->page_number,
+            'excerpt' => $hit['excerpt'],
+        ], $chunks);
+        $compareQuestion = "Compare these two selected documents. Identify supported similarities and differences, " .
+            "attribute every finding to its document, and state when the provided passages are insufficient. " .
+            "Question: {$question}";
+        $generated = app(AiProvider::class)->available()
+            ? app(AiProvider::class)->answer($compareQuestion, $passages)
+            : null;
+
+        if ($generated !== null) {
+            return ['content' => $generated, 'chunks' => $chunks];
+        }
+
+        $lines = [];
+        foreach ($chunks as $hit) {
+            $title = $hit['document']->title ?? $hit['document']->original_filename;
+            $page = $hit['chunk']->page_number !== null ? " (p. {$hit['chunk']->page_number})" : '';
+            $lines[] = "**{$title}**{$page}: \"{$hit['excerpt']}\"";
+        }
+
+        return [
+            'content' => "I couldn't generate a comparison, so here are the source passages from each selected document for you to compare:\n\n" .
+                implode("\n\n", $lines) .
+                "\n\n_The AI service is temporarily unavailable; no conclusions have been inferred._",
+            'chunks' => $chunks,
+        ];
     }
 
     /**

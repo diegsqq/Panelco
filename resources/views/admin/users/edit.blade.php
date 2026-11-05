@@ -42,12 +42,82 @@
 <label class="form-label">Primary Department</label>
 <select name="department_id" class="form-select"><option value="">— None —</option>@foreach ($departments as $d)<option value="{{ $d->id }}" {{ (string) old('department_id', $user->department_id) === (string) $d->id ? 'selected' : '' }}>{{ $d->name }}</option>@endforeach</select>
 </div>
+@unless ($user->isAdmin())
+<div class="col-12">
+<fieldset>
+<legend class="form-label">Additional Departments</legend>
+<input type="hidden" name="manage_departments" value="1">
+<small class="form-text text-muted d-block mb-2">Select the departments this user can access in addition to their primary department. Uncheck a department to remove access.</small>
+<div class="row g-2">
+@foreach ($departments as $d)
+<div class="col-md-6 col-lg-4">
+<div class="form-check">
+<input class="form-check-input" type="checkbox" name="departments[]" id="department-{{ $d->id }}" value="{{ $d->id }}" {{ in_array($d->id, $selectedDepartmentIds) ? 'checked' : '' }}>
+<label class="form-check-label" for="department-{{ $d->id }}">{{ $d->name }}</label>
+</div>
+</div>
+@endforeach
+</div>
+</fieldset>
+</div>
+@endunless
 </div>
 <div class="d-flex gap-2 mt-4">
 <button class="btn btn-outline-success px-4"><i class="bi bi-check-lg me-1"></i>Save Changes</button>
 <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary px-4">Cancel</a>
 </div>
 </form>
+</div>
+@if($user->two_factor_enabled && (int) $user->id !== (int) auth()->id())
+<div class="card card-p3 p-3 mt-4">
+<div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+<div>
+<div class="fw-semibold"><i class="bi bi-shield-lock me-1" style="color:#00A868"></i>Two-factor authentication</div>
+<small class="text-muted">Enabled. Reset only if the user has lost access to their authenticator; they will be notified by email.</small>
+</div>
+<form method="POST" action="{{ route('admin.users.two-factor.reset', $user) }}" onsubmit="return confirm('Reset this user’s two-factor authentication? They will be able to sign in with their password and must set up an authenticator again.')">
+@csrf
+<button class="btn btn-outline-danger"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset 2FA</button>
+</form>
+</div>
+</div>
+@endif
+<div class="card card-p3 p-4 mt-4">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+<div>
+<h5 class="fw-bold mb-1"><i class="bi bi-clock-history me-1" style="color:#00A868"></i>Recent sign-in activity</h5>
+<small class="text-muted">Recent authentication events for this account, visible to administrators.</small>
+</div>
+<span class="badge text-bg-secondary">Last 20 events</span>
+</div>
+@forelse($loginHistory as $event)
+@php
+    $eventLabels = [
+        'auth.login_succeeded' => ['Signed in successfully', 'text-bg-success'],
+        'auth.login_failed' => ['Failed sign-in attempt', 'text-bg-danger'],
+        'auth.login_locked_out' => ['Sign-in temporarily locked', 'text-bg-danger'],
+        'auth.two_factor_challenge_started' => ['Two-factor challenge started', 'text-bg-warning'],
+        'auth.two_factor_failed' => ['Incorrect two-factor code', 'text-bg-danger'],
+        'auth.logged_out' => ['Signed out', 'text-bg-secondary'],
+    ];
+    [$eventLabel, $eventBadge] = $eventLabels[$event->action] ?? ['Sign-in activity', 'text-bg-secondary'];
+@endphp
+<div class="d-flex justify-content-between align-items-start gap-3 border-top py-3">
+<div class="min-width-0">
+<span class="badge {{ $eventBadge }}">{{ $eventLabel }}</span>
+@if($event->action === 'auth.login_locked_out')
+<div class="small text-muted mt-1">Repeated failed attempts triggered a temporary sign-in lockout.</div>
+@endif
+<div class="small text-muted mt-1">
+{{ $event->metadata['ip'] ?? 'IP unavailable' }}
+@if(!empty($event->metadata['user_agent'])) · {{ \Illuminate\Support\Str::limit($event->metadata['user_agent'], 140) }}@endif
+</div>
+</div>
+<time class="small text-muted text-nowrap" datetime="{{ $event->created_at->toIso8601String() }}">{{ $event->created_at->format('M d, Y H:i') }}</time>
+</div>
+@empty
+<p class="text-muted mb-0">No sign-in activity has been recorded for this account yet.</p>
+@endforelse
 </div>
 @unless ($user->isAdmin())
 <div class="card card-p3 p-3 mt-4">

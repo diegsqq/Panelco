@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Document;
+use App\Models\DocumentVersion;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
@@ -21,7 +22,8 @@ class DuplicateDocumentDetector
 
     public function exists(string $hash, int $fileSize): bool
     {
-        if (Document::query()->where('file_hash', $hash)->exists()) {
+        if (Document::query()->where('file_hash', $hash)->exists()
+            || DocumentVersion::query()->whereHas('document')->where('file_hash', $hash)->exists()) {
             return true;
         }
 

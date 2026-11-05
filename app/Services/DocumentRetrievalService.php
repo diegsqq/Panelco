@@ -103,6 +103,11 @@ class DocumentRetrievalService
         }
     }
 
+    public function accessibleDocuments(User $user)
+    {
+        return $this->visibleDocuments($user);
+    }
+
     private function visibleDocuments(User $user, ?int $documentId = null)
     {
         $query = Document::query();

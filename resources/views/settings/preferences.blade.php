@@ -94,6 +94,16 @@
 </div>
 <div class="col-lg-4">
 <label class="p3-notif-row w-100 h-100 mb-0" style="cursor:pointer">
+<i class="bi bi-clipboard-check"></i>
+<span class="flex-grow-1">
+<span class="fw-semibold small d-block">Approval decisions</span>
+<small class="text-muted">An email when your document is approved or rejected.</small>
+</span>
+<span class="form-check form-switch m-0" style="flex:0 0 auto"><input type="checkbox" class="form-check-input" role="switch" name="notify_doc_approval" value="1" {{ $me->notify_doc_approval ? 'checked' : '' }} style="cursor:pointer"></span>
+</label>
+</div>
+<div class="col-lg-4">
+<label class="p3-notif-row w-100 h-100 mb-0" style="cursor:pointer">
 <i class="bi bi-fingerprint"></i>
 <span class="flex-grow-1">
 <span class="fw-semibold small d-block">{{ __('settings.notify_login') }}</span>

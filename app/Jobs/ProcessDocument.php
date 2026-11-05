@@ -14,43 +14,57 @@ use App\Services\ExtractionFailedException;
 use App\Services\UploadSuggester;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 class ProcessDocument implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public int $documentId) {}
+    public function __construct(public int $documentId, public ?int $versionNumber = null) {}
 
     public function handle(DocumentExtractionService $extractor, DocumentChunker $chunker, AiProvider $ai, UploadSuggester $suggester, DepartmentRecommender $departmentRecommender): void
     {
-        $document = Document::find($this->documentId);
-        if (! $document || $document->processing_status === 'completed') {
+        $document = DB::transaction(function () {
+            $document = Document::query()->lockForUpdate()->find($this->documentId);
+            if (! $document || $document->processing_status === 'completed'
+                || ($this->versionNumber !== null && (int) $document->version_number !== $this->versionNumber)) {
+                return null;
+            }
+
+            $document->update(['processing_status' => 'processing', 'processing_error' => null]);
+
+            return $document;
+        });
+        if (! $document) {
             return;
         }
 
-        $document->update(['processing_status' => 'processing', 'processing_error' => null]);
+        $processingVersionNumber = (int) $document->version_number;
 
         try {
             $result = $extractor->extract($document);
         } catch (ExtractionFailedException $e) {
-            $document->update(['processing_status' => 'failed', 'processing_error' => $e->getMessage()]);
-            $this->audit($document, 'document.processing_failed', ['error' => $e->getMessage()]);
-            $this->notifyUploader($document, true);
+            $failedDocument = $this->failIfCurrentVersion($processingVersionNumber, $e->getMessage());
+            if ($failedDocument) {
+                $this->audit($failedDocument, 'document.processing_failed', ['error' => $e->getMessage()]);
+                $this->notifyUploader($failedDocument, true);
+            }
 
             return;
         } catch (\Throwable $e) {
-            $document->update([
-                'processing_status' => 'failed',
-                'processing_error' => 'Unexpected processing error. Please retry or re-upload the document.',
-            ]);
-            $this->audit($document, 'document.processing_failed', []);
-            $this->notifyUploader($document, true);
+            $failedDocument = $this->failIfCurrentVersion(
+                $processingVersionNumber,
+                'Unexpected processing error. Please retry or re-upload the document.'
+            );
+            if ($failedDocument) {
+                $this->audit($failedDocument, 'document.processing_failed', []);
+                $this->notifyUploader($failedDocument, true);
+            }
 
             return;
         }
 
-        $chunker->chunk($document, $result['text'], $result['pages']);
         $metadata = $suggester->suggestFromText($result['text']);
         $departmentSuggestion = $departmentRecommender->suggest($result['text']);
 
@@ -122,9 +136,37 @@ class ProcessDocument implements ShouldQueue
             $updates['keywords'] = $this->fallbackKeywords($result['text']);
         }
 
-        $document->update($updates);
+        $document = DB::transaction(function () use ($chunker, $document, $processingVersionNumber, $result, $updates) {
+            $currentDocument = Document::query()->lockForUpdate()->find($document->id);
+            if (! $currentDocument || (int) $currentDocument->version_number !== $processingVersionNumber) {
+                return null;
+            }
+
+            $chunker->chunk($currentDocument, $result['text'], $result['pages']);
+            $currentDocument->update($updates);
+
+            return $currentDocument;
+        });
+        if (! $document) {
+            return;
+        }
+
         $this->audit($document, 'document.processed', ['chunks' => $document->chunks()->count()]);
         $this->notifyUploader($document, false);
+    }
+
+    private function failIfCurrentVersion(int $versionNumber, string $message): ?Document
+    {
+        return DB::transaction(function () use ($message, $versionNumber) {
+            $document = Document::query()->lockForUpdate()->find($this->documentId);
+            if (! $document || (int) $document->version_number !== $versionNumber) {
+                return null;
+            }
+
+            $document->update(['processing_status' => 'failed', 'processing_error' => $message]);
+
+            return $document;
+        });
     }
 
     /**

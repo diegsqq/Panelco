@@ -7,6 +7,7 @@ use App\Models\Document;
 use App\Models\MessageSource;
 use App\Models\User;
 use App\Services\Ai\AiProvider;
+use App\Services\Ai\NullAiProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -141,6 +142,119 @@ class Phase7ChatTest extends TestCase
             'document_id' => $target->id,
             'question' => 'What happened to the transformer?',
         ])->assertForbidden();
+    }
+
+    public function test_comparison_uses_both_selected_documents_and_cites_each(): void
+    {
+        $this->seed();
+        app()->instance(AiProvider::class, new FakeChatAiProvider());
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $first = $this->completedDoc($employee, 'Transformer Inspection', 'The transformer oil test found elevated moisture.');
+        $second = $this->completedDoc($employee, 'Transformer Repair', 'The repair crew replaced the transformer insulation.');
+        $unselected = $this->completedDoc($employee, 'Transformer Outage', 'The transformer outage lasted two hours.');
+
+        $this->actingAs($employee)->post(route('chat.store'), [
+        'document_id' => $first->id,
+        'comparison_document_id' => $second->id,
+        'question' => 'Compare the transformer findings.',
+        ])->assertRedirect();
+
+        $conversation = Conversation::firstOrFail();
+        $this->assertSame($first->id, $conversation->document_id);
+        $this->assertSame($second->id, $conversation->comparison_document_id);
+        $this->assertSame($second->id, $conversation->comparisonDocument->id);
+        $assistant = $conversation->messages()->where('role', 'assistant')->firstOrFail();
+        $this->assertSame('Generated answer from 2 passages.', $assistant->content);
+        $this->assertEqualsCanonicalizing(
+        [$first->id, $second->id],
+        $assistant->sources->pluck('document_id')->unique()->all()
+        );
+        $this->assertNotContains($unselected->id, $assistant->sources->pluck('document_id')->all());
+
+        $this->get(route('chat.show', $conversation))
+        ->assertOk()
+        ->assertSee('Transformer Inspection')
+        ->assertSee('Transformer Repair');
+    }
+
+    public function test_comparison_rejects_the_same_document_twice(): void
+    {
+        $this->seed();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $document = $this->completedDoc($employee, 'Transformer Report', 'Transformer repair complete.');
+
+        $this->actingAs($employee)->post(route('chat.store'), [
+        'document_id' => $document->id,
+        'comparison_document_id' => $document->id,
+        'question' => 'Compare the transformer findings.',
+        ])->assertSessionHasErrors('comparison_document_id');
+
+        $this->assertSame(0, Conversation::count());
+    }
+
+    public function test_comparison_rejects_documents_the_user_cannot_access(): void
+    {
+        $this->seed();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $otherEmployee = User::factory()->create(['role' => User::ROLE_EMPLOYEE]);
+        $first = $this->completedDoc($employee, 'My Transformer Report', 'My transformer was repaired.');
+        $restricted = $this->completedDoc($otherEmployee, 'Restricted Transformer Report', 'Restricted transformer details.');
+
+        $this->actingAs($employee)->post(route('chat.store'), [
+        'document_id' => $first->id,
+        'comparison_document_id' => $restricted->id,
+        'question' => 'Compare the transformer findings.',
+        ])->assertForbidden();
+
+        $this->assertSame(0, Conversation::count());
+        $this->actingAs($employee)->get(route('chat.index'))
+        ->assertOk()
+        ->assertSee('My Transformer Report')
+        ->assertDontSee('Restricted Transformer Report');
+    }
+
+    public function test_comparison_without_ai_returns_passages_and_cites_both_files(): void
+    {
+        $this->seed();
+        app()->instance(AiProvider::class, new NullAiProvider());
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $first = $this->completedDoc($employee, 'Inspection Report', 'Inspection documented increased transformer vibration.');
+        $second = $this->completedDoc($employee, 'Repair Report', 'Repair reduced transformer vibration after bearing replacement.');
+
+        $this->actingAs($employee)->post(route('chat.store'), [
+        'document_id' => $first->id,
+        'comparison_document_id' => $second->id,
+        'question' => 'Compare transformer vibration.',
+        ])->assertRedirect();
+
+        $assistant = Conversation::firstOrFail()->messages()->where('role', 'assistant')->firstOrFail();
+        $this->assertStringContainsString('couldn\'t generate a comparison', $assistant->content);
+        $this->assertStringContainsString('Inspection Report', $assistant->content);
+        $this->assertStringContainsString('Repair Report', $assistant->content);
+        $this->assertEqualsCanonicalizing(
+        [$first->id, $second->id],
+        $assistant->sources->pluck('document_id')->unique()->all()
+        );
+    }
+
+    public function test_comparison_follow_up_is_blocked_if_a_selected_document_is_deleted(): void
+    {
+        $this->seed();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $first = $this->completedDoc($employee, 'First Transformer Report', 'Transformer inspection was completed.');
+        $second = $this->completedDoc($employee, 'Second Transformer Report', 'Transformer repairs were completed.');
+        $this->actingAs($employee)->post(route('chat.store'), [
+        'document_id' => $first->id,
+        'comparison_document_id' => $second->id,
+        'question' => 'Compare these transformer reports.',
+        ])->assertRedirect();
+        $conversation = Conversation::firstOrFail();
+        $second->delete();
+
+        $this->post(route('chat.ask', $conversation), ['question' => 'What about the results?'])
+        ->assertSessionHasErrors('question');
+
+        $this->assertSame(2, $conversation->messages()->count());
     }
 
     public function test_pending_title_match_message(): void

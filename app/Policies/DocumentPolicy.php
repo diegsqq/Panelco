@@ -70,6 +70,11 @@ class DocumentPolicy
         return false;
     }
 
+    public function restore(User $user, Document $document): bool
+    {
+        return $this->delete($user, $document);
+    }
+
     public function approve(User $user, Document $document): bool
     {
         return $user->isAdmin() || ($user->role === User::ROLE_MANAGER && $this->canAccess($user, $document));

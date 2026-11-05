@@ -132,6 +132,44 @@
 </div>
 </div>
 
+<div class="card card-p3 p-4 mt-4">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+<div>
+<h5 class="fw-bold mb-1"><i class="bi bi-clock-history me-1" style="color:#00A868"></i>Recent sign-in activity</h5>
+<small class="text-muted">Your latest successful and failed sign-ins, 2FA events, and sign-outs. Only you can see this account history.</small>
+</div>
+<span class="badge text-bg-secondary">Last 20 events</span>
+</div>
+@forelse($loginHistory as $event)
+@php
+    $eventLabels = [
+        'auth.login_succeeded' => ['Signed in successfully', 'text-bg-success'],
+        'auth.login_failed' => ['Failed sign-in attempt', 'text-bg-danger'],
+        'auth.login_locked_out' => ['Sign-in temporarily locked', 'text-bg-danger'],
+        'auth.two_factor_challenge_started' => ['Two-factor challenge started', 'text-bg-warning'],
+        'auth.two_factor_failed' => ['Incorrect two-factor code', 'text-bg-danger'],
+        'auth.logged_out' => ['Signed out', 'text-bg-secondary'],
+    ];
+    [$eventLabel, $eventBadge] = $eventLabels[$event->action] ?? ['Sign-in activity', 'text-bg-secondary'];
+@endphp
+<div class="d-flex justify-content-between align-items-start gap-3 border-top py-3">
+<div class="min-width-0">
+<span class="badge {{ $eventBadge }}">{{ $eventLabel }}</span>
+@if($event->action === 'auth.login_locked_out')
+<div class="small text-muted mt-1">Repeated failed attempts triggered a temporary sign-in lockout.</div>
+@endif
+<div class="small text-muted mt-1">
+{{ $event->metadata['ip'] ?? 'IP unavailable' }}
+@if(!empty($event->metadata['user_agent'])) · {{ \Illuminate\Support\Str::limit($event->metadata['user_agent'], 140) }}@endif
+</div>
+</div>
+<time class="small text-muted text-nowrap" datetime="{{ $event->created_at->toIso8601String() }}">{{ $event->created_at->format('M d, Y H:i') }}</time>
+</div>
+@empty
+<p class="text-muted mb-0">No sign-in activity has been recorded yet.</p>
+@endforelse
+</div>
+
 <style>
 /* Security page */
 .p3-steps { display: flex; flex-direction: column; gap: .55rem; }
