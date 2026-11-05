@@ -7,11 +7,10 @@
 @if(isset($user)) @method('PUT') @endif
 <div class="row g-3">
 <div class="col-md-6"><label class="form-label">Name</label><input name="name" class="form-control" value="{{ old('name', $user->name ?? '') }}" required></div>
-<div class="col-md-6"><label class="form-label">Email</label><input name="email" type="email" class="form-control" value="{{ old('email', $user->email ?? '') }}" required></div>
-<div class="col-md-6"><label class="form-label">Password {{ isset($user) ? '(leave blank to keep)' : '' }}</label><input name="password" type="password" class="form-control" minlength="12" {{ isset($user) ? '' : 'required' }}><small class="text-muted">12+ characters, uppercase and lowercase, number, and symbol.</small><input name="password_confirmation" type="password" class="form-control mt-2" minlength="12" placeholder="Confirm password"></div>
+<div class="col-md-6"><label class="form-label">Email</label><input name="email" type="email" class="form-control" value="{{ old('email', $user->email ?? '') }}" autocomplete="off" autocapitalize="off" spellcheck="false" required></div>
+<div class="col-md-6"><label class="form-label">Password {{ isset($user) ? '(leave blank to keep)' : '' }}</label><div class="input-group"><input name="password" id="standalonePw" type="password" class="form-control" minlength="12" autocomplete="new-password" {{ isset($user) ? '' : 'required' }}></div><small class="text-muted">12+ characters, uppercase and lowercase, number, and symbol.</small><input name="password_confirmation" id="standalonePwConfirm" type="password" class="form-control mt-2" minlength="12" autocomplete="new-password" placeholder="Confirm password"></div>
 <div class="col-md-3"><label class="form-label">Role</label><select name="role" class="form-select" required>@foreach ([\App\Models\User::ROLE_EMPLOYEE, \App\Models\User::ROLE_MANAGER, \App\Models\User::ROLE_ADMIN] as $r)<option value="{{ $r }}" {{ old('role', $user->role ?? \App\Models\User::ROLE_EMPLOYEE) === $r ? 'selected' : '' }}>{{ \App\Models\User::roleLabel($r) }}</option>@endforeach</select></div>
 <div class="col-md-3"><label class="form-label">Primary Department</label><select name="department_id" class="form-select"><option value="">— None —</option>@foreach ($departments as $d)<option value="{{ $d->id }}" {{ (string) old('department_id', $user->department_id ?? '') === (string) $d->id ? 'selected' : '' }}>{{ $d->name }}</option>@endforeach</select></div>
-<div class="col-12" id="createAddDeptField"><label class="form-label">Additional Departments</label><select name="departments[]" class="form-select" multiple>@foreach ($departments as $d)<option value="{{ $d->id }}" {{ in_array($d->id, old('departments', isset($user) ? $user->departments->pluck('id')->toArray() : [])) ? 'selected' : '' }}>{{ $d->name }}</option>@endforeach</select></div>
 </div>
 <button class="btn btn-primary mt-3">Save</button>
 <a href="{{ route('admin.users.index') }}" class="btn btn-link mt-3">Cancel</a>
@@ -22,12 +21,24 @@
 </div>
 <script>
 (function () {
-    var role = document.querySelector('select[name="role"]');
-    var field = document.getElementById('createAddDeptField');
-    if (!role || !field) return;
-    function sync() { field.classList.toggle('d-none', role.value === @json(\App\Models\User::ROLE_ADMIN)); }
-    role.addEventListener('change', sync);
-    sync();
+    var pw = document.getElementById('standalonePw');
+    var confirm = document.getElementById('standalonePwConfirm');
+    if (!pw || !confirm) return;
+
+    // Chrome autofills after page load — wipe email/password again when the
+    // server sent no input to repopulate (fresh page, no validation errors).
+    @if (! $errors->any() && count(old()) === 0)
+    function clearAutofill() {
+        var email = document.querySelector('input[name="email"]');
+        if (email) email.value = '';
+        pw.value = '';
+        pw.type = 'password';
+        confirm.value = '';
+        confirm.type = 'password';
+    }
+    window.addEventListener('load', clearAutofill);
+    clearAutofill();
+    @endif
 })();
 </script>
 @endsection

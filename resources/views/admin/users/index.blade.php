@@ -1,20 +1,25 @@
 @extends('layouts.app')
 @section('content')
-@php $showForm = $errors->any() || count(old()) > 0; @endphp
+@php $openForm = $errors->any() || count(old()) > 0; @endphp
 <div class="d-flex justify-content-between align-items-center mb-3">
 <h4 class="mb-0">User Management</h4>
-<button class="btn btn-outline-success" data-bs-toggle="collapse" data-bs-target="#userCreateForm" aria-expanded="{{ $showForm ? 'true' : 'false' }}"><i class="bi bi-person-plus-fill me-1"></i>New User</button>
+<button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#newUserModal"><i class="bi bi-person-plus-fill me-1"></i>New User</button>
 </div>
-<div class="collapse {{ $showForm ? 'show' : '' }} mb-4" id="userCreateForm">
-<div class="card card-p3 p-4">
-<div class="d-flex align-items-center gap-2 mb-3">
+<div class="modal fade" id="newUserModal" tabindex="-1" aria-hidden="true">
+<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+<div class="modal-content" style="border-radius:1rem;overflow:hidden">
+<div class="modal-header border-0 pb-0">
+<div class="d-flex align-items-center gap-2">
 <span class="stat-icon" style="background:#e6f3ea;color:var(--p3-navy)"><i class="bi bi-person-plus-fill"></i></span>
 <div>
 <div class="fw-semibold">Create Employee Account</div>
 <small class="text-muted">New accounts default to Employee. Change the role only when elevated access is required.</small>
 </div>
 </div>
-<form method="POST" action="{{ route('admin.users.store') }}">
+<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body pt-3">
+<form method="POST" action="{{ route('admin.users.store') }}" autocomplete="off" id="userCreateFormEl">
 @csrf
 <div class="row g-3">
 <div class="col-md-6">
@@ -23,16 +28,16 @@
 </div>
 <div class="col-md-6">
 <label class="form-label">Email</label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-envelope"></i></span><input name="email" type="email" class="form-control" value="{{ old('email') }}" placeholder="juan@panelco.gov.ph" required></div>
+<div class="input-group"><span class="input-group-text"><i class="bi bi-envelope"></i></span><input name="email" type="email" class="form-control" value="{{ old('email') }}" placeholder="juan@panelco.gov.ph" autocomplete="off" autocapitalize="off" spellcheck="false" required></div>
 </div>
 <div class="col-md-6">
 <label class="form-label">Password</label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-lock"></i></span><input name="password" type="password" class="form-control" minlength="12" required></div>
+<div class="input-group"><span class="input-group-text"><i class="bi bi-lock"></i></span><input name="password" id="newUserPw" type="password" class="form-control" minlength="12" autocomplete="new-password" required></div>
 <small class="text-muted">12+ characters, uppercase and lowercase, number, and symbol.</small>
 </div>
 <div class="col-md-6">
 <label class="form-label">Confirm Password</label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-lock-fill"></i></span><input name="password_confirmation" type="password" class="form-control" minlength="12" required></div>
+<div class="input-group"><span class="input-group-text"><i class="bi bi-lock-fill"></i></span><input name="password_confirmation" id="newUserPwConfirm" type="password" class="form-control" minlength="12" autocomplete="new-password" required></div>
 </div>
 <div class="col-md-4">
 <label class="form-label">Role</label>
@@ -42,25 +47,14 @@
 <label class="form-label">Primary Department</label>
 <select name="department_id" class="form-select"><option value="">— None —</option>@foreach ($departments as $d)<option value="{{ $d->id }}" {{ (string) old('department_id') === (string) $d->id ? 'selected' : '' }}>{{ $d->name }}</option>@endforeach</select>
 </div>
-<div class="col-md-4" id="createAddDeptField">
-<label class="form-label">Additional Departments</label>
-<div class="border rounded p-2 d-flex flex-wrap gap-2" style="min-height:44px;background:#fff">
-@forelse ($departments as $d)
-<label class="btn btn-sm p3-dept-pill">
-<input type="checkbox" name="departments[]" value="{{ $d->id }}" class="form-check-input me-1" {{ in_array($d->id, old('departments', [])) ? 'checked' : '' }}>{{ $d->name }}
-</label>
-@empty
-<small class="text-muted align-self-center">No departments yet.</small>
-@endforelse
-</div>
-<small class="text-muted">Select or clear a checkbox to add or remove a department.</small>
-</div>
-</div>
-<div class="d-flex gap-2 mt-4">
-<button class="btn btn-outline-success px-4"><i class="bi bi-check-lg me-1"></i>Save</button>
-<button type="button" class="btn btn-outline-secondary px-4" data-bs-toggle="collapse" data-bs-target="#userCreateForm">Cancel</button>
 </div>
 </form>
+</div>
+<div class="modal-footer border-0 pt-0">
+<button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+<button type="submit" form="userCreateFormEl" class="btn btn-outline-success px-4"><i class="bi bi-check-lg me-1"></i>Save</button>
+</div>
+</div>
 </div>
 </div>
 <div class="card card-p3 p-0 overflow-hidden">
@@ -84,12 +78,47 @@
 <div class="mt-3">{{ $users->links() }}</div>
 <script>
 (function () {
-    var role = document.querySelector('#userCreateForm select[name="role"]');
-    var field = document.getElementById('createAddDeptField');
-    if (!role || !field) return;
-    function sync() { field.classList.toggle('d-none', role.value === @json(\App\Models\User::ROLE_ADMIN)); }
-    role.addEventListener('change', sync);
-    sync();
+    var modalEl = document.getElementById('newUserModal');
+    var form = document.getElementById('userCreateFormEl');
+    if (!modalEl || !form) return;
+
+    // Empty the create form whenever the modal closes, and right after a
+    // successful save, so no previous user's details linger for the next one.
+    function clearForm() {
+        form.reset();
+        ['newUserPw', 'newUserPwConfirm'].forEach(function (id) {
+            var f = document.getElementById(id);
+            if (f) { f.value = ''; f.type = 'password'; }
+        });
+    }
+
+    modalEl.addEventListener('hidden.bs.modal', clearForm);
+
+    // Chrome autofills after page load, so when the server sent no input to
+    // repopulate (fresh page or successful save), wipe email/password again.
+    @if (! $errors->any() && count(old()) === 0)
+    function clearAutofill() {
+        var email = form.querySelector('input[name="email"]');
+        if (email) email.value = '';
+        ['newUserPw', 'newUserPwConfirm'].forEach(function (id) {
+            var f = document.getElementById(id);
+            if (f) { f.value = ''; f.type = 'password'; }
+        });
+    }
+    window.addEventListener('load', clearAutofill);
+    clearAutofill();
+    @endif
+
+    // Validation errors (or repopulated input) reopen the modal so the fixes
+    // are visible; a clean page stays closed.
+    @if ($openForm)
+    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+    @endif
+
+    @if (session('status') && ! $errors->any())
+        clearForm();
+    @endif
 })();
 </script>
 @endsection

@@ -50,7 +50,7 @@ class DashboardVisibilityTest extends TestCase
             ->assertDontSee('Admin Records')
             ->assertSee('Employee private chat')
             ->assertDontSee('Admin private chat')
-            ->assertSee('2 docs');
+            ->assertSee('1 docs');
 
         $this->actingAs($admin)->get(route('dashboard'))
             ->assertOk()
@@ -62,10 +62,10 @@ class DashboardVisibilityTest extends TestCase
             ->assertSee('Admin Records')
             ->assertDontSee('Employee private chat')
             ->assertSee('Admin private chat')
-            ->assertSee('4 docs');
+            ->assertSee('1 docs');
     }
 
-    public function test_department_distribution_is_scoped_and_uses_document_suggestions(): void
+    public function test_department_distribution_shows_all_departments_for_every_role(): void
     {
         $this->seed();
         $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
@@ -83,23 +83,27 @@ class DashboardVisibilityTest extends TestCase
         $this->createDocument($otherEmployee, 'Other employee document', [
             'department_id' => $administration->id,
         ]);
+        $this->createDocument($otherEmployee, 'No department document');
 
+        $expected = [
+            $administration->name => 2,
+            $it->name => 1,
+        ];
+
+        // Employees see organization-wide department totals, same as admins,
+        // and documents without a department never show an "Unassigned" row.
         $this->actingAs($employee)->get(route('dashboard'))
             ->assertOk()
-            ->assertViewHas('departmentDistribution', function ($distribution) use ($it, $administration) {
-                return $distribution->pluck('total', 'department_name')->all() === [
-                    $administration->name => 1,
-                    $it->name => 1,
-                ];
+            ->assertDontSee('Unassigned')
+            ->assertViewHas('departmentDistribution', function ($distribution) use ($expected) {
+                return $distribution->pluck('total', 'department_name')->all() === $expected;
             });
 
         $this->actingAs($admin)->get(route('dashboard'))
             ->assertOk()
-            ->assertViewHas('departmentDistribution', function ($distribution) use ($it, $administration) {
-                return $distribution->pluck('total', 'department_name')->all() === [
-                    $administration->name => 2,
-                    $it->name => 1,
-                ];
+            ->assertDontSee('Unassigned')
+            ->assertViewHas('departmentDistribution', function ($distribution) use ($expected) {
+                return $distribution->pluck('total', 'department_name')->all() === $expected;
             });
     }
 

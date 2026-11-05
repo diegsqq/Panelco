@@ -151,7 +151,7 @@ class Phase9AdminTest extends TestCase
         $this->assertDatabaseMissing('users', ['id' => $created->id]);
     }
 
-    public function test_admin_can_remove_additional_departments_from_a_user(): void
+    public function test_saving_a_user_preserves_additional_departments(): void
     {
         $this->seed();
         $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
@@ -171,10 +171,35 @@ class Phase9AdminTest extends TestCase
             ->put(route('admin.users.update', $employee), $payload)
             ->assertRedirect(route('admin.users.index'));
 
-        $this->assertDatabaseMissing('department_user', [
+        $this->assertDatabaseHas('department_user', [
             'user_id' => $employee->id,
             'department_id' => $additional->id,
         ]);
+    }
+
+    public function test_user_forms_have_no_additional_departments_field(): void
+    {
+        $this->seed();
+        $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertDontSee('Additional Departments')
+            ->assertDontSee('name="departments[]"', false);
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.create'))
+            ->assertOk()
+            ->assertDontSee('Additional Departments')
+            ->assertDontSee('name="departments[]"', false);
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.edit', $employee))
+            ->assertOk()
+            ->assertDontSee('Additional Departments')
+            ->assertDontSee('name="departments[]"', false);
     }
 
     public function test_admin_can_deactivate_and_reactivate_employee_accounts(): void
@@ -246,7 +271,7 @@ class Phase9AdminTest extends TestCase
         $this->assertDatabaseHas('users', ['id' => $admin->id, 'role' => User::ROLE_ADMIN]);
     }
 
-    public function test_editing_own_account_explains_why_delete_is_unavailable(): void
+    public function test_edit_page_has_no_delete_controls(): void
     {
         $this->seed();
         $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
@@ -254,8 +279,112 @@ class Phase9AdminTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.users.edit', $admin))
             ->assertOk()
-            ->assertSee('You cannot delete your own account. Sign in as a different administrator to delete this account.')
-            ->assertSee('data-bs-target="#deleteUserModal" disabled', false);
+            ->assertDontSee('Danger Zone')
+            ->assertDontSee('deleteUserModal')
+            ->assertDontSee('Delete User');
+    }
+
+    public function test_create_form_is_empty_after_adding_a_user(): void
+    {
+        $this->seed();
+        $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
+
+        $this->actingAs($admin)->post(route('admin.users.store'), [
+            'name' => 'Freshly Added User',
+            'email' => 'freshly.added@panelco3.local',
+            'password' => 'Safe-password-123!',
+            'password_confirmation' => 'Safe-password-123!',
+        ])->assertRedirect(route('admin.users.index'));
+
+        // The create form comes back empty: no repopulated values, no password
+        // left behind, and the modal stays closed unless a validation error
+        // needs to reopen it with the input to fix.
+        $page = $this->actingAs($admin)->get(route('admin.users.index'));
+        $page->assertOk();
+        $html = $page->getContent();
+
+        $this->assertStringNotContainsString('value="Freshly Added User"', $html);
+        $this->assertStringNotContainsString('value="freshly.added@panelco3.local"', $html);
+        $this->assertStringNotContainsString('autocomplete="on"', $html);
+        $this->assertStringContainsString('autocomplete="off"', $html);
+        $this->assertStringContainsString('autocomplete="new-password"', $html);
+        $this->assertStringContainsString('id="newUserModal"', $html);
+        // Closed by default: auto-show script only runs when there is input
+        // to repopulate.
+        $this->assertDoesNotMatchRegularExpression(
+            '/bootstrap\.Modal\.getOrCreateInstance\(modalEl\);\s*modal\.show\(\);/',
+            $html
+        );
+    }
+
+    public function test_new_user_opens_a_modal_form(): void
+    {
+        $this->seed();
+        $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
+
+        $html = $this->actingAs($admin)->get(route('admin.users.index'))->getContent();
+
+        // The form lives in a centered modal, not an inline block at the top.
+        $this->assertStringContainsString('data-bs-target="#newUserModal"', $html);
+        $this->assertStringContainsString('modal-dialog-centered', $html);
+        $this->assertStringNotContainsString('id="userCreateForm"', $html);
+        $this->assertStringNotContainsString('data-bs-target="#userCreateForm"', $html);
+
+        // A failed save reopens the modal with the typed input intact.
+        $this->actingAs($admin)->post(route('admin.users.store'), [
+            'name' => 'Half Typed User',
+            'email' => 'not-an-email',
+            'password' => 'short',
+            'password_confirmation' => 'short',
+        ])->assertSessionHasErrors(['email', 'password']);
+
+        $html = $this->actingAs($admin)->get(route('admin.users.index'))->getContent();
+        $this->assertStringContainsString('value="Half Typed User"', $html);
+        $this->assertMatchesRegularExpression(
+            '/bootstrap\.Modal\.getOrCreateInstance\(modalEl\);\s*modal\.show\(\);/',
+            $html
+        );
+    }
+
+    public function test_email_and_password_fields_block_browser_autofill(): void
+    {
+        $this->seed();
+        $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+
+        foreach (['index', 'create'] as $routeName) {
+            $html = $this->actingAs($admin)->get(route('admin.users.' . $routeName))->getContent();
+
+            $this->assertStringContainsString('autocomplete="off"', $html, "email autofill off missing on {$routeName}");
+            $this->assertStringContainsString('autocomplete="new-password"', $html, "password new-password missing on {$routeName}");
+            $this->assertDoesNotMatchRegularExpression('/name="email"[^>]*autocomplete="on"/', $html);
+            $this->assertDoesNotMatchRegularExpression('/name="password"[^>]*autocomplete="on"/', $html);
+        }
+
+        $html = $this->actingAs($admin)->get(route('admin.users.edit', $employee))->getContent();
+        $this->assertStringContainsString('autocomplete="off"', $html);
+        $this->assertStringContainsString('autocomplete="new-password"', $html);
+    }
+
+    public function test_password_fields_have_no_suggest_password_text(): void
+    {
+        $this->seed();
+        $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
+
+        foreach (['index', 'create'] as $routeName) {
+            $html = $this->actingAs($admin)->get(route('admin.users.' . $routeName))->getContent();
+
+            $this->assertStringNotContainsString('Suggest password', $html, "suggest text still present on {$routeName}");
+            $this->assertStringNotContainsString('suggestPwLink', $html);
+            $this->assertStringNotContainsString('suggestStandalonePwLink', $html);
+            // The 12+ hint stays.
+            $this->assertStringContainsString('12+ characters, uppercase and lowercase, number, and symbol.', $html);
+        }
+
+        $html = $this->actingAs($admin)->get(route('admin.users.edit', $admin))->getContent();
+        $this->assertStringNotContainsString('Suggest password', $html);
+        $this->assertStringNotContainsString('suggestEditPwLink', $html);
+        $this->assertStringContainsString('12+ characters, uppercase and lowercase, number, and symbol.', $html);
     }
 
     public function test_another_administrator_can_delete_system_administrator_after_admin_handoff(): void
@@ -282,8 +411,7 @@ class Phase9AdminTest extends TestCase
         $this->actingAs($otherAdmin)
             ->get(route('admin.users.edit', $systemAdministrator))
             ->assertOk()
-            ->assertSee('The System Administrator account cannot be deleted.')
-            ->assertSee('data-bs-target="#deleteUserModal" disabled', false)
+            ->assertDontSee('Danger Zone')
             ->assertDontSee('Account access')
             ->assertDontSee('Additional Departments');
 

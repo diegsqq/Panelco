@@ -43,8 +43,6 @@ class UserController extends Controller
             'password' => [...PasswordRules::newPassword(), 'confirmed'],
             'role' => ['sometimes', 'required', Rule::in(User::ROLES)],
             'department_id' => ['nullable', 'exists:departments,id'],
-            'departments' => ['nullable', 'array'],
-            'departments.*' => ['exists:departments,id'],
         ]);
 
         $user = User::create([
@@ -54,7 +52,6 @@ class UserController extends Controller
             'role' => $data['role'] ?? User::ROLE_EMPLOYEE,
             'department_id' => $data['department_id'] ?? null,
         ]);
-        $user->departments()->sync($data['departments'] ?? []);
 
         AuditLog::create([
             'user_id' => auth()->id(),
@@ -70,10 +67,8 @@ class UserController extends Controller
     public function edit(User $user): View
     {
         $departments = Department::orderBy('name')->get();
-        $deleteBlockReason = $this->deleteBlockReason($user, (int) auth()->id())
-            ?? ($user->isAdmin() ? 'The System Administrator account cannot be deleted.' : null);
 
-        return view('admin.users.edit', compact('user', 'departments', 'deleteBlockReason'));
+        return view('admin.users.edit', compact('user', 'departments'));
     }
 
     public function update(Request $request, User $user): RedirectResponse
@@ -84,8 +79,6 @@ class UserController extends Controller
             'password' => [...PasswordRules::newPassword(false), 'confirmed'],
             'role' => ['required', Rule::in(User::ROLES)],
             'department_id' => ['nullable', 'exists:departments,id'],
-            'departments' => ['nullable', 'array'],
-            'departments.*' => ['exists:departments,id'],
         ]);
 
         if ($user->is_active && $user->isAdmin()
@@ -94,10 +87,9 @@ class UserController extends Controller
             return back()->withErrors(['role' => 'The last active administrator cannot be demoted. Activate or assign another administrator first.'])->withInput();
         }
 
-        // The Additional Departments field is hidden for System Administrator
-        // accounts, so skip the sync there or saving would wipe their departments.
-        $departmentsFieldShown = ! $user->isAdmin();
-
+        // Additional Departments no longer has a form field, so the existing
+        // department_user pivot is left untouched — saving must not wipe the
+        // departments that still drive document access.
         $user->fill([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -109,9 +101,6 @@ class UserController extends Controller
             $user->password = Hash::make($data['password']);
         }
         $user->save();
-        if ($departmentsFieldShown) {
-            $user->departments()->sync($data['departments'] ?? []);
-        }
 
         AuditLog::create([
             'user_id' => auth()->id(),

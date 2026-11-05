@@ -45,7 +45,14 @@ class HomeController extends Controller
             ->groupBy('resolved_category.name')
             ->get();
 
-        $departmentDistribution = (clone $documentQuery)
+        // Department distribution shows every department for all roles, so
+        // employees can see organization-wide totals, not only their uploads.
+        // Documents with neither a department nor a suggested one are left
+        // out, so no "Unassigned" row appears.
+        $departmentDistribution = Document::query()
+            ->where(function ($q) {
+                $q->whereNotNull('department_id')->orWhereNotNull('suggested_department_id');
+            })
             ->leftJoin('departments as resolved_department', function ($join) {
                 $join->on(
                     'resolved_department.id',
@@ -57,7 +64,9 @@ class HomeController extends Controller
             ->groupBy('resolved_department.name')
             ->orderByDesc('total')
             ->orderBy('department_name')
-            ->get();
+            ->get()
+            ->reject(fn ($row) => $row->department_name === 'Unassigned')
+            ->values();
 
         $recentConversations = Conversation::where('user_id', $user->id)
             ->latest()->limit(5)->get();
