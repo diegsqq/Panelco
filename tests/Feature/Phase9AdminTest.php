@@ -5,11 +5,16 @@ namespace Tests\Feature;
 use App\Mail\SecurityAlert;
 use App\Models\AuditLog;
 use App\Models\Department;
+use App\Models\Document;
 use App\Models\DocumentCategory;
 use App\Models\User;
+use App\Services\Ai\AiProvider;
+use App\Services\Ai\NullAiProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class Phase9AdminTest extends TestCase
@@ -164,6 +169,44 @@ class Phase9AdminTest extends TestCase
             ->assertDontSee('198.51.100.20');
     }
 
+    public function test_admin_user_edit_summarizes_account_access_for_review(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $primary = Department::create(['name' => 'Review Primary Department']);
+        $additional = Department::create(['name' => 'Review Additional Department']);
+        $user = User::factory()->create([
+            'role' => User::ROLE_MANAGER,
+            'department_id' => $primary->id,
+            'two_factor_enabled' => true,
+        ]);
+        $user->departments()->sync([$additional->id]);
+        $lastSuccessfulSignIn = AuditLog::create([
+            'user_id' => $user->id,
+            'action' => 'auth.login_succeeded',
+            'entity_type' => User::class,
+            'entity_id' => $user->id,
+            'created_at' => now()->subDays(5),
+        ]);
+        AuditLog::create([
+            'user_id' => $user->id,
+            'action' => 'auth.login_failed',
+            'entity_type' => User::class,
+            'entity_id' => $user->id,
+            'created_at' => now(),
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.edit', $user))
+            ->assertOk()
+            ->assertSee('Access review')
+            ->assertSee('Active')
+            ->assertSee('Document Manager')
+            ->assertSee('Review Primary Department')
+            ->assertSee('Review Additional Department')
+            ->assertSee('Enabled')
+            ->assertSee($lastSuccessfulSignIn->created_at->format('M d, Y H:i'));
+    }
+
     public function test_admin_user_list_shows_two_factor_status_without_exposing_secret(): void
     {
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
@@ -214,6 +257,62 @@ class Phase9AdminTest extends TestCase
 
         $this->get(route('admin.users.index', ['two_factor' => 'invalid']))
             ->assertSessionHasErrors('two_factor');
+    }
+
+    public function test_admin_system_health_reports_queue_document_and_service_status(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $employee = User::factory()->create(['role' => User::ROLE_EMPLOYEE]);
+        Document::create([
+            'uploaded_by' => $employee->id,
+            'title' => 'Pending health report',
+            'original_filename' => 'pending-health.txt',
+            'storage_path' => 'documents/pending-health.txt',
+            'mime_type' => 'text/plain',
+            'file_size' => 10,
+            'processing_status' => 'pending',
+        ]);
+        Document::create([
+            'uploaded_by' => $employee->id,
+            'title' => 'Failed health report',
+            'original_filename' => 'failed-health.txt',
+            'storage_path' => 'documents/failed-health.txt',
+            'mime_type' => 'text/plain',
+            'file_size' => 10,
+            'processing_status' => 'failed',
+        ]);
+        app()->instance(AiProvider::class, new NullAiProvider);
+        config(['queue.default' => 'database']);
+        DB::table('jobs')->insert([
+            'queue' => 'default',
+            'payload' => '{}',
+            'attempts' => 0,
+            'reserved_at' => null,
+            'available_at' => time(),
+            'created_at' => time(),
+        ]);
+        DB::table('failed_jobs')->insert([
+            'uuid' => (string) Str::uuid(),
+            'connection' => 'database',
+            'queue' => 'default',
+            'payload' => '{}',
+            'exception' => 'failure details are not shown',
+            'failed_at' => now(),
+        ]);
+
+        $this->actingAs($admin)->get(route('admin.system-health.index'))
+            ->assertOk()
+            ->assertSee('System health')
+            ->assertSee('Database connection is responding.')
+            ->assertSee('1 queued jobs')
+            ->assertSee('1 failed jobs')
+            ->assertSee('1 pending')
+            ->assertSee('1 failed')
+            ->assertSee('AI provider is not configured')
+            ->assertDontSee('failure details are not shown');
+
+        $this->actingAs($employee)->get(route('admin.system-health.index'))
+            ->assertForbidden();
     }
 
     public function test_admin_can_reset_another_users_two_factor_with_audit_and_email(): void

@@ -68,6 +68,35 @@
 </div>
 </form>
 </div>
+<div class="card card-p3 p-4 mt-4">
+<h5 class="fw-bold mb-1"><i class="bi bi-person-check me-1" style="color:#00A868"></i>Access review</h5>
+<small class="text-muted d-block mb-3">Review this account’s current access and recent successful sign-in before making changes.</small>
+<dl class="row mb-0">
+<dt class="col-sm-4 text-muted">Account status</dt>
+<dd class="col-sm-8"><span class="badge {{ $user->is_active ? 'text-bg-success' : 'text-bg-secondary' }}">{{ $user->is_active ? 'Active' : 'Inactive' }}</span></dd>
+<dt class="col-sm-4 text-muted">Role</dt>
+<dd class="col-sm-8">{{ \App\Models\User::roleLabel($user->role) }}</dd>
+<dt class="col-sm-4 text-muted">Department access</dt>
+<dd class="col-sm-8">
+@if ($user->isAdmin())
+All departments (administrator access)
+@else
+<div>Primary: {{ $user->department?->name ?? 'None' }}</div>
+<div>Additional: {{ $user->departments->isNotEmpty() ? $user->departments->pluck('name')->join(', ') : 'None' }}</div>
+@endif
+</dd>
+<dt class="col-sm-4 text-muted">Two-factor authentication</dt>
+<dd class="col-sm-8">{{ $user->two_factor_enabled ? 'Enabled' : 'Not enabled' }}</dd>
+<dt class="col-sm-4 text-muted">Last successful sign-in</dt>
+<dd class="col-sm-8">
+@if ($lastSuccessfulSignIn)
+<time datetime="{{ $lastSuccessfulSignIn->created_at->toIso8601String() }}">{{ $lastSuccessfulSignIn->created_at->format('M d, Y H:i') }}</time>
+@else
+No successful sign-in recorded
+@endif
+</dd>
+</dl>
+</div>
 @if($user->two_factor_enabled && (int) $user->id !== (int) auth()->id())
 <div class="card card-p3 p-3 mt-4">
 <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">

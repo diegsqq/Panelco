@@ -32,11 +32,15 @@
     <div class="col-md-6">
         <div class="card card-p3 p-4 h-100">
             <h5 class="fw-semibold"><i class="bi bi-file-earmark-text me-2" style="color:#00A868"></i>Document processing</h5>
-            <div class="d-flex flex-wrap gap-2">
-                <span class="badge text-bg-warning">{{ $documents['pending'] }} pending</span>
-                <span class="badge text-bg-info">{{ $documents['processing'] }} processing</span>
-                <span class="badge text-bg-{{ $documents['failed'] > 0 ? 'danger' : 'success' }}">{{ $documents['failed'] }} failed</span>
-            </div>
+            @if($documents['pending'] === null)
+                <p class="text-muted small mb-0">Processing counts are unavailable.</p>
+            @else
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge text-bg-warning">{{ $documents['pending'] }} pending</span>
+                    <span class="badge text-bg-info">{{ $documents['processing'] }} processing</span>
+                    <span class="badge text-bg-{{ $documents['failed'] > 0 ? 'danger' : 'success' }}">{{ $documents['failed'] }} failed</span>
+                </div>
+            @endif
             <a href="{{ route('queue.index') }}" class="small mt-3">Open processing queue</a>
         </div>
     </div>

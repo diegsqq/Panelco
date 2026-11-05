@@ -79,6 +79,7 @@ class UserController extends Controller
     public function edit(User $user): View
     {
         $departments = Department::orderBy('name')->get();
+        $user->load(['department', 'departments']);
         $selectedDepartmentIds = old('departments', $user->departments()->pluck('departments.id')->all());
         $selectedDepartmentIds = is_array($selectedDepartmentIds)
             ? array_map('intval', $selectedDepartmentIds)
@@ -91,19 +92,30 @@ class UserController extends Controller
             'auth.two_factor_failed',
             'auth.logged_out',
         ];
-        $loginHistory = AuditLog::query()
-            ->whereIn('action', $authenticationActions)
+        $accountEvents = AuditLog::query()
             ->where(function ($query) use ($user) {
                 $query->where(function ($ownedEvents) use ($user) {
                     $ownedEvents->where('entity_type', User::class)
                         ->where('entity_id', $user->id);
                 })->orWhere('metadata->identifier', $user->email);
-            })
+            });
+        $lastSuccessfulSignIn = (clone $accountEvents)
+            ->where('action', 'auth.login_succeeded')
+            ->latest()
+            ->first();
+        $loginHistory = (clone $accountEvents)
+            ->whereIn('action', $authenticationActions)
             ->latest()
             ->limit(20)
             ->get();
 
-        return view('admin.users.edit', compact('user', 'departments', 'selectedDepartmentIds', 'loginHistory'));
+        return view('admin.users.edit', compact(
+            'user',
+            'departments',
+            'selectedDepartmentIds',
+            'loginHistory',
+            'lastSuccessfulSignIn'
+        ));
     }
 
     public function update(Request $request, User $user): RedirectResponse
