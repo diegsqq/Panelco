@@ -24,14 +24,14 @@
 @if (($filters['access_review'] ?? '') === 'dormant')
 <div class="alert alert-info py-2">Showing accounts with no recorded successful sign-in within the last 90 days, including accounts with no sign-in history. Review each account before changing its access; no accounts are automatically deactivated.</div>
 @endif
-<div class="modal fade" id="newUserModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="newUserModal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="newUserModalLabel" aria-hidden="true">
 <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
 <div class="modal-content" style="border-radius:1rem;overflow:hidden">
 <div class="modal-header border-0 pb-0">
 <div class="d-flex align-items-center gap-2">
 <span class="stat-icon" style="background:#e6f3ea;color:var(--p3-navy)"><i class="bi bi-person-plus-fill"></i></span>
 <div>
-<div class="fw-semibold">Create Employee Account</div>
+<div id="newUserModalLabel" class="fw-semibold">Create Employee Account</div>
 <small class="text-muted">New accounts default to Employee. Change the role only when elevated access is required.</small>
 </div>
 </div>
@@ -42,29 +42,29 @@
 @csrf
 <div class="row g-3">
 <div class="col-md-6">
-<label class="form-label">Full Name</label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-person"></i></span><input name="name" class="form-control" value="{{ old('name') }}" placeholder="Juan Dela Cruz" required></div>
+<label for="newUserName" class="form-label">Full Name</label>
+<div class="input-group"><span class="input-group-text"><i class="bi bi-person"></i></span><input id="newUserName" name="name" class="form-control" value="{{ old('name') }}" placeholder="Juan Dela Cruz" required></div>
 </div>
 <div class="col-md-6">
-<label class="form-label">Email</label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-envelope"></i></span><input name="email" type="email" class="form-control" value="{{ old('email') }}" placeholder="juan@panelco.gov.ph" autocomplete="off" autocapitalize="off" spellcheck="false" required></div>
+<label for="newUserEmail" class="form-label">Email</label>
+<div class="input-group"><span class="input-group-text"><i class="bi bi-envelope"></i></span><input id="newUserEmail" name="email" type="email" class="form-control" value="{{ old('email') }}" placeholder="juan@panelco.gov.ph" autocomplete="off" autocapitalize="off" spellcheck="false" required></div>
 </div>
 <div class="col-md-6">
-<label class="form-label">Password</label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-lock"></i></span><input name="password" id="newUserPw" type="password" class="form-control" minlength="12" autocomplete="new-password" required></div>
+<label for="newUserPw" class="form-label">Password</label>
+<div class="input-group"><span class="input-group-text"><i class="bi bi-lock"></i></span><input id="newUserPw" name="password" type="password" class="form-control" minlength="12" autocomplete="new-password" required></div>
 <small class="text-muted">12+ characters, uppercase and lowercase, number, and symbol.</small>
 </div>
 <div class="col-md-6">
-<label class="form-label">Confirm Password</label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-lock-fill"></i></span><input name="password_confirmation" id="newUserPwConfirm" type="password" class="form-control" minlength="12" autocomplete="new-password" required></div>
+<label for="newUserPwConfirm" class="form-label">Confirm Password</label>
+<div class="input-group"><span class="input-group-text"><i class="bi bi-lock-fill"></i></span><input id="newUserPwConfirm" name="password_confirmation" type="password" class="form-control" minlength="12" autocomplete="new-password" required></div>
 </div>
 <div class="col-md-4">
-<label class="form-label">Role</label>
-<select name="role" class="form-select" required>@foreach ([\App\Models\User::ROLE_EMPLOYEE, \App\Models\User::ROLE_MANAGER, \App\Models\User::ROLE_ADMIN] as $r)<option value="{{ $r }}" {{ old('role', \App\Models\User::ROLE_EMPLOYEE) === $r ? 'selected' : '' }}>{{ \App\Models\User::roleLabel($r) }}</option>@endforeach</select>
+<label for="newUserRole" class="form-label">Role</label>
+<select id="newUserRole" name="role" class="form-select" required>@foreach ([\App\Models\User::ROLE_EMPLOYEE, \App\Models\User::ROLE_MANAGER, \App\Models\User::ROLE_ADMIN] as $r)<option value="{{ $r }}" {{ old('role', \App\Models\User::ROLE_EMPLOYEE) === $r ? 'selected' : '' }}>{{ \App\Models\User::roleLabel($r) }}</option>@endforeach</select>
 </div>
 <div class="col-md-4">
-<label class="form-label">Primary Department</label>
-<select name="department_id" class="form-select"><option value="">— None —</option>@foreach ($departments as $d)<option value="{{ $d->id }}" {{ (string) old('department_id') === (string) $d->id ? 'selected' : '' }}>{{ $d->name }}</option>@endforeach</select>
+<label for="newUserDepartment" class="form-label">Primary Department</label>
+<select id="newUserDepartment" name="department_id" class="form-select"><option value="">— None —</option>@foreach ($departments as $d)<option value="{{ $d->id }}" {{ (string) old('department_id') === (string) $d->id ? 'selected' : '' }}>{{ $d->name }}</option>@endforeach</select>
 </div>
 </div>
 </form>
@@ -78,7 +78,7 @@
 </div>
 <div class="card card-p3 p-0 overflow-hidden">
 <table class="table mb-0 align-middle">
-<thead class="table-light"><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>2FA</th><th>Department</th><th>Last sign-in</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+<thead class="table-light"><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Role</th><th scope="col">Status</th><th scope="col">2FA</th><th scope="col">Department</th><th scope="col">Last sign-in</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
 <tbody>
 @forelse ($users as $u)
 <tr>

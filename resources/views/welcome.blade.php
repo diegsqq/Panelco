@@ -17,8 +17,8 @@ a:focus-visible{outline:3px solid #124d30;outline-offset:4px}
 .welcome-wrap{max-width:1440px;margin:auto;padding:clamp(1rem,5vw,4rem)}
 .hero{position:relative;isolation:isolate;overflow:hidden;min-height:640px;border-radius:2.25rem;background:linear-gradient(145deg,#009d38 0%,#16bd3b 52%,#8bd318 100%);background-size:160% 160%;animation:hero-color-drift 18s ease-in-out infinite alternate;color:#fff;box-shadow:0 30px 60px rgba(34,100,54,.17)}
 .hero::before,.hero::after{position:absolute;z-index:-1;color:rgba(0,81,35,.18);font-weight:1000;line-height:.78;letter-spacing:-.08em;white-space:nowrap;pointer-events:none}
-.hero::before{content:"SMART";top:4.7rem;left:4%;font-size:clamp(6rem,17vw,15rem);animation:smart-drift 5s ease-in-out infinite alternate}
-.hero::after{content:"DOCS";top:11.4rem;right:3%;font-size:clamp(6rem,17vw,15rem);animation:docs-drift 5s ease-in-out infinite alternate}
+.hero::before{content:"SMART";top:4.7rem;left:4%;font-size:clamp(6rem,17vw,15rem);animation:smart-drift 1.8s ease-in-out infinite alternate}
+.hero::after{content:"DOCS";top:11.4rem;right:3%;font-size:clamp(6rem,17vw,15rem);animation:docs-drift 1.8s ease-in-out infinite alternate}
 .hero-nav{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:1.35rem clamp(1.25rem,4vw,3.5rem)}
 .brand{display:inline-flex;align-items:center;gap:.65rem;color:#fff;text-decoration:none;font-size:1.05rem;font-weight:800;letter-spacing:.02em}
 .brand img{height:30px;width:auto;object-fit:contain}

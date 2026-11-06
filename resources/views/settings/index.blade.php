@@ -68,34 +68,34 @@
 @method('PUT')
 <div class="row g-3">
 <div class="col-12 col-md-6">
-<label class="form-label">{{ __('settings.first_name') }}</label>
+<label for="settingsFirstName" class="form-label">{{ __('settings.first_name') }}</label>
 <div class="input-group"><span class="input-group-text"><i class="bi bi-person"></i></span>
-<input name="first_name" class="form-control" value="{{ old('first_name', $fallbackFirst) }}" required maxlength="100"></div>
+<input id="settingsFirstName" name="first_name" class="form-control" value="{{ old('first_name', $fallbackFirst) }}" required maxlength="100"></div>
 </div>
 <div class="col-12 col-md-6">
-<label class="form-label">{{ __('settings.last_name') }}</label>
+<label for="settingsLastName" class="form-label">{{ __('settings.last_name') }}</label>
 <div class="input-group"><span class="input-group-text"><i class="bi bi-person-badge"></i></span>
-<input name="last_name" class="form-control" value="{{ old('last_name', $fallbackLast) }}" required maxlength="100"></div>
+<input id="settingsLastName" name="last_name" class="form-control" value="{{ old('last_name', $fallbackLast) }}" required maxlength="100"></div>
 </div>
 <div class="col-12 col-md-6">
-<label class="form-label">{{ __('settings.email') }}</label>
+<label for="settingsEmail" class="form-label">{{ __('settings.email') }}</label>
 <div class="input-group"><span class="input-group-text"><i class="bi bi-envelope"></i></span>
-<input name="email" type="email" class="form-control" value="{{ old('email', $me->pending_email ?? $me->email) }}" required maxlength="100"></div>
+<input id="settingsEmail" name="email" type="email" class="form-control" value="{{ old('email', $me->pending_email ?? $me->email) }}" required maxlength="100"></div>
 </div>
 <div class="col-12 col-md-6">
-<label class="form-label">{{ __('settings.phone') }} <span class="text-muted small">{{ __('settings.optional') }}</span></label>
+<label for="settingsPhone" class="form-label">{{ __('settings.phone') }} <span class="text-muted small">{{ __('settings.optional') }}</span></label>
 <div class="input-group"><span class="input-group-text"><i class="bi bi-phone"></i></span>
-<input name="phone" class="form-control" value="{{ old('phone', $me->pending_phone ?? $me->phone) }}" placeholder="09XX XXX XXXX" maxlength="30"></div>
+<input id="settingsPhone" name="phone" class="form-control" value="{{ old('phone', $me->pending_phone ?? $me->phone) }}" placeholder="09XX XXX XXXX" maxlength="30"></div>
 </div>
 <div class="col-12 col-md-6">
-<label class="form-label">{{ __('settings.job_title') }} <span class="text-muted small">{{ __('settings.job_title_hint') }}</span></label>
+<label for="settingsJobTitle" class="form-label">{{ __('settings.job_title') }} <span class="text-muted small">{{ __('settings.job_title_hint') }}</span></label>
 <div class="input-group"><span class="input-group-text"><i class="bi bi-briefcase"></i></span>
-<input name="job_title" class="form-control" value="{{ old('job_title', $me->job_title) }}" placeholder="e.g. Records Officer" maxlength="100"></div>
+<input id="settingsJobTitle" name="job_title" class="form-control" value="{{ old('job_title', $me->job_title) }}" placeholder="e.g. Records Officer" maxlength="100"></div>
 </div>
 <div class="col-12 col-md-6">
-<label class="form-label">{{ __('settings.organization') }}</label>
+<label for="settingsOrganization" class="form-label">{{ __('settings.organization') }}</label>
 <div class="input-group"><span class="input-group-text"><i class="bi bi-building"></i></span>
-<input name="organization" class="form-control" value="{{ old('organization', $me->organization) }}" placeholder="PANELCO III" maxlength="150"></div>
+<input id="settingsOrganization" name="organization" class="form-control" value="{{ old('organization', $me->organization) }}" placeholder="PANELCO III" maxlength="150"></div>
 </div>
 </div>
 <div class="mt-3 d-flex align-items-center gap-3 flex-wrap">
@@ -111,7 +111,7 @@
 <form method="POST" action="{{ route('settings.profile.verify-email') }}" class="d-flex gap-2 mt-2 flex-wrap">
 @csrf
 @method('PUT')
-<input name="code" class="form-control p3-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="123456" required>
+<input name="code" class="form-control p3-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="123456" required aria-label="6-digit verification code">
 <button class="btn btn-sm btn-outline-success px-3">Verify Email</button>
 </form>
 <form method="POST" action="{{ route('settings.profile.resend') }}" class="mt-1">
@@ -129,7 +129,7 @@
 <form method="POST" action="{{ route('settings.profile.verify-phone') }}" class="d-flex gap-2 mt-2 flex-wrap">
 @csrf
 @method('PUT')
-<input name="code" class="form-control p3-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="123456" required>
+<input name="code" class="form-control p3-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="123456" required aria-label="6-digit verification code">
 <button class="btn btn-sm btn-outline-success px-3">Verify Number</button>
 </form>
 <form method="POST" action="{{ route('settings.profile.resend') }}" class="mt-1">

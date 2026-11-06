@@ -14,11 +14,11 @@
         <table class="table mb-0 align-middle">
             <thead class="table-light">
                 <tr>
-                    <th>Document</th>
-                    <th>Department</th>
-                    <th>Deleted</th>
-                    <th>Uploaded by</th>
-                    <th class="text-end">Action</th>
+                    <th scope="col">Document</th>
+                    <th scope="col">Department</th>
+                    <th scope="col">Deleted</th>
+                    <th scope="col">Uploaded by</th>
+                    <th scope="col" class="text-end">Action</th>
                 </tr>
             </thead>
             <tbody>

@@ -31,6 +31,8 @@ class WelcomePageTest extends TestCase
             ->assertSee('animation:hero-color-drift 18s ease-in-out infinite alternate', false)
             ->assertSee('.hero::before{content:"SMART";top:4.7rem;left:4%', false)
             ->assertSee('.hero::after{content:"DOCS";top:11.4rem;right:3%', false)
+            ->assertSee('animation:smart-drift 1.8s ease-in-out infinite alternate', false)
+            ->assertSee('animation:docs-drift 1.8s ease-in-out infinite alternate', false)
             ->assertSee('@keyframes smart-drift', false)
             ->assertSee('@keyframes docs-drift', false)
             ->assertSee('@media(prefers-reduced-motion:reduce)', false)

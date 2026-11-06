@@ -4,8 +4,8 @@
 <div class="card card-p3 p-4">
 <form method="POST" action="{{ isset($category) ? route('admin.categories.update', $category) : route('admin.categories.store') }}">
 @csrf @if(isset($category)) @method('PUT') @endif
-<div class="mb-3"><label class="form-label">Name</label><input name="name" class="form-control" value="{{ old('name', $category->name ?? '') }}" required></div>
-<div class="mb-3"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="2">{{ old('description', $category->description ?? '') }}</textarea></div>
+<div class="mb-3"><label for="categoryName" class="form-label">Name</label><input id="categoryName" name="name" class="form-control" value="{{ old('name', $category->name ?? '') }}" required></div>
+<div class="mb-3"><label for="categoryDescription" class="form-label">Description</label><textarea id="categoryDescription" name="description" class="form-control" rows="2">{{ old('description', $category->description ?? '') }}</textarea></div>
 <div class="mb-3">
 <label class="form-label" for="keywordsField">AI keywords <span class="text-muted fw-normal">(comma-separated, used by rule + AI category suggestions)</span></label>
 <div class="input-group">

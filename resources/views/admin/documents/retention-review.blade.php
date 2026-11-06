@@ -12,12 +12,12 @@
         <table class="table mb-0 align-middle">
             <thead class="table-light">
                 <tr>
-                    <th>Document</th>
-                    <th>Department</th>
-                    <th>Uploaded by</th>
-                    <th>Expiration</th>
-                    <th>Status</th>
-                    <th><span class="visually-hidden">Actions</span></th>
+                    <th scope="col">Document</th>
+                    <th scope="col">Department</th>
+                    <th scope="col">Uploaded by</th>
+                    <th scope="col">Expiration</th>
+                    <th scope="col">Status</th>
+                    <th scope="col"><span class="visually-hidden">Actions</span></th>
                 </tr>
             </thead>
             <tbody>

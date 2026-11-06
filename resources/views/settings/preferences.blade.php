@@ -51,7 +51,7 @@
 @csrf
 <div class="input-group flex-grow-1" style="min-width:200px">
 <span class="input-group-text"><i class="bi bi-globe2"></i></span>
-<select name="locale" class="form-select">
+<select id="settingsLocale" name="locale" class="form-select" aria-label="Interface language">
 <option value="en" {{ ($me->locale ?? 'en') === 'en' ? 'selected' : '' }}>English</option>
 <option value="tl" {{ ($me->locale ?? 'en') === 'tl' ? 'selected' : '' }}>Tagalog / Filipino</option>
 </select>
@@ -139,12 +139,12 @@
 </div>
 <div class="row g-3">
 <div class="col-md-8">
-<label class="form-label">App Name</label>
-<input name="app_name" class="form-control" value="{{ old('app_name', $val('app_name', config('app.name'))) }}" required>
+<label for="settingsAppName" class="form-label">App Name</label>
+<input id="settingsAppName" name="app_name" class="form-control" value="{{ old('app_name', $val('app_name', config('app.name'))) }}" required>
 </div>
 <div class="col-md-4">
-<label class="form-label">Support Email</label>
-<input name="support_email" type="email" class="form-control" value="{{ old('support_email', $val('support_email')) }}" placeholder="it@panelco.gov.ph">
+<label for="settingsSupportEmail" class="form-label">Support Email</label>
+<input id="settingsSupportEmail" name="support_email" type="email" class="form-control" value="{{ old('support_email', $val('support_email')) }}" placeholder="it@panelco.gov.ph">
 </div>
 </div>
 </div>
@@ -158,21 +158,21 @@
 </div>
 <div class="row g-3">
 <div class="col-md-6">
-<label class="form-label">Model Override <span class="text-muted small">(blank = .env)</span></label>
-<input name="ai_model" class="form-control" value="{{ old('ai_model', $val('ai_model')) }}" placeholder="gpt-4o-mini">
+<label for="settingsAiModel" class="form-label">Model Override <span class="text-muted small">(blank = .env)</span></label>
+<input id="settingsAiModel" name="ai_model" class="form-control" value="{{ old('ai_model', $val('ai_model')) }}" placeholder="gpt-4o-mini">
 </div>
 <div class="col-md-3">
-<label class="form-label">Temperature</label>
-<input name="ai_temperature" type="number" step="0.1" min="0" max="2" class="form-control" value="{{ old('ai_temperature', $val('ai_temperature', '0.2')) }}" required>
+<label for="settingsAiTemperature" class="form-label">Temperature</label>
+<input id="settingsAiTemperature" name="ai_temperature" type="number" step="0.1" min="0" max="2" class="form-control" value="{{ old('ai_temperature', $val('ai_temperature', '0.2')) }}" required>
 </div>
 <div class="col-md-3">
-<label class="form-label">Max Tokens</label>
-<input name="ai_max_tokens" type="number" min="64" max="8192" class="form-control" value="{{ old('ai_max_tokens', $val('ai_max_tokens', '1024')) }}" required>
+<label for="settingsAiMaxTokens" class="form-label">Max Tokens</label>
+<input id="settingsAiMaxTokens" name="ai_max_tokens" type="number" min="64" max="8192" class="form-control" value="{{ old('ai_max_tokens', $val('ai_max_tokens', '1024')) }}" required>
 </div>
 <div class="col-12 d-flex flex-wrap gap-3 pt-1">
-<label class="btn btn-sm p3-dept-pill"><input type="checkbox" name="ai_chat_enabled" class="d-none" value="1" {{ $on('ai_chat_enabled') ? 'checked' : '' }}><i class="bi bi-chat-dots me-1"></i>Lightning</label>
-<label class="btn btn-sm p3-dept-pill"><input type="checkbox" name="ai_autofill_enabled" class="d-none" value="1" {{ $on('ai_autofill_enabled') ? 'checked' : '' }}><i class="bi bi-magic me-1"></i>Upload Autofill</label>
-<label class="btn btn-sm p3-dept-pill"><input type="checkbox" name="ai_suggest_enabled" class="d-none" value="1" {{ $on('ai_suggest_enabled') ? 'checked' : '' }}><i class="bi bi-tags me-1"></i>Category Suggestions</label>
+<label class="btn btn-sm p3-dept-pill" role="checkbox" tabindex="0" aria-checked="{{ $on('ai_chat_enabled') ? 'true' : 'false' }}" id="aiChatPill"><input type="checkbox" name="ai_chat_enabled" class="d-none" value="1" {{ $on('ai_chat_enabled') ? 'checked' : '' }}><i class="bi bi-chat-dots me-1"></i>Lightning</label>
+<label class="btn btn-sm p3-dept-pill" role="checkbox" tabindex="0" aria-checked="{{ $on('ai_autofill_enabled') ? 'true' : 'false' }}" id="aiAutofillPill"><input type="checkbox" name="ai_autofill_enabled" class="d-none" value="1" {{ $on('ai_autofill_enabled') ? 'checked' : '' }}><i class="bi bi-magic me-1"></i>Upload Autofill</label>
+<label class="btn btn-sm p3-dept-pill" role="checkbox" tabindex="0" aria-checked="{{ $on('ai_suggest_enabled') ? 'true' : 'false' }}" id="aiSuggestPill"><input type="checkbox" name="ai_suggest_enabled" class="d-none" value="1" {{ $on('ai_suggest_enabled') ? 'checked' : '' }}><i class="bi bi-tags me-1"></i>Category Suggestions</label>
 </div>
 </div>
 </div>
@@ -186,16 +186,16 @@
 </div>
 <div class="row g-3">
 <div class="col-md-4">
-<label class="form-label">Max Upload (KB)</label>
-<input name="upload_max_kb" type="number" min="1024" step="1024" class="form-control" value="{{ old('upload_max_kb', $val('upload_max_kb', '51200')) }}" required>
+<label for="settingsUploadMaxKb" class="form-label">Max Upload (KB)</label>
+<input id="settingsUploadMaxKb" name="upload_max_kb" type="number" min="1024" step="1024" class="form-control" value="{{ old('upload_max_kb', $val('upload_max_kb', '51200')) }}" required>
 </div>
 <div class="col-md-8">
-<label class="form-label">Allowed Extensions <span class="text-muted small">(comma-separated)</span></label>
-<input name="allowed_extensions" class="form-control" value="{{ old('allowed_extensions', $val('allowed_extensions', 'pdf,docx,txt,png,jpg,jpeg')) }}" required>
+<label for="settingsAllowedExtensions" class="form-label">Allowed Extensions <span class="text-muted small">(comma-separated)</span></label>
+<input id="settingsAllowedExtensions" name="allowed_extensions" class="form-control" value="{{ old('allowed_extensions', $val('allowed_extensions', 'pdf,docx,txt,png,jpg,jpeg')) }}" required>
 </div>
 <div class="col-md-6">
-<label class="form-label">Auto-Delete Failed Docs (days)</label>
-<input name="failed_cleanup_days" type="number" min="0" class="form-control" value="{{ old('failed_cleanup_days', $val('failed_cleanup_days', '0')) }}" required>
+<label for="settingsFailedCleanupDays" class="form-label">Auto-Delete Failed Docs (days)</label>
+<input id="settingsFailedCleanupDays" name="failed_cleanup_days" type="number" min="0" class="form-control" value="{{ old('failed_cleanup_days', $val('failed_cleanup_days', '0')) }}" required>
 <small class="text-muted">0 = never delete.</small>
 </div>
 </div>
@@ -209,4 +209,23 @@
 </div>
 </form>
 @endif
+
+<script>
+(function () {
+    document.querySelectorAll('label.p3-dept-pill[role="checkbox"]').forEach(function (pill) {
+        var input = pill.querySelector('input[type="checkbox"]');
+        if (!input) return;
+        function sync() { pill.setAttribute('aria-checked', input.checked ? 'true' : 'false'); }
+        sync();
+        pill.addEventListener('click', function () { input.checked = !input.checked; sync(); });
+        pill.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                input.checked = !input.checked;
+                sync();
+            }
+        });
+    });
+})();
+</script>
 @endsection
