@@ -76,19 +76,5 @@ a:focus-visible{outline:3px solid #087a4b;outline-offset:4px}
     </div>
 </header>
 
-<main id="main-content" class="features">
-    <div class="container-fluid px-4">
-        <div class="text-center mb-5">
-            <p class="text-uppercase small fw-bold mb-1" style="color:#087a4b;letter-spacing:.1em">A clearer way to work with records</p>
-            <h2 class="h2 mb-0" id="features">Built for secure document work</h2>
-        </div>
-        <div class="row g-4 justify-content-center">
-            <div class="col-md-4"><section class="feature-card"><i class="bi bi-cloud-upload" aria-hidden="true"></i><h3>Smart upload</h3><p>PDF, DOCX, TXT, and image uploads with validation, queued processing, and clear status updates.</p></section></div>
-            <div class="col-md-4"><section class="feature-card"><i class="bi bi-chat-dots" aria-hidden="true"></i><h3>Grounded chat</h3><p>Search records and ask questions with clickable citations to the source pages.</p></section></div>
-            <div class="col-md-4"><section class="feature-card" id="security"><i class="bi bi-journal-check" aria-hidden="true"></i><h3>Review &amp; audit</h3><p>Human review for classifications, role-based document access, and an audit trail of administrative actions.</p></section></div>
-        </div>
-    </div>
-</main>
-<footer class="site-footer">PANELCO III SmartDocs AI</footer>
 </body>
 </html>
