@@ -83,11 +83,11 @@ a:focus-visible{outline:3px solid #087a4b;outline-offset:4px}
   if (!logo) return;
   logo.style.cursor = 'pointer';
   logo.addEventListener('click', function () {
-    logo.classList.remove('fast');
-    void logo.offsetWidth;
-    logo.classList.add('fast');
+    logo.animate([
+      { transform: 'rotateY(0deg)' },
+      { transform: 'rotateY(360deg)' }
+    ], { duration: 150, easing: 'ease-in-out' });
   });
-  logo.addEventListener('animationend', function () { logo.classList.remove('fast'); });
 })();
 </script>
 
