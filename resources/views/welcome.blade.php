@@ -35,7 +35,7 @@ a:focus-visible{outline:3px solid #087a4b;outline-offset:4px}
 .hero-cta{padding:.9rem 1.5rem;background:#087a4b;color:#fff;box-shadow:0 9px 18px rgba(8,122,75,.2)}
 .hero-cta:hover,.hero-cta:focus{background:#064b34;color:#fff}
 .hero-art{position:relative;display:grid;place-items:center;min-height:300px}
-.hero-logo{display:block;width:clamp(200px,35vw,420px);height:auto;object-fit:contain;filter:drop-shadow(0 22px 30px rgba(0,45,28,.24));animation:logo-float 5s ease-in-out infinite;margin-top:1.5rem}
+.hero-logo{display:block;width:clamp(160px,28vw,320px);height:auto;object-fit:contain;filter:drop-shadow(0 22px 30px rgba(0,45,28,.24));animation:logo-float 5s ease-in-out infinite;margin-top:1.5rem}
 .hero-footer{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:1rem;min-height:116px;padding:1rem clamp(1.25rem,4vw,3rem);border-radius:1.5rem 1.5rem 0 0;background:#fff;color:#4b332f;margin:clamp(1rem,3vw,2rem) clamp(1.5rem,5vw,4rem) clamp(2rem,5vw,4rem)}
 .footer-message{max-width:450px;margin:auto;text-align:center;font-size:clamp(1.15rem,2.4vw,1.8rem);font-weight:700;line-height:1.25;letter-spacing:-.025em}
 .footer-side{display:flex;align-items:center;gap:.75rem;color:#68776c;font-size:.76rem;font-weight:650}
