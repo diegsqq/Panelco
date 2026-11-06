@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Document;
 use App\Services\Ai\AiProvider;
+use App\Services\LocalBackupService;
 use App\Support\SystemHealthThresholds;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -129,6 +130,7 @@ class SystemHealthController extends Controller
                 ? 'Driver is configured; email delivery has not been tested.'
                 : 'This driver does not deliver email to recipients. Configure a delivery mailer for notifications.',
         ];
+        $backup = app(LocalBackupService::class)->health();
 
         $healthIssues = [];
         if ($database['status'] === 'error') {
@@ -160,6 +162,17 @@ class SystemHealthController extends Controller
         if ($storage['status'] === 'error') {
             $healthIssues[] = 'Private storage unavailable';
         }
+        if ($backup['last_backup_at'] === null) {
+            $healthIssues[] = 'Encrypted backup missing, stale, or unavailable';
+        } elseif ($backup['stale'] === true) {
+            $healthIssues[] = 'Encrypted backup is stale';
+        }
+        if (($backup['integrity']['status'] ?? 'skipped') === 'warning') {
+            $healthIssues[] = 'Backup integrity not verified or failed';
+        }
+        if (($backup['offsite']['status'] ?? 'skipped') === 'warning') {
+            $healthIssues[] = 'Off-site backup copy missing or stale';
+        }
         $healthStatus = in_array($database['status'], ['error'], true)
             || in_array($queue['status'], ['error'], true)
             || $storage['status'] === 'error'
@@ -170,12 +183,14 @@ class SystemHealthController extends Controller
             'database' => $database,
             'queue' => $queue,
             'documents' => $documents,
+            'backup' => $backup,
             'health' => [
                 'status' => $healthStatus,
                 'issues' => $healthIssues,
             ],
             'stuckProcessingMinutes' => SystemHealthThresholds::STUCK_PROCESSING_MINUTES,
             'staleQueueJobMinutes' => SystemHealthThresholds::STALE_QUEUE_JOB_MINUTES,
+            'backupStaleHours' => SystemHealthThresholds::BACKUP_STALE_HOURS,
             'ai' => [
                 'status' => $aiAvailable ? 'ok' : 'info',
                 'detail' => $aiAvailable

@@ -10,10 +10,11 @@ class ExampleTest extends TestCase
     /**
      * A basic test example.
      */
-    public function test_guest_root_redirects_to_login(): void
+    public function test_guest_root_shows_public_welcome_page(): void
     {
         $response = $this->get('/');
 
-        $response->assertRedirect(route('login'));
+        $response->assertOk()
+            ->assertSee('Answers grounded in real records');
     }
 }

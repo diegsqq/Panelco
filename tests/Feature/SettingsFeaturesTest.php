@@ -3,12 +3,14 @@
 namespace Tests\Feature;
 
 use App\Mail\ProfileVerificationCode;
-use App\Models\User;
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use PragmaRX\Google2FA\Google2FA;
 use Tests\TestCase;
 
@@ -161,7 +163,7 @@ class SettingsFeaturesTest extends TestCase
             'password_confirmation' => 'NewSecret123!',
         ])->assertRedirect(route('settings.security'));
 
-        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('NewSecret123!', $user->fresh()->password));
+        $this->assertTrue(Hash::check('NewSecret123!', $user->fresh()->password));
     }
 
     public function test_admin_session_timeout_setting_is_applied_to_the_session_configuration(): void
@@ -214,7 +216,7 @@ class SettingsFeaturesTest extends TestCase
         $this->assertFalse($user->fresh()->two_factor_enabled);
 
         // Confirm with real TOTP → activated.
-        $code = (new Google2FA())->getCurrentOtp($secret);
+        $code = (new Google2FA)->getCurrentOtp($secret);
         $this->actingAs($user)->post(route('settings.2fa.confirm'), ['code' => $code]);
         $user->refresh();
         $this->assertTrue($user->two_factor_enabled);
@@ -241,7 +243,18 @@ class SettingsFeaturesTest extends TestCase
         ]);
 
         // Wrong 2FA code rejected.
+        $this->get(route('two-factor.show'))
+            ->assertOk()
+            ->assertSee('aria-describedby="codeHelp"', false)
+            ->assertSee('Enter all 6 digits without spaces.');
+
         $this->post(route('two-factor.verify'), ['code' => '000000'])->assertSessionHasErrors('code');
+        $this->get(route('two-factor.show'))
+            ->assertOk()
+            ->assertSee('aria-describedby="codeHelp codeError"', false)
+            ->assertSee('aria-invalid="true"', false)
+            ->assertSee('id="codeError" class="invalid-feedback d-block text-center" role="alert"', false)
+            ->assertSee('Incorrect authentication code.');
         $this->assertGuest();
         $this->assertDatabaseHas('audit_logs', [
             'action' => 'auth.two_factor_failed',
@@ -249,7 +262,7 @@ class SettingsFeaturesTest extends TestCase
         ]);
 
         // Right 2FA code signs in.
-        $valid = (new Google2FA())->getCurrentOtp($user->two_factor_secret);
+        $valid = (new Google2FA)->getCurrentOtp($user->two_factor_secret);
         $this->post(route('two-factor.verify'), ['code' => $valid])->assertRedirect('/home');
         $this->assertAuthenticatedAs($user);
         $this->assertNull(Session::get('two_factor_pending_user'));
@@ -274,7 +287,7 @@ class SettingsFeaturesTest extends TestCase
 
         $user->refresh();
         $this->assertNotNull($user->avatar_path);
-        $this->assertTrue(\Illuminate\Support\Facades\Storage::disk('private')->exists($user->avatar_path));
+        $this->assertTrue(Storage::disk('private')->exists($user->avatar_path));
 
         $this->actingAs($user)->get(route('profile.avatar'))->assertOk();
         // Avatar uploaded → page renders the photo, not the initials.

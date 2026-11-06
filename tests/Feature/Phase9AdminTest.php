@@ -12,6 +12,7 @@ use App\Services\Ai\AiProvider;
 use App\Services\Ai\NullAiProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -20,6 +21,32 @@ use Tests\TestCase;
 class Phase9AdminTest extends TestCase
 {
     use RefreshDatabase;
+
+    private string $backupPath;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->backupPath = storage_path('framework/testing-backups/system-health-'.Str::uuid());
+        config(['backup.path' => $this->backupPath]);
+        File::ensureDirectoryExists($this->backupPath);
+        File::put($this->backupPath.DIRECTORY_SEPARATOR.'smartdocs-test.zip.enc', 'test');
+        File::put($this->backupPath.DIRECTORY_SEPARATOR.'verification.json', json_encode([
+            'smartdocs-test.zip.enc' => [
+                'ok' => true,
+                'verified_at' => now()->toIso8601String(),
+                'detail' => 'test fixture backup',
+            ],
+        ]));
+    }
+
+    protected function tearDown(): void
+    {
+        File::deleteDirectory($this->backupPath);
+
+        parent::tearDown();
+    }
 
     public function test_admin_can_crud_category_employee_blocked(): void
     {
@@ -128,6 +155,38 @@ class Phase9AdminTest extends TestCase
             ->assertSee('Auth.login Failed')
             ->assertDontSee('logged out')
             ->assertDontSee('downloaded');
+    }
+
+    public function test_admin_can_search_access_review_history_by_note_actor_and_account(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN, 'name' => 'Review Administrator']);
+        $employee = User::factory()->create(['name' => 'Target Employee']);
+        AuditLog::create([
+            'user_id' => $admin->id,
+            'action' => 'user.access_reviewed',
+            'entity_type' => User::class,
+            'entity_id' => $employee->id,
+            'metadata' => ['note' => 'Confirmed transfer to the field office.'],
+        ]);
+        AuditLog::create([
+            'user_id' => $admin->id,
+            'action' => 'user.updated',
+            'entity_type' => User::class,
+            'entity_id' => $employee->id,
+            'metadata' => ['note' => 'Unrelated account update'],
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.audit-logs.index', ['category' => 'user', 'action' => 'access_reviewed', 'q' => 'field office']))
+            ->assertOk()
+            ->assertSee('Search audit users, actions, and review notes')
+            ->assertSee('Confirmed transfer to the field office.')
+            ->assertDontSee('Unrelated account update');
+
+        $this->get(route('admin.audit-logs.index', ['q' => 'Target Employee']))
+            ->assertOk()
+            ->assertSee('Confirmed transfer to the field office.')
+            ->assertSee('Unrelated account update');
 
         $this->get(route('admin.audit-logs.index', ['category' => 'invalid']))
             ->assertSessionHasErrors('category');
@@ -205,6 +264,55 @@ class Phase9AdminTest extends TestCase
             ->assertSee('Review Additional Department')
             ->assertSee('Enabled')
             ->assertSee($lastSuccessfulSignIn->created_at->format('M d, Y H:i'));
+    }
+
+    public function test_admin_can_record_audited_access_review_notes_without_changing_user_access(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $user = User::factory()->create(['role' => User::ROLE_EMPLOYEE, 'is_active' => true]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.users.access-reviews.store', $user), [
+                'review_note' => 'Confirmed department access with the department head.',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('audit_logs', [
+            'user_id' => $admin->id,
+            'action' => 'user.access_reviewed',
+            'entity_type' => User::class,
+            'entity_id' => $user->id,
+        ]);
+        $review = AuditLog::where('action', 'user.access_reviewed')->firstOrFail();
+        $this->assertSame('Confirmed department access with the department head.', $review->metadata['note']);
+        $this->assertTrue($user->fresh()->is_active);
+
+        $this->get(route('admin.users.edit', $user))
+            ->assertOk()
+            ->assertSee('Access review notes')
+            ->assertSee('Confirmed department access with the department head.');
+    }
+
+    public function test_access_review_notes_require_text_and_are_admin_only(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $employee = User::factory()->create(['role' => User::ROLE_EMPLOYEE]);
+        $user = User::factory()->create(['role' => User::ROLE_EMPLOYEE]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.users.access-reviews.store', $user), ['review_note' => ''])
+            ->assertSessionHasErrors('review_note');
+
+        $this->actingAs($employee)
+            ->post(route('admin.users.access-reviews.store', $user), [
+                'review_note' => 'Unauthorized review.',
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('audit_logs', [
+            'action' => 'user.access_reviewed',
+            'entity_id' => $user->id,
+        ]);
     }
 
     public function test_admin_user_list_shows_two_factor_status_without_exposing_secret(): void
@@ -338,6 +446,7 @@ class Phase9AdminTest extends TestCase
             ->assertSee('1 failed jobs')
             ->assertSee('Queue jobs need attention.')
             ->assertSee('Overall status: Needs attention.')
+            ->assertSee('The latest encrypted backup is current.')
             ->assertSee('Email driver does not deliver messages')
             ->assertSee('1 failed jobs; 1 stale reservations and 1 overdue queued jobs (over 30 minutes).')
             ->assertSee('1 stale reservations (&gt; 30 min)', false)
@@ -376,7 +485,59 @@ class Phase9AdminTest extends TestCase
             ->assertOk()
             ->assertSee('Overall status: Healthy.')
             ->assertSee('No issues detected by the available checks.')
+            ->assertSee('Encrypted local backup')
+            ->assertSee('The latest encrypted backup is current.')
             ->assertDontSee('Needs attention');
+    }
+
+    public function test_admin_system_health_flags_a_missing_or_stale_backup(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $backupFile = $this->backupPath.DIRECTORY_SEPARATOR.'smartdocs-test.zip.enc';
+        File::delete($backupFile);
+
+        $this->actingAs($admin)
+            ->get(route('admin.system-health.index'))
+            ->assertOk()
+            ->assertSee('No encrypted local backup was found.')
+            ->assertSee('Encrypted backup missing, stale, or unavailable')
+            ->assertSee('Overall status: Needs attention.');
+
+        File::put($backupFile, 'test');
+        touch($backupFile, now()->subHours(37)->getTimestamp());
+
+        $this->get(route('admin.system-health.index'))
+            ->assertOk()
+            ->assertSee('37 hours old')
+            ->assertSee('Backups older than 36 hours are flagged.');
+    }
+
+    public function test_admin_can_review_expired_and_upcoming_document_expirations(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $employee = User::factory()->create(['role' => User::ROLE_EMPLOYEE]);
+        $this->createRetentionReviewDocument($employee, 'Expired record', now()->subDay()->toDateString());
+        $this->createRetentionReviewDocument($employee, 'Expires today', today()->toDateString());
+        $this->createRetentionReviewDocument($employee, 'Upcoming record', now()->addDays(30)->toDateString());
+        $this->createRetentionReviewDocument($employee, 'Outside review window', now()->addDays(31)->toDateString());
+        $this->createRetentionReviewDocument($employee, 'No expiration date', null);
+
+        $this->actingAs($admin)
+            ->get(route('admin.documents.retention-review'))
+            ->assertOk()
+            ->assertSee('Document expiration review')
+            ->assertSee('Expired record')
+            ->assertSee('Expires today')
+            ->assertSee('Upcoming record')
+            ->assertDontSee('Outside review window')
+            ->assertDontSee('No expiration date')
+            ->assertSee('Expired')
+            ->assertSee('Expires soon')
+            ->assertSee('does not archive or delete documents');
+
+        $this->actingAs($employee)
+            ->get(route('admin.documents.retention-review'))
+            ->assertForbidden();
     }
 
     public function test_admin_can_filter_dormant_accounts_without_automatically_deactivating_them(): void
@@ -414,6 +575,20 @@ class Phase9AdminTest extends TestCase
         $this->assertTrue($dormant->fresh()->is_active);
         $this->get(route('admin.users.index', ['access_review' => 'invalid']))
             ->assertSessionHasErrors('access_review');
+    }
+
+    private function createRetentionReviewDocument(User $uploader, string $title, ?string $expirationDate): Document
+    {
+        return Document::create([
+            'uploaded_by' => $uploader->id,
+            'title' => $title,
+            'original_filename' => Str::slug($title).'.txt',
+            'storage_path' => 'documents/'.Str::slug($title).'.txt',
+            'mime_type' => 'text/plain',
+            'file_size' => 10,
+            'processing_status' => 'completed',
+            'expiration_date' => $expirationDate,
+        ]);
     }
 
     public function test_admin_can_reset_another_users_two_factor_with_audit_and_email(): void

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Mail\OperationalHealthAlert;
 use App\Models\Document;
 use App\Models\User;
+use App\Services\LocalBackupService;
 use App\Support\SystemHealthThresholds;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
@@ -105,6 +106,17 @@ class SendOperationalHealthAlerts extends Command
     private function findIssues(): array
     {
         $issues = [];
+        $backup = app(LocalBackupService::class)->health();
+        if ($backup['last_backup_at'] === null || $backup['stale'] === true) {
+            $issues['Encrypted backup needs attention: '.$backup['detail']] = 1;
+        }
+        if (($backup['integrity']['status'] ?? 'skipped') === 'warning') {
+            $issues[$backup['integrity']['detail']] = 1;
+        }
+        if (($backup['offsite']['status'] ?? 'skipped') === 'warning') {
+            $issues[$backup['offsite']['detail']] = 1;
+        }
+
         $failedDocuments = Document::query()->where('processing_status', 'failed')->count();
         $stuckDocuments = Document::query()
             ->where('processing_status', 'processing')

@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocumentController extends Controller
@@ -72,7 +73,87 @@ class DocumentController extends Controller
 
     public function index(Request $request): View
     {
-        $validated = $request->validate([
+        $validated = $this->validatedLibraryFilters($request);
+        $query = $this->filteredLibraryQuery($request, $validated);
+        $search = trim((string) ($validated['q'] ?? ''));
+        $visibleIds = (clone $this->visibleToUser($request))->reorder()->select('documents.id');
+        $categoryIds = Document::query()->whereIn('id', $visibleIds)
+            ->where(function ($q) {
+                $q->whereNotNull('category_id')->orWhereNotNull('suggested_category_id');
+            })
+            ->selectRaw('COALESCE(category_id, suggested_category_id) as category_id')
+            ->distinct()->pluck('category_id');
+        $departmentIds = Document::query()->whereIn('id', $visibleIds)
+            ->where(function ($q) {
+                $q->whereNotNull('department_id')->orWhereNotNull('suggested_department_id');
+            })
+            ->selectRaw('COALESCE(department_id, suggested_department_id) as department_id')
+            ->distinct()->pluck('department_id');
+        $uploaderIds = Document::query()->whereIn('id', $visibleIds)
+            ->whereNotNull('uploaded_by')->distinct()->pluck('uploaded_by');
+        $categories = DocumentCategory::whereIn('id', $categoryIds)->orderBy('name')->get();
+        $departments = Department::whereIn('id', $departmentIds)->orderBy('name')->get();
+        $uploaders = \App\Models\User::whereIn('id', $uploaderIds)->orderBy('name')->get();
+
+        $sort = $validated['sort'] ?? 'newest';
+        $documents = $query->paginate(15)->withQueryString();
+
+        return view('documents.index', compact(
+            'documents', 'search', 'categories', 'departments', 'uploaders', 'validated', 'sort'
+        ));
+    }
+
+    public function export(Request $request): StreamedResponse
+    {
+        $validated = $this->validatedLibraryFilters($request);
+        $query = $this->filteredLibraryQuery($request, $validated);
+
+        return response()->streamDownload(function () use ($query): void {
+            $output = fopen('php://output', 'w');
+            if ($output === false) {
+                throw new \RuntimeException('Could not open the CSV output stream.');
+            }
+
+            fwrite($output, "\xEF\xBB\xBF");
+            fputcsv($output, [
+                'Title',
+                'Original filename',
+                'Department',
+                'Category',
+                'Processing status',
+                'Document date',
+                'Uploaded by',
+                'File size (bytes)',
+            ]);
+
+            $query->chunk(500, function ($documents) use ($output): void {
+                foreach ($documents as $document) {
+                    fputcsv($output, array_map($this->spreadsheetSafeValue(...), [
+                        $document->title ?: $document->original_filename,
+                        $document->original_filename,
+                        $document->department?->name ?? $document->suggestedDepartment?->name,
+                        $document->category?->name ?? $document->suggestedCategory?->name,
+                        $document->processing_status,
+                        $document->document_date?->format('Y-m-d'),
+                        $document->uploader?->name,
+                        $document->file_size,
+                    ]));
+                }
+            });
+
+            fclose($output);
+        }, 'smartdocs-documents-'.now()->format('Ymd-His').'.csv', [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Cache-Control' => 'no-store, private',
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function validatedLibraryFilters(Request $request): array
+    {
+        return $request->validate([
             'q' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', Rule::in(['pending', 'processing', 'completed', 'failed'])],
             'category_id' => ['nullable', 'integer', 'exists:document_categories,id'],
@@ -82,8 +163,14 @@ class DocumentController extends Controller
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
             'sort' => ['nullable', Rule::in(['newest', 'oldest', 'alphabetical'])],
         ]);
-        $query = $this->visibleToUser($request)->with(['suggestedCategory', 'suggestedDepartment']);
+    }
 
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    private function filteredLibraryQuery(Request $request, array $validated): Builder
+    {
+        $query = $this->visibleToUser($request)->with(['suggestedCategory', 'suggestedDepartment']);
         $search = trim((string) ($validated['q'] ?? ''));
         if ($search !== '') {
             $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $search) . '%';
@@ -132,30 +219,17 @@ class DocumentController extends Controller
             default => $query->orderByDesc('created_at')->orderByDesc('id'),
         };
 
-        $visibleIds = (clone $this->visibleToUser($request))->reorder()->select('documents.id');
-        $categoryIds = Document::query()->whereIn('id', $visibleIds)
-            ->where(function ($q) {
-                $q->whereNotNull('category_id')->orWhereNotNull('suggested_category_id');
-            })
-            ->selectRaw('COALESCE(category_id, suggested_category_id) as category_id')
-            ->distinct()->pluck('category_id');
-        $departmentIds = Document::query()->whereIn('id', $visibleIds)
-            ->where(function ($q) {
-                $q->whereNotNull('department_id')->orWhereNotNull('suggested_department_id');
-            })
-            ->selectRaw('COALESCE(department_id, suggested_department_id) as department_id')
-            ->distinct()->pluck('department_id');
-        $uploaderIds = Document::query()->whereIn('id', $visibleIds)
-            ->whereNotNull('uploaded_by')->distinct()->pluck('uploaded_by');
-        $categories = DocumentCategory::whereIn('id', $categoryIds)->orderBy('name')->get();
-        $departments = Department::whereIn('id', $departmentIds)->orderBy('name')->get();
-        $uploaders = \App\Models\User::whereIn('id', $uploaderIds)->orderBy('name')->get();
+        return $query;
+    }
 
-        $documents = $query->paginate(15)->withQueryString();
+    private function spreadsheetSafeValue(mixed $value): string
+    {
+        $value = (string) ($value ?? '');
+        if (preg_match('/^[\t\r\n ]*[=+\-@]/', $value) === 1) {
+            return "'".$value;
+        }
 
-        return view('documents.index', compact(
-            'documents', 'search', 'categories', 'departments', 'uploaders', 'validated', 'sort'
-        ));
+        return $value;
     }
 
     public function create(): View

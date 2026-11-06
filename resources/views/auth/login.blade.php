@@ -174,7 +174,7 @@
                         <label for="password" class="form-label">Password</label>
                         <div class="input-group">
                             <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password" placeholder="Enter your password">
-                            <button type="button" class="btn btn-outline-secondary" id="pwToggle" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                            <button type="button" class="btn btn-outline-secondary" id="pwToggle" aria-label="Show password" aria-controls="password" aria-pressed="false"><i class="bi bi-eye" aria-hidden="true"></i></button>
                         </div>
                         @error('password')<span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>@enderror
                     </div>
@@ -200,8 +200,9 @@
     toggle.addEventListener('click', function () {
         var show = password.type === 'password';
         password.type = show ? 'text' : 'password';
-        toggle.innerHTML = show ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+        toggle.innerHTML = show ? '<i class="bi bi-eye-slash" aria-hidden="true"></i>' : '<i class="bi bi-eye" aria-hidden="true"></i>';
         toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+        toggle.setAttribute('aria-pressed', show ? 'true' : 'false');
     });
 })();
 </script>

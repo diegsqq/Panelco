@@ -97,6 +97,25 @@ No successful sign-in recorded
 </dd>
 </dl>
 </div>
+<div class="card card-p3 p-4 mt-3">
+<h5 class="fw-bold mb-1"><i class="bi bi-clipboard-check me-1" style="color:#00A868"></i>Access review notes</h5>
+<small class="text-muted d-block mb-3">Record the review outcome for the audit trail. This does not change account access.</small>
+@if ($latestAccessReview)
+<div class="border rounded p-3 mb-3">
+<div class="small text-muted mb-1">Last reviewed by {{ $latestAccessReview->user?->name ?? 'an administrator' }} on {{ $latestAccessReview->created_at->format('M d, Y H:i') }}</div>
+<div>{{ $latestAccessReview->metadata['note'] ?? '' }}</div>
+</div>
+@else
+<p class="small text-muted mb-3">No access review has been recorded for this account.</p>
+@endif
+<form method="POST" action="{{ route('admin.users.access-reviews.store', $user) }}">
+@csrf
+<label for="accessReviewNote" class="form-label">Review note</label>
+<textarea id="accessReviewNote" name="review_note" class="form-control @error('review_note') is-invalid @enderror" rows="3" maxlength="1000" required>{{ old('review_note') }}</textarea>
+@error('review_note')<div class="invalid-feedback">{{ $message }}</div>@enderror
+<button class="btn btn-outline-success mt-3"><i class="bi bi-check-lg me-1"></i>Record access review</button>
+</form>
+</div>
 @if($user->two_factor_enabled && (int) $user->id !== (int) auth()->id())
 <div class="card card-p3 p-3 mt-4">
 <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">

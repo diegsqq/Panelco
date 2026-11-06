@@ -22,6 +22,9 @@
     @media (max-width: 991.98px) {
         .p3-dashboard .row { overflow-y: auto; overflow-x: hidden; }
     }
+    @media (max-width: 767.98px) {
+        body:has(#p3Dashboard) .p3-topbar { display: flex !important; }
+    }
 </style>
 <div class="p3-dashboard" id="p3Dashboard">
 <div class="d-flex flex-wrap justify-content-between align-items-center">

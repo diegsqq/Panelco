@@ -17,10 +17,10 @@
                             <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
 
                             <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ $email ?? old('email') }}" required autocomplete="email" autofocus>
+                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ $email ?? old('email') }}" required autocomplete="email" autofocus @error('email') aria-describedby="emailError" aria-invalid="true" @enderror>
 
                                 @error('email')
-                                    <span class="invalid-feedback" role="alert">
+                                    <span id="emailError" class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
                                     </span>
                                 @enderror
@@ -31,10 +31,11 @@
                             <label for="password" class="col-md-4 col-form-label text-md-end">{{ __('Password') }}</label>
 
                             <div class="col-md-6">
-                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="new-password">
+                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="new-password" aria-describedby="passwordHelp{{ $errors->has('password') ? ' passwordError' : '' }}" @error('password') aria-invalid="true" @enderror>
+                                <small id="passwordHelp" class="form-text text-muted">Use at least 12 characters with uppercase and lowercase letters, a number, and a symbol.</small>
 
                                 @error('password')
-                                    <span class="invalid-feedback" role="alert">
+                                    <span id="passwordError" class="invalid-feedback d-block" role="alert">
                                         <strong>{{ $message }}</strong>
                                     </span>
                                 @enderror

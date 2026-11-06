@@ -128,13 +128,20 @@ class UserController extends Controller
             ->latest()
             ->limit(20)
             ->get();
+        $latestAccessReview = AuditLog::query()
+            ->where('action', 'user.access_reviewed')
+            ->where('entity_type', User::class)
+            ->where('entity_id', $user->id)
+            ->latest()
+            ->first();
 
         return view('admin.users.edit', compact(
             'user',
             'departments',
             'selectedDepartmentIds',
             'loginHistory',
-            'lastSuccessfulSignIn'
+            'lastSuccessfulSignIn',
+            'latestAccessReview'
         ));
     }
 
@@ -232,6 +239,23 @@ class UserController extends Controller
         ]);
 
         return back()->with('status', $isActive ? 'User account activated.' : 'User account deactivated.');
+    }
+
+    public function recordAccessReview(Request $request, User $user): RedirectResponse
+    {
+        $data = $request->validate([
+            'review_note' => ['required', 'string', 'max:1000'],
+        ]);
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'user.access_reviewed',
+            'entity_type' => User::class,
+            'entity_id' => $user->id,
+            'metadata' => ['note' => trim($data['review_note'])],
+        ]);
+
+        return back()->with('status', 'Access review recorded.');
     }
 
     public function resetTwoFactor(Request $request, User $user): RedirectResponse

@@ -21,67 +21,67 @@
 
             <div class="mb-3">
                 <label class="form-label fw-semibold" for="title">Title</label>
-                <input id="title" name="title" class="form-control @error('title') is-invalid @enderror" value="{{ old('title', $document->title) }}" maxlength="255" placeholder="Leave blank to use the filename">
-                @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                <div class="form-text">Shown in the library and search results instead of <code>{{ $document->original_filename }}</code>.</div>
+                <input id="title" name="title" class="form-control @error('title') is-invalid @enderror" value="{{ old('title', $document->title) }}" maxlength="255" placeholder="Leave blank to use the filename" aria-describedby="titleHelp{{ $errors->has('title') ? ' titleError' : '' }}" @error('title') aria-invalid="true" @enderror>
+                @error('title')<div id="titleError" class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                <div id="titleHelp" class="form-text">Shown in the library and search results instead of <code>{{ $document->original_filename }}</code>.</div>
             </div>
 
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label fw-semibold" for="category_id">Category</label>
-                    <select id="category_id" name="category_id" class="form-select @error('category_id') is-invalid @enderror">
+                    <select id="category_id" name="category_id" class="form-select @error('category_id') is-invalid @enderror" @error('category_id') aria-describedby="categoryError" aria-invalid="true" @enderror>
                         <option value="">— None —</option>
                         @foreach ($categories as $c)
                             <option value="{{ $c->id }}" @selected((string) old('category_id', $document->category_id) === (string) $c->id)>{{ $c->name }}</option>
                         @endforeach
                     </select>
-                    @error('category_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    @error('category_id')<div id="categoryError" class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </div>
                 @if (auth()->user()->isManager())
                 <div class="col-md-6">
                     <label class="form-label fw-semibold" for="department_id">Department</label>
-                    <select id="department_id" name="department_id" class="form-select @error('department_id') is-invalid @enderror">
+                    <select id="department_id" name="department_id" class="form-select @error('department_id') is-invalid @enderror" @error('department_id') aria-describedby="departmentError" aria-invalid="true" @enderror>
                         <option value="">— None —</option>
                         @foreach ($departments as $d)
                             <option value="{{ $d->id }}" @selected((string) old('department_id', $document->department_id) === (string) $d->id)>{{ $d->name }}</option>
                         @endforeach
                     </select>
-                    @error('department_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    @error('department_id')<div id="departmentError" class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     <div class="form-text">Controls which departments can find this document.</div>
                 </div>
                 @endif
                 <div class="col-md-6">
                     <label class="form-label fw-semibold" for="document_date">Document date</label>
-                    <input id="document_date" name="document_date" type="date" class="form-control @error('document_date') is-invalid @enderror" value="{{ old('document_date', $document->document_date?->format('Y-m-d')) }}">
-                    @error('document_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <input id="document_date" name="document_date" type="date" class="form-control @error('document_date') is-invalid @enderror" value="{{ old('document_date', $document->document_date?->format('Y-m-d')) }}" @error('document_date') aria-describedby="documentDateError" aria-invalid="true" @enderror>
+                    @error('document_date')<div id="documentDateError" class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold" for="expiration_date">Expiration date <span class="text-muted fw-normal">(optional)</span></label>
-                    <input id="expiration_date" name="expiration_date" type="date" class="form-control @error('expiration_date') is-invalid @enderror" value="{{ old('expiration_date', $document->expiration_date?->format('Y-m-d')) }}">
-                    @error('expiration_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <input id="expiration_date" name="expiration_date" type="date" class="form-control @error('expiration_date') is-invalid @enderror" value="{{ old('expiration_date', $document->expiration_date?->format('Y-m-d')) }}" @error('expiration_date') aria-describedby="expirationDateError" aria-invalid="true" @enderror>
+                    @error('expiration_date')<div id="expirationDateError" class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     <div class="form-text">Set a reminder date; SmartDocs will not automatically archive or delete the document.</div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold" for="reference_number">Reference number</label>
-                    <input id="reference_number" name="reference_number" class="form-control @error('reference_number') is-invalid @enderror" value="{{ old('reference_number', $document->reference_number) }}" maxlength="255">
-                    @error('reference_number')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <input id="reference_number" name="reference_number" class="form-control @error('reference_number') is-invalid @enderror" value="{{ old('reference_number', $document->reference_number) }}" maxlength="255" @error('reference_number') aria-describedby="referenceNumberError" aria-invalid="true" @enderror>
+                    @error('reference_number')<div id="referenceNumberError" class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold" for="sender">Sender</label>
-                    <input id="sender" name="sender" class="form-control @error('sender') is-invalid @enderror" value="{{ old('sender', $document->sender) }}" maxlength="255">
-                    @error('sender')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <input id="sender" name="sender" class="form-control @error('sender') is-invalid @enderror" value="{{ old('sender', $document->sender) }}" maxlength="255" @error('sender') aria-describedby="senderError" aria-invalid="true" @enderror>
+                    @error('sender')<div id="senderError" class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold" for="recipient">Recipient</label>
-                    <input id="recipient" name="recipient" class="form-control @error('recipient') is-invalid @enderror" value="{{ old('recipient', $document->recipient) }}" maxlength="255">
-                    @error('recipient')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <input id="recipient" name="recipient" class="form-control @error('recipient') is-invalid @enderror" value="{{ old('recipient', $document->recipient) }}" maxlength="255" @error('recipient') aria-describedby="recipientError" aria-invalid="true" @enderror>
+                    @error('recipient')<div id="recipientError" class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </div>
             </div>
 
             <div class="mt-4">
                 <label class="form-label fw-semibold" for="file">Replace file <span class="text-muted fw-normal">(optional)</span></label>
-                <input id="file" name="file" type="file" class="form-control @error('file') is-invalid @enderror" accept=".{{ implode(',.', config('smartdocs.upload.allowed_extensions')) }}">
-                @error('file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                <input id="file" name="file" type="file" class="form-control @error('file') is-invalid @enderror" accept=".{{ implode(',.', config('smartdocs.upload.allowed_extensions')) }}" @error('file') aria-describedby="fileError" aria-invalid="true" @enderror>
+                @error('file')<div id="fileError" class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 <div class="form-text">The current file will be retained in version history. Replacing it resets extracted results and queues the new version for processing.</div>
             </div>
 

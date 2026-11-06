@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Jobs\ProcessDocument;
-use App\Models\Document;
 use App\Models\Department;
+use App\Models\Document;
 use App\Models\DocumentCategory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -68,7 +68,7 @@ class Phase3UploadTest extends TestCase
         Storage::fake('private');
         Queue::fake();
         $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
-        $contents = "Same document selected twice in one batch.";
+        $contents = 'Same document selected twice in one batch.';
 
         $this->actingAs($employee)->post(route('documents.store'), [
             'file' => [
@@ -126,6 +126,22 @@ class Phase3UploadTest extends TestCase
         $this->get(route('documents.upload'))->assertRedirect('/login');
     }
 
+    public function test_upload_picker_is_keyboard_accessible_and_announces_file_status(): void
+    {
+        $this->seed();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+
+        $this->actingAs($employee)
+            ->get(route('documents.upload'))
+            ->assertOk()
+            ->assertSee('role="button" tabindex="0" aria-label="Choose files to upload"', false)
+            ->assertSee('aria-describedby="uploadInstructions" aria-controls="file"', false)
+            ->assertSee('id="fileMeta" role="status" aria-live="polite"', false)
+            ->assertSee('id="suggestNote" role="status" aria-live="polite"', false)
+            ->assertSee('input.files[0]', false)
+            ->assertDontSee('input.files = (function ()', false);
+    }
+
     public function test_user_cannot_download_restricted_document(): void
     {
         $this->seed();
@@ -177,6 +193,55 @@ class Phase3UploadTest extends TestCase
         $this->get(route('documents.library'))->assertRedirect('/login');
     }
 
+    public function test_library_csv_export_respects_access_filters_and_escapes_spreadsheet_formulas(): void
+    {
+        $this->seed();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $otherEmployee = User::factory()->create(['role' => User::ROLE_EMPLOYEE]);
+
+        Document::create([
+            'uploaded_by' => $employee->id,
+            'title' => '=HYPERLINK("https://example.invalid","Open")',
+            'original_filename' => 'report.txt',
+            'storage_path' => 'documents/report.txt',
+            'mime_type' => 'text/plain',
+            'file_size' => 100,
+            'processing_status' => 'completed',
+            'extracted_text' => 'private document contents are excluded',
+        ]);
+        Document::create([
+            'uploaded_by' => $employee->id,
+            'title' => 'Unmatched own document',
+            'original_filename' => 'other.txt',
+            'storage_path' => 'documents/other.txt',
+            'mime_type' => 'text/plain',
+            'file_size' => 100,
+            'processing_status' => 'completed',
+        ]);
+        Document::create([
+            'uploaded_by' => $otherEmployee->id,
+            'title' => '=HYPERLINK("https://example.invalid","Private")',
+            'original_filename' => 'private.txt',
+            'storage_path' => 'documents/private.txt',
+            'mime_type' => 'text/plain',
+            'file_size' => 100,
+            'processing_status' => 'completed',
+        ]);
+
+        $response = $this->actingAs($employee)->get(route('documents.export', ['q' => 'HYPERLINK']));
+
+        $response->assertOk()
+            ->assertHeader('content-type', 'text/csv; charset=UTF-8')
+            ->assertHeader('cache-control', 'no-store, private');
+        $this->assertStringContainsString('.csv', (string) $response->headers->get('content-disposition'));
+        $csv = $response->streamedContent();
+
+        $this->assertStringContainsString("'=HYPERLINK", $csv);
+        $this->assertStringNotContainsString('Unmatched own document', $csv);
+        $this->assertStringNotContainsString('Private', $csv);
+        $this->assertStringNotContainsString('private document contents are excluded', $csv);
+    }
+
     public function test_library_renders_documents_and_filters_by_status(): void
     {
         $this->seed();
@@ -205,6 +270,9 @@ class Phase3UploadTest extends TestCase
             ->get(route('documents.library', ['status' => 'completed']))
             ->assertOk()
             ->assertSeeText('Documents')
+            ->assertSee('<caption class="visually-hidden">Document library results</caption>', false)
+            ->assertSee('aria-label="Document result pages"', false)
+            ->assertSee('aria-label="Page 1 of 1" aria-current="page"', false)
             ->assertSeeText('Approved plan')
             ->assertSeeText('Complete')
             ->assertDontSeeText('Pending plan');
@@ -222,8 +290,8 @@ class Phase3UploadTest extends TestCase
         ] as $index => $attributes) {
             Document::create(array_merge([
                 'uploaded_by' => $admin->id,
-                'original_filename' => 'search-' . $index . '.txt',
-                'storage_path' => 'documents/search-' . $index . '.txt',
+                'original_filename' => 'search-'.$index.'.txt',
+                'storage_path' => 'documents/search-'.$index.'.txt',
                 'mime_type' => 'text/plain',
                 'file_size' => 100,
                 'processing_status' => 'completed',
@@ -323,8 +391,8 @@ class Phase3UploadTest extends TestCase
             Document::create([
                 'uploaded_by' => $uploader->id,
                 'title' => $title,
-                'original_filename' => $title . '.txt',
-                'storage_path' => 'documents/' . str_replace(' ', '-', strtolower($title)) . '.txt',
+                'original_filename' => $title.'.txt',
+                'storage_path' => 'documents/'.str_replace(' ', '-', strtolower($title)).'.txt',
                 'mime_type' => 'text/plain',
                 'file_size' => 100,
                 'processing_status' => 'completed',

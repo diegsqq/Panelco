@@ -13,13 +13,29 @@ use Tests\TestCase;
 
 class FakeChatAiProvider implements AiProvider
 {
-    public function available(): bool { return true; }
-    public function name(): string { return 'fake-chat'; }
-    public function analyze(string $text): ?array { return null; }
-    public function classify(string $text, array $categoryNames): ?array { return null; }
+    public function available(): bool
+    {
+        return true;
+    }
+
+    public function name(): string
+    {
+        return 'fake-chat';
+    }
+
+    public function analyze(string $text): ?array
+    {
+        return null;
+    }
+
+    public function classify(string $text, array $categoryNames): ?array
+    {
+        return null;
+    }
+
     public function answer(string $question, array $passages): ?string
     {
-        return 'Generated answer from ' . count($passages) . ' passages.';
+        return 'Generated answer from '.count($passages).' passages.';
     }
 }
 
@@ -32,7 +48,7 @@ class Phase7ChatTest extends TestCase
         $doc = Document::create([
             'uploaded_by' => $uploader->id,
             'title' => $title,
-            'original_filename' => $title . '.txt',
+            'original_filename' => $title.'.txt',
             'storage_path' => 'documents/x.txt',
             'mime_type' => 'text/plain',
             'file_size' => strlen($text),
@@ -86,12 +102,12 @@ class Phase7ChatTest extends TestCase
 
         $assistant = Conversation::first()->messages()->where('role', 'assistant')->first();
         $this->assertStringContainsString('damaged transformer was replaced', strtolower($assistant->content));
-        $this->assertStringContainsString('Transformer Report', $assistant->content);
 
-        $sources = MessageSource::all();
+        $sources = MessageSource::query()->where('chat_message_id', $assistant->id)->with('document')->get();
         $this->assertGreaterThanOrEqual(1, $sources->count());
         foreach ($sources as $src) {
             $this->assertEquals($doc->id, $src->document_id);
+            $this->assertEquals('Transformer Report', $src->document->title);
             $this->assertNotNull($src->document_chunk_id);
             $this->assertEquals(2, $src->page_number);
         }
@@ -100,7 +116,7 @@ class Phase7ChatTest extends TestCase
     public function test_generative_answer_with_ai(): void
     {
         $this->seed();
-        app()->instance(AiProvider::class, new FakeChatAiProvider());
+        app()->instance(AiProvider::class, new FakeChatAiProvider);
         $emp = User::where('email', 'employee@panelco3.local')->first();
         $this->completedDoc($emp, 'Transformer Report', 'The damaged transformer was replaced by the crew');
 
@@ -147,16 +163,16 @@ class Phase7ChatTest extends TestCase
     public function test_comparison_uses_both_selected_documents_and_cites_each(): void
     {
         $this->seed();
-        app()->instance(AiProvider::class, new FakeChatAiProvider());
+        app()->instance(AiProvider::class, new FakeChatAiProvider);
         $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
         $first = $this->completedDoc($employee, 'Transformer Inspection', 'The transformer oil test found elevated moisture.');
         $second = $this->completedDoc($employee, 'Transformer Repair', 'The repair crew replaced the transformer insulation.');
         $unselected = $this->completedDoc($employee, 'Transformer Outage', 'The transformer outage lasted two hours.');
 
         $this->actingAs($employee)->post(route('chat.store'), [
-        'document_id' => $first->id,
-        'comparison_document_id' => $second->id,
-        'question' => 'Compare the transformer findings.',
+            'document_id' => $first->id,
+            'comparison_document_id' => $second->id,
+            'question' => 'Compare the transformer findings.',
         ])->assertRedirect();
 
         $conversation = Conversation::firstOrFail();
@@ -166,15 +182,15 @@ class Phase7ChatTest extends TestCase
         $assistant = $conversation->messages()->where('role', 'assistant')->firstOrFail();
         $this->assertSame('Generated answer from 2 passages.', $assistant->content);
         $this->assertEqualsCanonicalizing(
-        [$first->id, $second->id],
-        $assistant->sources->pluck('document_id')->unique()->all()
+            [$first->id, $second->id],
+            $assistant->sources->pluck('document_id')->unique()->all()
         );
         $this->assertNotContains($unselected->id, $assistant->sources->pluck('document_id')->all());
 
         $this->get(route('chat.show', $conversation))
-        ->assertOk()
-        ->assertSee('Transformer Inspection')
-        ->assertSee('Transformer Repair');
+            ->assertOk()
+            ->assertSee('Transformer Inspection')
+            ->assertSee('Transformer Repair');
     }
 
     public function test_comparison_rejects_the_same_document_twice(): void
@@ -184,9 +200,9 @@ class Phase7ChatTest extends TestCase
         $document = $this->completedDoc($employee, 'Transformer Report', 'Transformer repair complete.');
 
         $this->actingAs($employee)->post(route('chat.store'), [
-        'document_id' => $document->id,
-        'comparison_document_id' => $document->id,
-        'question' => 'Compare the transformer findings.',
+            'document_id' => $document->id,
+            'comparison_document_id' => $document->id,
+            'question' => 'Compare the transformer findings.',
         ])->assertSessionHasErrors('comparison_document_id');
 
         $this->assertSame(0, Conversation::count());
@@ -201,30 +217,30 @@ class Phase7ChatTest extends TestCase
         $restricted = $this->completedDoc($otherEmployee, 'Restricted Transformer Report', 'Restricted transformer details.');
 
         $this->actingAs($employee)->post(route('chat.store'), [
-        'document_id' => $first->id,
-        'comparison_document_id' => $restricted->id,
-        'question' => 'Compare the transformer findings.',
+            'document_id' => $first->id,
+            'comparison_document_id' => $restricted->id,
+            'question' => 'Compare the transformer findings.',
         ])->assertForbidden();
 
         $this->assertSame(0, Conversation::count());
         $this->actingAs($employee)->get(route('chat.index'))
-        ->assertOk()
-        ->assertSee('My Transformer Report')
-        ->assertDontSee('Restricted Transformer Report');
+            ->assertOk()
+            ->assertSee('My Transformer Report')
+            ->assertDontSee('Restricted Transformer Report');
     }
 
     public function test_comparison_without_ai_returns_passages_and_cites_both_files(): void
     {
         $this->seed();
-        app()->instance(AiProvider::class, new NullAiProvider());
+        app()->instance(AiProvider::class, new NullAiProvider);
         $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
         $first = $this->completedDoc($employee, 'Inspection Report', 'Inspection documented increased transformer vibration.');
         $second = $this->completedDoc($employee, 'Repair Report', 'Repair reduced transformer vibration after bearing replacement.');
 
         $this->actingAs($employee)->post(route('chat.store'), [
-        'document_id' => $first->id,
-        'comparison_document_id' => $second->id,
-        'question' => 'Compare transformer vibration.',
+            'document_id' => $first->id,
+            'comparison_document_id' => $second->id,
+            'question' => 'Compare transformer vibration.',
         ])->assertRedirect();
 
         $assistant = Conversation::firstOrFail()->messages()->where('role', 'assistant')->firstOrFail();
@@ -232,8 +248,8 @@ class Phase7ChatTest extends TestCase
         $this->assertStringContainsString('Inspection Report', $assistant->content);
         $this->assertStringContainsString('Repair Report', $assistant->content);
         $this->assertEqualsCanonicalizing(
-        [$first->id, $second->id],
-        $assistant->sources->pluck('document_id')->unique()->all()
+            [$first->id, $second->id],
+            $assistant->sources->pluck('document_id')->unique()->all()
         );
     }
 
@@ -244,15 +260,15 @@ class Phase7ChatTest extends TestCase
         $first = $this->completedDoc($employee, 'First Transformer Report', 'Transformer inspection was completed.');
         $second = $this->completedDoc($employee, 'Second Transformer Report', 'Transformer repairs were completed.');
         $this->actingAs($employee)->post(route('chat.store'), [
-        'document_id' => $first->id,
-        'comparison_document_id' => $second->id,
-        'question' => 'Compare these transformer reports.',
+            'document_id' => $first->id,
+            'comparison_document_id' => $second->id,
+            'question' => 'Compare these transformer reports.',
         ])->assertRedirect();
         $conversation = Conversation::firstOrFail();
         $second->delete();
 
         $this->post(route('chat.ask', $conversation), ['question' => 'What about the results?'])
-        ->assertSessionHasErrors('question');
+            ->assertSessionHasErrors('question');
 
         $this->assertSame(2, $conversation->messages()->count());
     }

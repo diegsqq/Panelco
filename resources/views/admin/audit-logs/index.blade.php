@@ -2,14 +2,15 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
 <h4 class="mb-0">Audit Logs</h4>
-<form method="GET" class="d-flex gap-2">
+<form method="GET" class="d-flex flex-wrap gap-2" role="search">
 <select name="category" class="form-select form-select-sm" aria-label="Filter by event category">
 <option value="">All activity</option>
 <option value="auth" {{ request('category') === 'auth' ? 'selected' : '' }}>Sign-in &amp; security</option>
 <option value="document" {{ request('category') === 'document' ? 'selected' : '' }}>Document activity</option>
 <option value="user" {{ request('category') === 'user' ? 'selected' : '' }}>User administration</option>
 </select>
-<input name="action" class="form-control form-control-sm" value="{{ request('action') }}" placeholder="Filter by action…">
+<input name="action" class="form-control form-control-sm" value="{{ request('action') }}" placeholder="Filter by action…" aria-label="Filter by action">
+<input name="q" class="form-control form-control-sm" value="{{ request('q') }}" placeholder="Search users or review notes…" aria-label="Search audit users, actions, and review notes">
 <button class="btn btn-sm btn-outline-success">Filter</button>
 </form>
 </div>
@@ -27,6 +28,7 @@
 @if($log->metadata['identifier'] ?? false)<div>{{ $log->metadata['identifier'] }}</div>@endif
 @if($log->metadata['ip'] ?? false)<div class="text-muted">{{ $log->metadata['ip'] }}</div>@endif
 @if($log->metadata['user_agent'] ?? false)<small class="text-muted" title="{{ $log->metadata['user_agent'] }}">{{ \Illuminate\Support\Str::limit($log->metadata['user_agent'], 60) }}</small>@endif
+@if($log->metadata['note'] ?? false)<div class="mt-1">{{ $log->metadata['note'] }}</div>@endif
 </td>
 </tr>
 @empty

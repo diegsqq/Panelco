@@ -3,6 +3,7 @@
 <style>
     .up-zone { border: 2px dashed #b9dfc6; border-radius: 1rem; background: #f7fbf8; transition: all .2s ease; cursor: pointer; }
     .up-zone:hover { border-color: #00A868; background: #f0f9f3; }
+    .up-zone:focus-visible { outline: 3px solid #00743F; outline-offset: 3px; }
     .up-zone.dragging { border-color: #00A868; background: #e6f3ea; box-shadow: 0 0 0 4px rgba(0,168,104,.12); }
     .up-zone.filled { border-style: solid; border-color: #cfe9d7; background: #fff; cursor: default; }
     .up-zone .up-idle-icon { width: 64px; height: 64px; border-radius: 18px; background: #e6f3ea; color: #00A868; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto; transition: transform .2s ease; }
@@ -46,20 +47,20 @@
                 <h6 class="fw-bold mb-0">Choose a file</h6>
             </div>
 
-            <div id="dropZone" class="up-zone p-4 text-center" role="button" tabindex="0" aria-label="Upload file">
+            <div id="dropZone" class="up-zone p-4 text-center" role="button" tabindex="0" aria-label="Choose files to upload" aria-describedby="uploadInstructions" aria-controls="file">
                 <div id="zoneIdle">
                     <div class="up-idle-icon"><i class="bi bi-cloud-arrow-up"></i></div>
                     <div class="fw-semibold mt-3">Drag &amp; drop your file here</div>
                     <small class="text-muted">or <span style="color:#00743F;text-decoration:underline">browse from your computer</span></small>
-                    <div class="mt-2"><small class="text-muted">PDF · DOCX · TXT · PNG · JPEG — up to {{ number_format(config('smartdocs.upload.max_kb', 51200) / 1024, 0) }} MB</small></div>
+                    <div class="mt-2">                    <small id="uploadInstructions" class="text-muted">PDF · DOCX · TXT · PNG · JPEG — up to {{ number_format(config('smartdocs.upload.max_kb', 51200) / 1024, 0) }} MB. You can select multiple files.</small></div>
                 </div>
                 <div id="zoneFile" class="d-none text-start px-1">
                     <div class="up-file-tile">
                         <span class="up-file-icon" id="fileIcon"><i class="bi bi-file-earmark-fill"></i></span>
                         <div class="flex-grow-1" style="min-width:0">
                             <div class="fw-semibold text-truncate" id="fileName" style="color:#00743F"></div>
-                            <small class="text-muted" id="fileMeta"></small>
-                            <div class="up-analyzing mt-1 d-none" id="analyzingLine">
+                            <small class="text-muted" id="fileMeta" role="status" aria-live="polite" aria-atomic="true"></small>
+                            <div class="up-analyzing mt-1 d-none" id="analyzingLine" role="status" aria-live="polite">
                                 <span class="spinner-border spinner-border-sm me-1" style="width:.8rem;height:.8rem"></span>
                                 <span id="analyzingText">Reading document and suggesting details…</span>
                             </div>
@@ -73,7 +74,7 @@
             <input id="file" name="file[]" type="file" class="d-none @error('file') is-invalid @enderror" accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" multiple required>
             <input type="hidden" name="file_last_modified" id="fileLastModified" value="">
             @error('file')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
-            <div class="form-text mt-2" id="suggestNote"></div>
+            <div class="form-text mt-2" id="suggestNote" role="status" aria-live="polite" aria-atomic="true"></div>
         </div>
 
         {{-- Step 2: details --}}
@@ -269,11 +270,6 @@
 
     function accept(file) {
         if (!file) return;
-        input.files = (function () {
-            var dt = new DataTransfer();
-            dt.items.add(file);
-            return dt.files;
-        })();
         document.getElementById('fileLastModified').value = file.lastModified ? String(file.lastModified) : '';
         showFile(file);
         analyze(file);

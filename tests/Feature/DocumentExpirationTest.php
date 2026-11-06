@@ -36,6 +36,24 @@ class DocumentExpirationTest extends TestCase
         $this->assertNull($document->fresh()->expiration_date);
     }
 
+    public function test_document_edit_validation_errors_are_programmatically_associated_with_fields(): void
+    {
+        $this->seed();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $document = $this->createDocument($employee);
+
+        $this->actingAs($employee)
+            ->from(route('documents.edit', $document))
+            ->put(route('documents.update', $document), ['title' => str_repeat('x', 256)])
+            ->assertSessionHasErrors('title');
+
+        $this->get(route('documents.edit', $document))
+            ->assertOk()
+            ->assertSee('aria-describedby="titleHelp titleError"', false)
+            ->assertSee('aria-invalid="true"', false)
+            ->assertSee('id="titleError" class="invalid-feedback d-block"', false);
+    }
+
     public function test_dashboard_lists_expired_and_upcoming_owned_documents_only(): void
     {
         $this->seed();

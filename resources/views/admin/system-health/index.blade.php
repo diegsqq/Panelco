@@ -74,6 +74,7 @@
                 </div>
             @endif
             <a href="{{ route('queue.index') }}" class="small mt-3">Open processing queue</a>
+            <a href="{{ route('admin.documents.retention-review') }}" class="small mt-2">Review document expirations</a>
         </div>
     </div>
     <div class="col-md-6">
@@ -101,6 +102,24 @@
             </span>
             <p class="mb-0 mt-2">Configured storage driver: <span class="fw-semibold">{{ $storage['driver'] }}</span></p>
             <small class="text-muted mt-2">{{ $storage['detail'] }} Storage credentials and filesystem paths are not displayed.</small>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card card-p3 p-4 h-100">
+            <h5 class="fw-semibold"><i class="bi bi-shield-lock me-2" style="color:#00A868"></i>Encrypted local backup</h5>
+            <span class="badge text-bg-{{ $backup['status'] === 'ok' ? 'success' : 'warning' }} align-self-start">
+                {{ $backup['status'] === 'ok' ? 'Current' : 'Needs attention' }}
+            </span>
+            @if($backup['last_backup_at'])
+                <p class="mb-0 mt-2">Latest backup: <span class="fw-semibold">{{ $backup['last_backup_at']->timezone(config('app.timezone'))->format('M d, Y H:i:s') }}</span></p>
+            @endif
+            @if($backup['integrity_verified_at'])
+                <p class="mb-0">Integrity verified: <span class="fw-semibold">{{ $backup['integrity_verified_at']->timezone(config('app.timezone'))->format('M d, Y H:i:s') }}</span></p>
+            @endif
+            <small class="text-muted mt-2">{{ $backup['detail'] }}</small>
+            <small class="text-muted mt-2">{{ $backup['integrity']['detail'] }}</small>
+            <small class="text-muted mt-2">{{ $backup['offsite']['detail'] }}</small>
+            <small class="text-muted mt-2">Backups older than {{ $backupStaleHours }} hours are flagged. Backup paths are not displayed.</small>
         </div>
     </div>
 </div>

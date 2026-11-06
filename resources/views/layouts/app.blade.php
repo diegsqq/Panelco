@@ -89,6 +89,8 @@
         main { animation: p3-fade .3s ease; }
         @keyframes p3-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
         .form-control:focus, .form-select:focus, .btn:focus-visible, a:focus-visible { box-shadow: 0 0 0 .25rem rgba(0,168,104,.25); outline: none; }
+        .p3-skip-link { position: fixed; top: -4rem; left: 1rem; z-index: 2000; padding: .6rem 1rem; background: #fff; color: #00743F; border: 2px solid #00743F; border-radius: .5rem; }
+        .p3-skip-link:focus { top: 1rem; }
         .form-select.p3-chosen { color: var(--p3-navy); font-weight: 600; background-color: #f0f9f3; }
         .p3-dept-pill { border: 1px solid #d5e8db; color: var(--p3-navy); background: #fff; border-radius: 2rem; font-weight: 500; padding: .35rem .9rem; transition: all .15s ease; }
         .p3-dept-pill:hover { background: #e6f3ea; }
@@ -278,13 +280,22 @@
             .sidebar-backdrop { position: fixed; inset: 0; z-index: 1040; background: rgba(0,0,0,.45); opacity: 0; pointer-events: none; transition: opacity .3s ease; }
             .sidebar-backdrop.show { opacity: 1; pointer-events: auto; }
         }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                scroll-behavior: auto !important;
+                transition-duration: .01ms !important;
+            }
+        }
     </style>
 </head>
 <body class="{{ request()->routeIs('chat.*') || request()->routeIs('documents.library') ? 'p3-no-scroll' : '' }}">
 <div class="container-fluid">
     <div class="row">
         @auth
-        <aside class="col-md-3 col-lg-2 d-none d-md-flex p3-sidebar p-3 flex-column" id="p3Sidebar">
+        <a class="p3-skip-link" href="#main-content">Skip to main content</a>
+        <aside class="col-md-3 col-lg-2 d-none d-md-flex p3-sidebar p-3 flex-column" id="p3Sidebar" aria-label="Primary navigation">
             <div class="d-flex align-items-center gap-2 mb-1 px-1">
                 <img src="{{ asset('images/logo.png') }}" alt="PANELCO III" style="width:58px;height:58px;object-fit:contain">
                 <div class="text-white lh-sm">
@@ -293,24 +304,26 @@
             </div>
             <nav class="nav flex-column gap-1 flex-grow-1" id="p3Nav">
                 <span class="nav-indicator" id="navIndicator"></span>
-                <a class="nav-link {{ request()->routeIs('dashboard','home') ? 'active' : '' }}" href="{{ route('dashboard') }}"><span class="nav-ico"><i class="bi bi-grid-1x2-fill"></i></span>{{ __('nav.dashboard') }}</a>
-                <a class="nav-link {{ request()->routeIs('documents.upload') ? 'active' : '' }}" href="{{ route('documents.upload') }}"><span class="nav-ico"><i class="bi bi-cloud-arrow-up-fill"></i></span>{{ __('nav.upload') }}</a>
-                <a class="nav-link {{ request()->routeIs('documents.library') ? 'active' : '' }}" href="{{ route('documents.library') }}"><span class="nav-ico"><i class="bi bi-folder-fill"></i></span>{{ __('nav.library') }}</a>
+                <a class="nav-link {{ request()->routeIs('dashboard','home') ? 'active' : '' }}" aria-current="{{ request()->routeIs('dashboard','home') ? 'page' : 'false' }}" href="{{ route('dashboard') }}"><span class="nav-ico"><i class="bi bi-grid-1x2-fill"></i></span>{{ __('nav.dashboard') }}</a>
+                <a class="nav-link {{ request()->routeIs('documents.upload') ? 'active' : '' }}" aria-current="{{ request()->routeIs('documents.upload') ? 'page' : 'false' }}" href="{{ route('documents.upload') }}"><span class="nav-ico"><i class="bi bi-cloud-arrow-up-fill"></i></span>{{ __('nav.upload') }}</a>
+                <a class="nav-link {{ request()->routeIs('documents.library') ? 'active' : '' }}" aria-current="{{ request()->routeIs('documents.library') ? 'page' : 'false' }}" href="{{ route('documents.library') }}"><span class="nav-ico"><i class="bi bi-folder-fill"></i></span>{{ __('nav.library') }}</a>
                 @if(auth()->user()->isManager())
-                <a class="nav-link {{ request()->routeIs('documents.approvals') ? 'active' : '' }}" href="{{ route('documents.approvals') }}"><span class="nav-ico"><i class="bi bi-clipboard-check-fill"></i></span>Document approvals</a>
+                <a class="nav-link {{ request()->routeIs('documents.approvals') ? 'active' : '' }}" aria-current="{{ request()->routeIs('documents.approvals') ? 'page' : 'false' }}" href="{{ route('documents.approvals') }}"><span class="nav-ico"><i class="bi bi-clipboard-check-fill"></i></span>Document approvals</a>
                 @endif
-                <a class="nav-link {{ request()->routeIs('chat.*') ? 'active' : '' }}" href="{{ route('chat.index') }}"><span class="nav-ico"><i class="bi bi-lightning-charge-fill"></i></span>{{ __('nav.lightning') }}</a>
+                <a class="nav-link {{ request()->routeIs('chat.*') ? 'active' : '' }}" aria-current="{{ request()->routeIs('chat.*') ? 'page' : 'false' }}" href="{{ route('chat.index') }}"><span class="nav-ico"><i class="bi bi-lightning-charge-fill"></i></span>{{ __('nav.lightning') }}</a>
+                <a class="nav-link {{ request()->routeIs('help') ? 'active' : '' }}" aria-current="{{ request()->routeIs('help') ? 'page' : 'false' }}" href="{{ route('help') }}"><span class="nav-ico"><i class="bi bi-question-circle-fill" aria-hidden="true"></i></span>Help</a>
                 @php $settingsOpen = request()->routeIs('settings.*') || request()->routeIs('admin.*'); @endphp
-                <a class="nav-link {{ $settingsOpen ? 'active' : '' }}" data-bs-toggle="collapse" href="#settingsMenu" role="button" aria-expanded="{{ $settingsOpen ? 'true' : 'false' }}"><span class="nav-ico"><i class="bi bi-gear-fill"></i></span>{{ __('nav.settings') }}<i class="bi bi-chevron-down ms-auto small"></i></a>
+                <a class="nav-link {{ $settingsOpen ? 'active' : '' }}" data-bs-toggle="collapse" href="#settingsMenu" role="button" aria-controls="settingsMenu" aria-expanded="{{ $settingsOpen ? 'true' : 'false' }}"><span class="nav-ico"><i class="bi bi-gear-fill"></i></span>{{ __('nav.settings') }}<i class="bi bi-chevron-down ms-auto small"></i></a>
                 <div class="collapse {{ $settingsOpen ? 'show' : '' }} ps-3" id="settingsMenu">
-                    <a class="nav-link {{ request()->routeIs('settings.index') ? 'active' : '' }}" href="{{ route('settings.index') }}"><span class="nav-ico"><i class="bi bi-sliders"></i></span>{{ __('nav.general') }}</a>
-                    <a class="nav-link {{ request()->routeIs('settings.security') ? 'active' : '' }}" href="{{ route('settings.security') }}"><span class="nav-ico"><i class="bi bi-shield-lock"></i></span>{{ __('nav.security') }}</a>
-                    <a class="nav-link {{ request()->routeIs('settings.preferences') ? 'active' : '' }}" href="{{ route('settings.preferences') }}"><span class="nav-ico"><i class="bi bi-palette-fill"></i></span>{{ __('nav.preferences') }}</a>
+                    <a class="nav-link {{ request()->routeIs('settings.index') ? 'active' : '' }}" aria-current="{{ request()->routeIs('settings.index') ? 'page' : 'false' }}" href="{{ route('settings.index') }}"><span class="nav-ico"><i class="bi bi-sliders"></i></span>{{ __('nav.general') }}</a>
+                    <a class="nav-link {{ request()->routeIs('settings.security') ? 'active' : '' }}" aria-current="{{ request()->routeIs('settings.security') ? 'page' : 'false' }}" href="{{ route('settings.security') }}"><span class="nav-ico"><i class="bi bi-shield-lock"></i></span>{{ __('nav.security') }}</a>
+                    <a class="nav-link {{ request()->routeIs('settings.preferences') ? 'active' : '' }}" aria-current="{{ request()->routeIs('settings.preferences') ? 'page' : 'false' }}" href="{{ route('settings.preferences') }}"><span class="nav-ico"><i class="bi bi-palette-fill"></i></span>{{ __('nav.preferences') }}</a>
                     @can('admin')
-                    <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}"><span class="nav-ico"><i class="bi bi-people-fill"></i></span>{{ __('nav.users') }}</a>
-                    <a class="nav-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}" href="{{ route('admin.categories.index') }}"><span class="nav-ico"><i class="bi bi-tags-fill"></i></span>{{ __('nav.categories') }}</a>
-                    <a class="nav-link {{ request()->routeIs('admin.departments.*') ? 'active' : '' }}" href="{{ route('admin.departments.index') }}"><span class="nav-ico"><i class="bi bi-diagram-3-fill"></i></span>{{ __('nav.departments') }}</a>
-                    <a class="nav-link {{ request()->routeIs('admin.system-health.*') ? 'active' : '' }}" href="{{ route('admin.system-health.index') }}"><span class="nav-ico"><i class="bi bi-heart-pulse-fill"></i></span>System health</a>
+                    <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" aria-current="{{ request()->routeIs('admin.users.*') ? 'page' : 'false' }}" href="{{ route('admin.users.index') }}"><span class="nav-ico"><i class="bi bi-people-fill"></i></span>{{ __('nav.users') }}</a>
+                    <a class="nav-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}" aria-current="{{ request()->routeIs('admin.categories.*') ? 'page' : 'false' }}" href="{{ route('admin.categories.index') }}"><span class="nav-ico"><i class="bi bi-tags-fill"></i></span>{{ __('nav.categories') }}</a>
+                    <a class="nav-link {{ request()->routeIs('admin.departments.*') ? 'active' : '' }}" aria-current="{{ request()->routeIs('admin.departments.*') ? 'page' : 'false' }}" href="{{ route('admin.departments.index') }}"><span class="nav-ico"><i class="bi bi-diagram-3-fill"></i></span>{{ __('nav.departments') }}</a>
+                    <a class="nav-link {{ request()->routeIs('admin.system-health.*') ? 'active' : '' }}" aria-current="{{ request()->routeIs('admin.system-health.*') ? 'page' : 'false' }}" href="{{ route('admin.system-health.index') }}"><span class="nav-ico"><i class="bi bi-heart-pulse-fill"></i></span>System health</a>
+                    <a class="nav-link {{ request()->routeIs('admin.audit-logs.*') ? 'active' : '' }}" aria-current="{{ request()->routeIs('admin.audit-logs.*') ? 'page' : 'false' }}" href="{{ route('admin.audit-logs.index') }}"><span class="nav-ico"><i class="bi bi-journal-text"></i></span>Audit logs</a>
                     @endcan
                 </div>
             </nav>
@@ -337,7 +350,7 @@
         <div class="col-md-9 col-lg-10 p-0">
             <div class="p3-topbar px-3 px-md-4 py-2 d-flex justify-content-between align-items-center sticky-top">
                 <div class="d-flex align-items-center gap-2">
-                    <button class="btn btn-sm d-md-none" id="sidebarToggle" aria-label="Open menu" style="border:1px solid #d5e8db"><i class="bi bi-list"></i></button>
+                    <button type="button" class="btn btn-sm d-md-none" id="sidebarToggle" aria-label="Open menu" aria-controls="p3Sidebar" aria-expanded="false" style="border:1px solid #d5e8db"><i class="bi bi-list" aria-hidden="true"></i></button>
                     @if(request()->routeIs('documents.show'))
                     <a href="{{ route('documents.library') }}" class="small text-decoration-none fw-semibold" style="color:#00A868"><i class="bi bi-arrow-left me-1"></i>Back to library</a>
                     @endif
@@ -355,7 +368,7 @@
                     <span class="fw-semibold small" style="color:inherit">{{ auth()->user()->name }}</span>
                 </div>
             </div>
-            <main class="p-3">
+            <main class="p-3" id="main-content" tabindex="-1">
                 @if (session('status'))<div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 py-3 shadow-sm" role="alert" id="flashOk" style="border:1px solid #c3e6cb;border-radius:.75rem"><span class="stat-icon" style="width:34px;height:34px;background:#d4edda;color:#155724"><i class="bi bi-check-circle-fill"></i></span><span class="fw-semibold text-success">{{ session('status') }}</span><button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button></div>@endif
                 @if (session('warning'))<div class="alert alert-warning alert-dismissible fade show" role="alert">{{ session('warning') }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>@endif
                 @if ($errors->any())<div class="alert alert-danger alert-dismissible fade show" role="alert"><ul class="mb-0">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>@endif
@@ -429,16 +442,50 @@
     var sidebar = document.getElementById('p3Sidebar');
     var toggle = document.getElementById('sidebarToggle');
     if (!sidebar || !toggle) return;
+    var mobileNav = window.matchMedia('(max-width: 767.98px)');
     var backdrop = document.createElement('div');
     backdrop.className = 'sidebar-backdrop';
     document.body.appendChild(backdrop);
-    function close() { sidebar.classList.remove('open'); backdrop.classList.remove('show'); }
+
+    function syncState() {
+        var open = mobileNav.matches && sidebar.classList.contains('open');
+        sidebar.inert = mobileNav.matches && !open;
+        if (mobileNav.matches && !open) {
+            sidebar.setAttribute('aria-hidden', 'true');
+        } else {
+            sidebar.removeAttribute('aria-hidden');
+        }
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        backdrop.classList.toggle('show', open);
+    }
+
+    function close(returnFocus) {
+        sidebar.classList.remove('open');
+        syncState();
+        if (returnFocus && mobileNav.matches) toggle.focus();
+    }
+
     toggle.addEventListener('click', function () {
-        sidebar.classList.toggle('open');
-        backdrop.classList.toggle('show', sidebar.classList.contains('open'));
+        if (sidebar.classList.contains('open')) {
+            close(false);
+            return;
+        }
+        sidebar.classList.add('open');
+        syncState();
+        var firstLink = Array.prototype.slice.call(sidebar.querySelectorAll('.nav-link'))
+            .find(function (link) { return link.getClientRects().length > 0; });
+        if (firstLink) firstLink.focus();
     });
-    backdrop.addEventListener('click', close);
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    backdrop.addEventListener('click', function () { close(true); });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && sidebar.classList.contains('open')) close(true);
+    });
+    mobileNav.addEventListener('change', function () {
+        sidebar.classList.remove('open');
+        syncState();
+    });
+    syncState();
 })();
 </script>
 <script>

@@ -47,14 +47,15 @@
 <div class="lib-page p3-chat-page" id="libPage">
     <section class="lib-shell">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
-            <div>
+            <div class="d-flex align-items-center gap-2">
                 <h3 class="fw-bold mb-0">{{ auth()->user()->role === \App\Models\User::ROLE_EMPLOYEE ? 'Your documents' : 'Documents' }}</h3>
-                <small class="text-muted">{{ number_format($documents->total()) }} {{ \Illuminate\Support\Str::plural('document', $documents->total()) }}</small>
+                <span class="badge text-capitalize" style="background:#e6f3ea;color:#00743F;font-weight:500">{{ number_format($documents->total()) }} {{ \Illuminate\Support\Str::plural('document', $documents->total()) }}</span>
             </div>
             @if(auth()->user()->isManager())
                 <a href="{{ route('documents.trash') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-trash3 me-1"></i>Recycle bin</a>
             @endif
-            <form method="GET" action="{{ route('documents.library') }}" class="d-flex flex-wrap align-items-center gap-2 ms-auto" role="search">
+            <div class="d-flex flex-wrap align-items-center gap-2 ms-auto">
+            <form method="GET" action="{{ route('documents.library') }}" class="d-flex flex-wrap align-items-center gap-2" role="search">
                 <div class="input-group input-group-sm" style="width:min(18rem, 55vw)">
                     <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
                     <input type="search" name="q" value="{{ $search }}" class="form-control" placeholder="Title, keywords, or content" aria-label="Search title, keywords, or content">
@@ -65,42 +66,46 @@
                         <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
                     @endforeach
                 </select>
-                <select name="category_id" class="form-select form-select-sm" aria-label="Filter by category" style="width:auto">
+                <select name="category_id" class="form-select form-select-sm" aria-label="Filter by category" style="width:auto" onchange="this.form.submit()">
                     <option value="">All categories</option>
                     @foreach($categories as $category)
                         <option value="{{ $category->id }}" @selected((string) request('category_id') === (string) $category->id)>{{ $category->name }}</option>
                     @endforeach
                 </select>
-                <select name="department_id" class="form-select form-select-sm" aria-label="Filter by department" style="width:auto">
+                <select name="department_id" class="form-select form-select-sm" aria-label="Filter by department" style="width:auto" onchange="this.form.submit()">
                     <option value="">All departments</option>
                     @foreach($departments as $department)
                         <option value="{{ $department->id }}" @selected((string) request('department_id') === (string) $department->id)>{{ $department->name }}</option>
                     @endforeach
                 </select>
                 @if(auth()->user()->isManager())
-                    <select name="uploader_id" class="form-select form-select-sm" aria-label="Filter by uploader" style="width:auto">
+                    <select name="uploader_id" class="form-select form-select-sm" aria-label="Filter by uploader" style="width:auto" onchange="this.form.submit()">
                         <option value="">All uploaders</option>
                         @foreach($uploaders as $uploader)
                             <option value="{{ $uploader->id }}" @selected((string) request('uploader_id') === (string) $uploader->id)>{{ $uploader->name }}</option>
                         @endforeach
                     </select>
                 @endif
-                <input type="date" name="date_from" value="{{ $validated['date_from'] ?? '' }}" class="form-control form-control-sm" aria-label="Document date from" title="Document date from" style="width:auto">
-                <input type="date" name="date_to" value="{{ $validated['date_to'] ?? '' }}" class="form-control form-control-sm" aria-label="Document date to" title="Document date to" style="width:auto">
-                <select name="sort" class="form-select form-select-sm" aria-label="Sort documents" style="width:auto">
+                <input type="date" name="date_from" value="{{ $validated['date_from'] ?? '' }}" class="form-control form-control-sm" aria-label="Document date from" title="Document date from" style="width:auto" onchange="this.form.submit()">
+                <input type="date" name="date_to" value="{{ $validated['date_to'] ?? '' }}" class="form-control form-control-sm" aria-label="Document date to" title="Document date to" style="width:auto" onchange="this.form.submit()">
+                <select name="sort" class="form-select form-select-sm" aria-label="Sort documents" style="width:auto" onchange="this.form.submit()">
                     <option value="newest" @selected($sort === 'newest')>Newest</option>
                     <option value="oldest" @selected($sort === 'oldest')>Oldest</option>
                     <option value="alphabetical" @selected($sort === 'alphabetical')>A–Z</option>
                 </select>
-                <button type="submit" class="btn btn-sm btn-outline-secondary">Apply</button>
                 @if(collect($validated)->filter(fn ($value) => $value !== null && $value !== '' && $value !== 'newest')->isNotEmpty())
                     <a href="{{ route('documents.library') }}" class="btn btn-sm btn-outline-secondary">Clear</a>
                 @endif
             </form>
+            <a href="{{ route('documents.export', request()->query()) }}" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-download me-1" aria-hidden="true"></i>Export CSV
+            </a>
+            </div>
         </div>
 
         <div class="lib-table-wrap">
             <table class="table table-sm lib-table">
+                <caption class="visually-hidden">Document library results</caption>
                 <thead>
                     <tr>
                         <th scope="col" class="text-center">No.</th>
@@ -182,7 +187,7 @@
             </table>
         </div>
 
-        <div id="libPagination" class="lib-pagination d-flex flex-wrap justify-content-center align-items-center gap-3 pt-3">
+        <nav id="libPagination" class="lib-pagination d-flex flex-wrap justify-content-center align-items-center gap-3 pt-3" aria-label="Document result pages">
                 <small class="text-muted">{{ $documents->firstItem() }}&ndash;{{ $documents->lastItem() }} of {{ $documents->total() }}</small>
                 <div class="d-flex align-items-center gap-2">
                     @if ($documents->onFirstPage())
@@ -190,13 +195,13 @@
                     @else
                         <a class="btn btn-sm btn-outline-success" href="{{ $documents->previousPageUrl() }}" rel="prev" aria-label="Previous page"><i class="bi bi-chevron-left"></i></a>
                     @endif
-                    <span class="px-1 fw-semibold">{{ $documents->currentPage() }}/{{ $documents->lastPage() }}</span>
+                    <span class="px-1 fw-semibold" aria-label="Page {{ $documents->currentPage() }} of {{ $documents->lastPage() }}" aria-current="page">{{ $documents->currentPage() }}/{{ $documents->lastPage() }}</span>
                     @if ($documents->hasMorePages())
                         <a class="btn btn-sm btn-outline-success" href="{{ $documents->nextPageUrl() }}" rel="next" aria-label="Next page"><i class="bi bi-chevron-right"></i></a>
                     @else
                         <span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true"><i class="bi bi-chevron-right"></i></span>
                     @endif
-                </div>
+                </nav>
         </div>
     </section>
 </div>

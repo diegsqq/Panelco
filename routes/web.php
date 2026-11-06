@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\SystemHealthController;
 use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\DocumentCategoryController;
+use App\Http\Controllers\Admin\DocumentRetentionController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -19,11 +20,13 @@ Auth::routes(['register' => false]);
 Route::middleware('auth')->group(function () {
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
     Route::get('/dashboard', [App\Http\Controllers\HomeController::class, 'index'])->name('dashboard');
+    Route::view('/help', 'help.index')->name('help');
 
     Route::get('/upload', [App\Http\Controllers\DocumentController::class, 'create'])->name('documents.upload');
     Route::post('/upload/suggest', [App\Http\Controllers\DocumentController::class, 'suggest'])->name('documents.suggest');
     Route::post('/upload', [App\Http\Controllers\DocumentController::class, 'store'])->name('documents.store');
     Route::get('/library', [App\Http\Controllers\DocumentController::class, 'index'])->name('documents.library');
+    Route::get('/library/export', [App\Http\Controllers\DocumentController::class, 'export'])->name('documents.export');
     Route::get('/library/{document}/edit', [App\Http\Controllers\DocumentController::class, 'edit'])->name('documents.edit');
     Route::put('/library/{document}', [App\Http\Controllers\DocumentController::class, 'update'])->name('documents.update');
     Route::get('/library/{document}/versions/{version}/download', [App\Http\Controllers\DocumentController::class, 'downloadVersion'])->name('documents.versions.download');
@@ -76,6 +79,8 @@ Route::get('/two-factor', [App\Http\Controllers\TwoFactorController::class, 'sho
 Route::post('/two-factor', [App\Http\Controllers\TwoFactorController::class, 'verify'])->middleware('throttle:5,1')->name('two-factor.verify');
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('documents/retention-review', [DocumentRetentionController::class, 'index'])->name('documents.retention-review');
+    Route::post('users/{user}/access-reviews', [UserController::class, 'recordAccessReview'])->name('users.access-reviews.store');
     Route::patch('users/{user}/status', [UserController::class, 'updateStatus'])->name('users.status');
     Route::post('users/{user}/two-factor/reset', [UserController::class, 'resetTwoFactor'])->name('users.two-factor.reset');
     Route::resource('users', UserController::class)->except(['show']);

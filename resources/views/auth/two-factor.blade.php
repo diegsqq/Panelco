@@ -15,8 +15,10 @@
                     <label for="code" class="form-label">Authentication Code</label>
                     <input id="code" name="code" class="form-control @error('code') is-invalid @enderror text-center"
                         style="letter-spacing:6px;font-size:1.5rem;font-weight:700;max-width:220px;margin:0 auto"
-                        inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="123456" required autofocus>
-                    @error('code')<span class="invalid-feedback d-block text-center" role="alert"><strong>{{ $message }}</strong></span>@enderror
+                        inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="123456" required autofocus
+                        aria-describedby="codeHelp{{ $errors->has('code') ? ' codeError' : '' }}" @error('code') aria-invalid="true" @enderror>
+                    <small id="codeHelp" class="form-text text-muted d-block text-center">Enter all 6 digits without spaces.</small>
+                    @error('code')<span id="codeError" class="invalid-feedback d-block text-center" role="alert"><strong>{{ $message }}</strong></span>@enderror
                 </div>
                 <button type="submit" class="btn w-100" style="background:#ffffff;border-color:#00A868;color:#00A868;font-weight:600">
                     <i class="bi bi-box-arrow-in-right me-1"></i>Verify &amp; Sign In

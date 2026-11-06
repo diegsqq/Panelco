@@ -1,5 +1,10 @@
 <?php
 
+use App\Http\Middleware\AddSecurityHeaders;
+use App\Http\Middleware\CheckRole;
+use App\Http\Middleware\EnsurePasswordSessionIsCurrent;
+use App\Http\Middleware\EnsureUserIsActive;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,13 +17,14 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'role' => \App\Http\Middleware\CheckRole::class,
+            'role' => CheckRole::class,
         ]);
         // After session start → picks the signed-in user's language.
         $middleware->web(append: [
-            \App\Http\Middleware\SetLocale::class,
-            \App\Http\Middleware\EnsureUserIsActive::class,
-            \App\Http\Middleware\EnsurePasswordSessionIsCurrent::class,
+            AddSecurityHeaders::class,
+            SetLocale::class,
+            EnsureUserIsActive::class,
+            EnsurePasswordSessionIsCurrent::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
