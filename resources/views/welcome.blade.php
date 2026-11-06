@@ -18,7 +18,7 @@ a:focus-visible{outline:3px solid #087a4b;outline-offset:4px}
 .hero::before,.hero::after{position:absolute;z-index:-1;color:rgba(0,81,35,.18);font-weight:1000;line-height:.78;letter-spacing:-.08em;white-space:nowrap;pointer-events:none}
 .hero::before{content:"SMART";top:4.7rem;left:4%;font-size:clamp(6rem,17vw,15rem);animation:smart-drift 1.8s ease-in-out infinite alternate}
 .hero::after{content:"DOCS";top:11.4rem;right:3%;font-size:clamp(6rem,17vw,15rem);animation:docs-drift 1.8s ease-in-out infinite alternate}
-.hero-nav{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:1.35rem clamp(1.25rem,4vw,3.5rem)}
+.hero-nav{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:1.35rem clamp(2rem,6vw,5rem)}
 .brand{display:inline-flex;align-items:center;gap:.65rem;color:#fff;text-decoration:none;font-size:1.05rem;font-weight:800;letter-spacing:-.02em}
 .brand img{height:30px;width:auto;object-fit:contain}
 .hero-links{display:flex;align-items:center;gap:clamp(1rem,3vw,2.5rem)}
@@ -26,7 +26,7 @@ a:focus-visible{outline:3px solid #087a4b;outline-offset:4px}
 .hero-links a:hover{text-decoration:underline;text-underline-offset:4px}
 .nav-login,.hero-cta{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border-radius:999px;font-weight:800;text-decoration:none}
 .nav-login{padding:.68rem 1.15rem;background:#fff;color:#087039!important;font-size:.78rem!important}
-.hero-main{z-index:1;flex:1;display:grid;grid-template-columns:1fr 1.1fr;align-items:center;gap:clamp(2rem,5vw,6rem);padding:clamp(2rem,5vw,6rem) clamp(1.5rem,5vw,6rem);min-height:0}
+.hero-main{z-index:1;flex:1;display:grid;grid-template-columns:1fr 1.1fr;align-items:center;gap:clamp(2rem,5vw,6rem);padding:clamp(2rem,5vw,6rem) clamp(3rem,8vw,8rem);min-height:0}
 .hero-copy{position:relative;z-index:2;max-width:640px}
 .eyebrow{display:inline-flex;align-items:center;gap:.5rem;margin-bottom:1rem;padding:.45rem .8rem;border:1px solid rgba(255,255,255,.4);border-radius:999px;background:rgba(0,90,35,.2);font-size:.77rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
 .hero h1{max-width:620px;margin:0;font-size:clamp(3.2rem,7.3vw,6.7rem);font-weight:950;line-height:.91;letter-spacing:-.075em;text-transform:uppercase}
