@@ -25,9 +25,10 @@ class WelcomePageTest extends TestCase
             ->assertSee('id="main-content"', false)
             ->assertSee('Grounded chat')
             ->assertSee('aria-label="Main navigation"', false)
-            ->assertSee('Sample inspection report')
-            ->assertSee('Example source citation')
-            ->assertSee('animation:document-float 6s ease-in-out infinite', false)
+            ->assertSee('src="'.asset('images/logo.png').'" alt="PANELCO III SmartDocs AI" class="hero-logo"', false)
+            ->assertSee('animation:logo-float 5s ease-in-out infinite', false)
+            ->assertDontSee('Sample inspection report')
+            ->assertDontSee('Access controlled')
             ->assertSee('animation:hero-color-drift 18s ease-in-out infinite alternate', false)
             ->assertSee('.hero::before{content:"SMART";top:4.7rem;left:4%', false)
             ->assertSee('.hero::after{content:"DOCS";top:11.4rem;right:3%', false)
@@ -42,13 +43,15 @@ class WelcomePageTest extends TestCase
             ->assertSee('name="description"', false);
     }
 
-    public function test_authenticated_user_is_redirected_to_dashboard_from_root(): void
+    public function test_authenticated_user_sees_welcome_page_at_root(): void
     {
         $user = User::factory()->create();
 
         $this->actingAs($user)
             ->get('/')
-            ->assertRedirect(route('home'));
+            ->assertOk()
+            ->assertSee('Know your records.')
+            ->assertSee('Skip to main content');
     }
 
     public function test_dashboard_keeps_accessible_mobile_navigation_available(): void
