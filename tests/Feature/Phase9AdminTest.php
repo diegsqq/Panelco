@@ -281,15 +281,45 @@ class Phase9AdminTest extends TestCase
             'file_size' => 10,
             'processing_status' => 'failed',
         ]);
+        $stuckDocument = Document::create([
+            'uploaded_by' => $employee->id,
+            'title' => 'Stuck health report',
+            'original_filename' => 'stuck-health.txt',
+            'storage_path' => 'documents/stuck-health.txt',
+            'mime_type' => 'text/plain',
+            'file_size' => 10,
+            'processing_status' => 'processing',
+        ]);
+        $stuckDocument->forceFill(['updated_at' => now()->subMinutes(31)])->saveQuietly();
+        Document::create([
+            'uploaded_by' => $employee->id,
+            'title' => 'Active health report',
+            'original_filename' => 'active-health.txt',
+            'storage_path' => 'documents/active-health.txt',
+            'mime_type' => 'text/plain',
+            'file_size' => 10,
+            'processing_status' => 'processing',
+        ]);
         app()->instance(AiProvider::class, new NullAiProvider);
         config(['queue.default' => 'database']);
+        config(['mail.default' => 'log']);
         DB::table('jobs')->insert([
-            'queue' => 'default',
-            'payload' => '{}',
-            'attempts' => 0,
-            'reserved_at' => null,
-            'available_at' => time(),
-            'created_at' => time(),
+            [
+                'queue' => 'default',
+                'payload' => '{}',
+                'attempts' => 0,
+                'reserved_at' => now()->subMinutes(31)->timestamp,
+                'available_at' => now()->subMinutes(31)->timestamp,
+                'created_at' => now()->subMinutes(31)->timestamp,
+            ],
+            [
+                'queue' => 'default',
+                'payload' => '{}',
+                'attempts' => 0,
+                'reserved_at' => null,
+                'available_at' => now()->subMinutes(31)->timestamp,
+                'created_at' => now()->subMinutes(31)->timestamp,
+            ],
         ]);
         DB::table('failed_jobs')->insert([
             'uuid' => (string) Str::uuid(),
@@ -304,15 +334,49 @@ class Phase9AdminTest extends TestCase
             ->assertOk()
             ->assertSee('System health')
             ->assertSee('Database connection is responding.')
-            ->assertSee('1 queued jobs')
+            ->assertSee('2 queued jobs')
             ->assertSee('1 failed jobs')
+            ->assertSee('Queue jobs need attention.')
+            ->assertSee('Overall status: Needs attention.')
+            ->assertSee('Email driver does not deliver messages')
+            ->assertSee('1 failed jobs; 1 stale reservations and 1 overdue queued jobs (over 30 minutes).')
+            ->assertSee('1 stale reservations (&gt; 30 min)', false)
+            ->assertSee('1 overdue queued jobs (&gt; 30 min)', false)
             ->assertSee('1 pending')
-            ->assertSee('1 failed')
+            ->assertSee('1 failed; 1 stuck in processing for more than 30 minutes.')
+            ->assertSee('1 stuck (&gt; 30 min)', false)
+            ->assertSee('Not delivering')
+            ->assertSee('This driver does not deliver email to recipients.')
+            ->assertSee('Private storage directory exists and is writable.')
+            ->assertDontSee(config('filesystems.disks.private.root'))
             ->assertSee('AI provider is not configured')
             ->assertDontSee('failure details are not shown');
 
+        config(['mail.default' => 'smtp']);
+        $this->get(route('admin.system-health.index'))
+            ->assertOk()
+            ->assertSee('Configured')
+            ->assertSee('email delivery has not been tested');
+
         $this->actingAs($employee)->get(route('admin.system-health.index'))
             ->assertForbidden();
+    }
+
+    public function test_admin_system_health_summary_is_healthy_when_checks_find_no_issues(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        app()->instance(AiProvider::class, new NullAiProvider);
+        config([
+            'queue.default' => 'sync',
+            'mail.default' => 'smtp',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.system-health.index'))
+            ->assertOk()
+            ->assertSee('Overall status: Healthy.')
+            ->assertSee('No issues detected by the available checks.')
+            ->assertDontSee('Needs attention');
     }
 
     public function test_admin_can_filter_dormant_accounts_without_automatically_deactivating_them(): void

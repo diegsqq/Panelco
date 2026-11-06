@@ -64,3 +64,17 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## SmartDocs operational alerts
+
+The scheduler checks document processing and database queue health every 15 minutes. When it finds failed or overdue work, it emails active administrator accounts and suppresses repeat alerts for 60 minutes.
+
+Configure a mailer that delivers messages and a persistent cache store before enabling alerts. The `log` and `array` mailers do not deliver email, and ephemeral cache stores cannot reliably enforce the alert cooldown across scheduled runs. The scheduled command reports these configuration problems instead of silently claiming an alert was sent.
+
+On a production server, run Laravel's scheduler every minute, for example with cron:
+
+```cron
+* * * * * cd /path/to/smartdocs && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Run `php artisan schedule:list` to confirm the alert task is registered. To check immediately, run `php artisan smartdocs:send-health-alerts`; it sends only when issues are present and the cooldown has expired.

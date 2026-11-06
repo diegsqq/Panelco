@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Document;
 use App\Services\Ai\AiProvider;
+use App\Support\SystemHealthThresholds;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
@@ -37,6 +38,8 @@ class SystemHealthController extends Controller
                 : 'Queue status is unavailable because the database is not responding.',
             'pending' => null,
             'failed' => null,
+            'stale' => null,
+            'overdue' => null,
         ];
 
         if ($databaseAvailable && $queueDriver === 'database') {
@@ -48,7 +51,16 @@ class SystemHealthController extends Controller
             try {
                 $schema = Schema::connection($connection);
                 if ($schema->hasTable($jobsTable)) {
-                    $queue['pending'] = DB::connection($connection)->table($jobsTable)->count();
+                    $jobs = DB::connection($connection)->table($jobsTable);
+                    $queue['pending'] = (clone $jobs)->count();
+                    $queue['stale'] = (clone $jobs)
+                        ->whereNotNull('reserved_at')
+                        ->where('reserved_at', '<=', now()->subMinutes(SystemHealthThresholds::STALE_QUEUE_JOB_MINUTES)->timestamp)
+                        ->count();
+                    $queue['overdue'] = (clone $jobs)
+                        ->whereNull('reserved_at')
+                        ->where('available_at', '<=', now()->subMinutes(SystemHealthThresholds::STALE_QUEUE_JOB_MINUTES)->timestamp)
+                        ->count();
                 } else {
                     $queue['status'] = 'warning';
                     $queue['detail'] = 'Database queue is selected, but its jobs table is missing.';
@@ -67,7 +79,7 @@ class SystemHealthController extends Controller
             $queue['detail'] .= ' Pending counts are available from the queue backend, not this dashboard.';
         }
 
-        $documents = ['pending' => null, 'processing' => null, 'failed' => null];
+        $documents = ['pending' => null, 'processing' => null, 'failed' => null, 'stuck' => null];
         if ($databaseAvailable) {
             try {
                 $counts = Document::query()
@@ -79,6 +91,10 @@ class SystemHealthController extends Controller
                     'pending' => (int) ($counts->pending ?? 0),
                     'processing' => (int) ($counts->processing ?? 0),
                     'failed' => (int) ($counts->failed ?? 0),
+                    'stuck' => Document::query()
+                        ->where('processing_status', 'processing')
+                        ->where('updated_at', '<=', now()->subMinutes(SystemHealthThresholds::STUCK_PROCESSING_MINUTES))
+                        ->count(),
                 ];
             } catch (Throwable $exception) {
                 report($exception);
@@ -86,19 +102,88 @@ class SystemHealthController extends Controller
         }
 
         $aiAvailable = app(AiProvider::class)->available();
+        $mailDriver = (string) config('mail.default', 'unknown');
+        $mailDeliveryConfigured = ! in_array($mailDriver, ['log', 'array'], true);
+        $storageDriver = (string) config('filesystems.disks.private.driver', 'unknown');
+        if ($storageDriver === 'local') {
+            $storageRoot = (string) config('filesystems.disks.private.root', '');
+            $storageReady = $storageRoot !== '' && is_dir($storageRoot) && is_writable($storageRoot);
+            $storage = [
+                'status' => $storageReady ? 'ok' : 'error',
+                'driver' => $storageDriver,
+                'detail' => $storageReady
+                    ? 'Private storage directory exists and is writable.'
+                    : 'Private storage directory is missing or not writable.',
+            ];
+        } else {
+            $storage = [
+                'status' => 'info',
+                'driver' => $storageDriver,
+                'detail' => 'Driver is configured; remote storage connectivity has not been tested.',
+            ];
+        }
+        $mail = [
+            'driver' => $mailDriver,
+            'status' => $mailDeliveryConfigured ? 'info' : 'warning',
+            'detail' => $mailDeliveryConfigured
+                ? 'Driver is configured; email delivery has not been tested.'
+                : 'This driver does not deliver email to recipients. Configure a delivery mailer for notifications.',
+        ];
+
+        $healthIssues = [];
+        if ($database['status'] === 'error') {
+            $healthIssues[] = 'Database unavailable';
+        }
+        if ($queue['status'] === 'error') {
+            $healthIssues[] = 'Queue check failed';
+        } elseif ($queue['status'] === 'warning') {
+            $healthIssues[] = 'Queue configuration needs attention';
+        }
+        if (($queue['failed'] ?? 0) > 0) {
+            $healthIssues[] = 'Failed queue jobs';
+        }
+        if (($queue['stale'] ?? 0) > 0 || ($queue['overdue'] ?? 0) > 0) {
+            $healthIssues[] = 'Stale or overdue queue jobs';
+        }
+        if (($documents['failed'] ?? 0) > 0) {
+            $healthIssues[] = 'Failed document processing';
+        }
+        if (($documents['stuck'] ?? 0) > 0) {
+            $healthIssues[] = 'Stuck document processing';
+        }
+        if ($databaseAvailable && $documents['pending'] === null) {
+            $healthIssues[] = 'Document processing counts unavailable';
+        }
+        if ($mail['status'] === 'warning') {
+            $healthIssues[] = 'Email driver does not deliver messages';
+        }
+        if ($storage['status'] === 'error') {
+            $healthIssues[] = 'Private storage unavailable';
+        }
+        $healthStatus = in_array($database['status'], ['error'], true)
+            || in_array($queue['status'], ['error'], true)
+            || $storage['status'] === 'error'
+                ? 'error'
+                : ($healthIssues === [] ? 'ok' : 'warning');
 
         return view('admin.system-health.index', [
             'database' => $database,
             'queue' => $queue,
             'documents' => $documents,
+            'health' => [
+                'status' => $healthStatus,
+                'issues' => $healthIssues,
+            ],
+            'stuckProcessingMinutes' => SystemHealthThresholds::STUCK_PROCESSING_MINUTES,
+            'staleQueueJobMinutes' => SystemHealthThresholds::STALE_QUEUE_JOB_MINUTES,
             'ai' => [
                 'status' => $aiAvailable ? 'ok' : 'info',
                 'detail' => $aiAvailable
                     ? 'AI provider is available.'
                     : 'AI provider is not configured; rule-based processing remains available.',
             ],
-            'mailDriver' => config('mail.default'),
-            'storageDriver' => config('filesystems.disks.private.driver', 'unknown'),
+            'mail' => $mail,
+            'storage' => $storage,
         ]);
     }
 }
