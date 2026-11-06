@@ -74,11 +74,6 @@ a:focus-visible{outline:3px solid #087a4b;outline-offset:4px}
             <img src="{{ asset('images/logo.png') }}" alt="PANELCO III SmartDocs AI" class="hero-logo">
         </div>
     </div>
-    <div class="hero-footer" aria-label="SmartDocs benefits">
-        <div class="footer-side"><i class="bi bi-folder2-open" aria-hidden="true"></i><span>Documents<br>in order</span></div>
-        <div class="footer-message">Answers you can trace.<br>Records you can trust.</div>
-        <div class="footer-side"><i class="bi bi-shield-lock" aria-hidden="true"></i><span>Secure by<br>design</span></div>
-    </div>
 </header>
 
 <main id="main-content" class="features">
@@ -86,7 +81,6 @@ a:focus-visible{outline:3px solid #087a4b;outline-offset:4px}
         <div class="text-center mb-5">
             <p class="text-uppercase small fw-bold mb-1" style="color:#087a4b;letter-spacing:.1em">A clearer way to work with records</p>
             <h2 class="h2 mb-0" id="features">Built for secure document work</h2>
-            <a href="{{ route('login') }}" class="mt-3 btn btn-outline-success px-4">Sign in to get started <i class="bi bi-arrow-right ms-1"></i></a>
         </div>
         <div class="row g-4 justify-content-center">
             <div class="col-md-4"><section class="feature-card"><i class="bi bi-cloud-upload" aria-hidden="true"></i><h3>Smart upload</h3><p>PDF, DOCX, TXT, and image uploads with validation, queued processing, and clear status updates.</p></section></div>
