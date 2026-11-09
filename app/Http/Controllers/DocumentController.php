@@ -7,9 +7,16 @@ use App\Mail\DocumentApprovalNotification;
 use App\Models\AuditLog;
 use App\Models\Department;
 use App\Models\Document;
+use App\Models\DocumentAccessLog;
 use App\Models\DocumentCategory;
+use App\Models\DocumentComment;
 use App\Models\DocumentVersion;
+use App\Services\DocumentContentSanitizer;
+use App\Services\DocumentDocxExporter;
+use App\Services\DocumentPdfRenderer;
 use App\Services\DuplicateDocumentDetector;
+use App\Support\DocumentTemplates;
+use App\Support\PageLayout;
 use App\Services\UploadSuggester;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -162,6 +169,9 @@ class DocumentController extends Controller
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
             'sort' => ['nullable', Rule::in(['newest', 'oldest', 'alphabetical'])],
+            'favorite' => ['nullable', 'boolean'],
+            'recent' => ['nullable', 'boolean'],
+            'tag' => ['nullable', 'string', 'max:50'],
         ]);
     }
 
@@ -210,6 +220,19 @@ class DocumentController extends Controller
 
         if (! empty($validated['status'])) {
             $query->where('processing_status', $validated['status']);
+        }
+
+        if (! empty($validated['favorite'])) {
+            $query->whereHas('favoritedBy', fn ($q) => $q->where('users.id', $request->user()->id));
+        }
+
+        if (! empty($validated['recent'])) {
+            $query->whereNotNull('last_opened_at')
+                ->orderByDesc('last_opened_at');
+        }
+
+        if (! empty($validated['tag'])) {
+            $query->whereJsonContains('tags', $validated['tag']);
         }
 
         $sort = $validated['sort'] ?? 'newest';
@@ -390,6 +413,237 @@ class DocumentController extends Controller
     }
 
     /**
+     * In-app rich text editor: lets an authorized user edit the document's
+     * content (body, page header and page footer) directly in SmartDocs.
+     */
+    public function editContent(Document $document): View
+    {
+        $this->authorize('update', $document);
+
+        $document->load('contentEditor');
+
+        return view('documents.edit-content', [
+            'document' => $document,
+            'templates' => DocumentTemplates::all(),
+        ]);
+    }
+
+    /**
+     * Autosave endpoint for the content editor. Sanitizes every fragment
+     * through the allowlist before persisting, and answers with the exact
+     * timestamp so the UI can show when the last save landed.
+     */
+    public function updateContent(Request $request, Document $document, DocumentContentSanitizer $sanitizer): JsonResponse
+    {
+        $this->authorize('update', $document);
+
+        $data = $request->validate([
+            'content' => ['nullable', 'string', 'max:400000'],
+            'header' => ['nullable', 'string', 'max:20000'],
+            'footer' => ['nullable', 'string', 'max:20000'],
+            'page_paper' => ['nullable', 'string', Rule::in(array_keys(PageLayout::PAPERS))],
+            'page_orientation' => ['nullable', 'string', Rule::in(array_keys(PageLayout::ORIENTATIONS))],
+            'page_margins' => ['nullable', 'string', Rule::in(array_keys(PageLayout::MARGINS))],
+        ]);
+
+        $previousUpdate = $document->content_updated_at;
+
+        $document->update([
+            'content' => $sanitizer->sanitize($data['content'] ?? ''),
+            'content_header' => $sanitizer->sanitize($data['header'] ?? ''),
+            'content_footer' => $sanitizer->sanitize($data['footer'] ?? ''),
+            'page_paper' => $data['page_paper'] ?? $document->page_paper,
+            'page_orientation' => $data['page_orientation'] ?? $document->page_orientation,
+            'page_margins' => $data['page_margins'] ?? $document->page_margins,
+            'content_updated_at' => now(),
+            'content_updated_by' => $request->user()->id,
+        ]);
+
+        // Autosave fires every few seconds while someone types, so only the
+        // first save of a burst is written to the audit trail to keep it
+        // readable (and bounded) instead of logging every keystroke batch.
+        if ($previousUpdate === null || $previousUpdate->diffInSeconds(now()) >= 60) {
+            AuditLog::create([
+                'user_id' => $request->user()->id,
+                'action' => 'document.content_updated',
+                'entity_type' => Document::class,
+                'entity_id' => $document->id,
+                'metadata' => [
+                    'content_length' => mb_strlen((string) $document->content),
+                ],
+            ]);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'saved_at' => $document->content_updated_at->format('M d, Y H:i:s'),
+            'content_length' => mb_strlen((string) $document->content),
+        ]);
+    }
+
+    /**
+     * Export the edited document content to a real, editable .docx file.
+     */
+    public function exportContentDocx(
+        Document $document,
+        DocumentDocxExporter $exporter,
+        DocumentContentSanitizer $sanitizer
+    ): \Symfony\Component\HttpFoundation\Response {
+        $this->authorize('download', $document);
+
+        if (trim((string) $document->content) === '' && trim((string) $document->content_header) === '' && trim((string) $document->content_footer) === '') {
+            abort(409, 'There is no edited content to export yet.');
+        }
+
+        $binary = $exporter->export($document);
+
+        AuditLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'document.exported',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+            'metadata' => ['format' => 'docx', 'filename' => $document->title . '.docx'],
+        ]);
+
+        $filename = preg_replace('/[^A-Za-z0-9._-]/', '_', (string) $document->title) . '.docx';
+        if ($filename === '.docx') {
+            $filename = 'document.docx';
+        }
+
+        return response($binary, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    /**
+     * Export the edited document content to a printable PDF.
+     */
+    public function exportContentPdf(
+        Document $document,
+        DocumentPdfRenderer $renderer
+    ): \Symfony\Component\HttpFoundation\Response {
+        $this->authorize('download', $document);
+
+        if (trim((string) $document->content) === '' && trim((string) $document->content_header) === '' && trim((string) $document->content_footer) === '') {
+            abort(409, 'There is no edited content to export yet.');
+        }
+
+        $binary = $renderer->render($document);
+
+        AuditLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'document.exported',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+            'metadata' => ['format' => 'pdf', 'filename' => $document->title . '.pdf'],
+        ]);
+
+        $filename = preg_replace('/[^A-Za-z0-9._-]/', '_', (string) $document->title) . '.pdf';
+        if ($filename === '.pdf') {
+            $filename = 'document.pdf';
+        }
+
+        return response($binary, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    /**
+     * Export a user-selected subset of the edited content to PDF.
+     */
+    public function exportContentSelectionPdf(
+        Request $request,
+        Document $document,
+        DocumentPdfRenderer $renderer
+    ): \Symfony\Component\HttpFoundation\Response {
+        $this->authorize('download', $document);
+
+        $data = $request->validate([
+            'html' => ['required', 'string', 'max:400000'],
+            'header' => ['nullable', 'string', 'max:20000'],
+            'footer' => ['nullable', 'string', 'max:20000'],
+            'page_paper' => ['nullable', 'string', Rule::in(array_keys(PageLayout::PAPERS))],
+            'page_orientation' => ['nullable', 'string', Rule::in(array_keys(PageLayout::ORIENTATIONS))],
+            'page_margins' => ['nullable', 'string', Rule::in(array_keys(PageLayout::MARGINS))],
+        ]);
+
+        $binary = $renderer->render(
+            $document,
+            $data['html'],
+            $data['header'] ?? null,
+            $data['footer'] ?? null,
+            $data['page_paper'] ?? null,
+            $data['page_orientation'] ?? null,
+            $data['page_margins'] ?? null
+        );
+
+        AuditLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'document.exported',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+            'metadata' => ['format' => 'pdf-selection'],
+        ]);
+
+        $filename = preg_replace('/[^A-Za-z0-9._-]/', '_', (string) $document->title) . '-selection.pdf';
+        if ($filename === '-selection.pdf') {
+            $filename = 'document-selection.pdf';
+        }
+
+        return response($binary, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    /**
+     * AJAX: stores an image chosen in the content editor inside private
+     * storage and returns the URL used to embed it in the document.
+     */
+    public function storeContentImage(Request $request, Document $document): JsonResponse
+    {
+        $this->authorize('update', $document);
+
+        $request->validate([
+            'image' => ['required', 'file', 'mimes:png,jpeg,jpg,gif,webp', 'max:5120'],
+        ]);
+
+        $file = $request->file('image');
+        $extension = strtolower($file->getClientOriginalExtension() ?: 'png');
+        $filename = bin2hex(random_bytes(16)) . '.' . $extension;
+
+        $path = $file->storeAs('content-images/' . $document->id, $filename, 'private');
+        if (! is_string($path)) {
+            return response()->json(['message' => 'The image could not be saved.'], 500);
+        }
+
+        return response()->json([
+            'url' => route('documents.content-image', ['document' => $document, 'filename' => $filename]),
+            'filename' => $file->getClientOriginalName(),
+        ], 201);
+    }
+
+    /**
+     * Serves an embedded content image. Access follows the document's own
+     * view permission, so the private disk never becomes publicly reachable.
+     */
+    public function contentImage(Document $document, string $filename): StreamedResponse
+    {
+        $this->authorize('view', $document);
+
+        abort_unless(preg_match('/^[A-Za-z0-9._-]+\.(?:png|jpe?g|gif|webp)$/', $filename) === 1, 404);
+
+        $path = 'content-images/' . $document->id . '/' . $filename;
+        abort_unless(Storage::disk('private')->exists($path), 404);
+
+        return Storage::disk('private')->response($path, $filename, [
+            'Cache-Control' => 'private, max-age=86400',
+        ]);
+    }
+
+    /**
      * AJAX: reads the selected file and proposes editable title, category,
      * and document date before the user actually uploads.
      */
@@ -500,7 +754,14 @@ class DocumentController extends Controller
     public function show(Document $document): View
     {
         $this->authorize('view', $document);
-        $document->load(['category', 'suggestedCategory', 'department', 'suggestedDepartment', 'uploader', 'currentVersionUploader', 'approver', 'approvalReviewer', 'classificationReviewer', 'chunks', 'versions.uploader']);
+        $document->increment('view_count');
+        $document->update(['last_opened_at' => now()]);
+        DocumentAccessLog::create([
+            'document_id' => $document->id,
+            'user_id' => auth()->id(),
+            'action' => 'view',
+        ]);
+        $document->load(['category', 'suggestedCategory', 'department', 'suggestedDepartment', 'uploader', 'currentVersionUploader', 'approver', 'approvalReviewer', 'classificationReviewer', 'contentEditor', 'chunks', 'versions.uploader', 'assignedTo', 'reviewedBy', 'comments.user', 'accessLogs.user', 'favoritedBy']);
         $similarCandidates = $this->visibleToUser(request())
             ->where('processing_status', 'completed')
             ->whereNotNull('extracted_text')
@@ -984,6 +1245,314 @@ class DocumentController extends Controller
         $this->notifyUploaderOfApproval($document, $request, false, $data['review_note']);
 
         return back()->with('status', 'Document rejected.');
+    }
+
+    public function submitDocument(Request $request, Document $document): RedirectResponse
+    {
+        $this->authorize('update', $document);
+
+        $document->update([
+            'workflow_status' => 'submitted',
+            'submitted_at' => now(),
+        ]);
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'document.submitted',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+        ]);
+
+        $this->notifyWorkflowParticipants($document, $request->user(), 'submitted');
+
+        return back()->with('status', 'Document submitted for review.');
+    }
+
+    public function startDocumentReview(Request $request, Document $document): RedirectResponse
+    {
+        $this->authorize('approve', $document);
+
+        $document->update([
+            'workflow_status' => 'under_review',
+            'reviewed_at' => null,
+            'reviewed_by' => null,
+        ]);
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'document.review_started',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+        ]);
+
+        $this->notifyWorkflowParticipants($document, $request->user(), 'under_review');
+
+        return back()->with('status', 'Document marked as under review.');
+    }
+
+    public function approveWorkflow(Request $request, Document $document): RedirectResponse
+    {
+        $this->authorize('approve', $document);
+
+        $data = $request->validate([
+            'review_note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $document->update([
+            'workflow_status' => 'approved',
+            'reviewed_at' => now(),
+            'reviewed_by' => $request->user()->id,
+            'review_decision_note' => $data['review_note'] ?? null,
+        ]);
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'document.workflow_approved',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+            'metadata' => ['review_note' => $data['review_note'] ?? null],
+        ]);
+
+        $this->notifyWorkflowParticipants($document, $request->user(), 'approved');
+
+        return back()->with('status', 'Document approved.');
+    }
+
+    public function rejectWorkflow(Request $request, Document $document): RedirectResponse
+    {
+        $this->authorize('approve', $document);
+
+        $data = $request->validate([
+            'review_note' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $document->update([
+            'workflow_status' => 'rejected',
+            'reviewed_at' => now(),
+            'reviewed_by' => $request->user()->id,
+            'review_decision_note' => $data['review_note'],
+        ]);
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'document.workflow_rejected',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+            'metadata' => ['review_note' => $data['review_note']],
+        ]);
+
+        $this->notifyWorkflowParticipants($document, $request->user(), 'rejected');
+
+        return back()->with('status', 'Document rejected.');
+    }
+
+    public function archiveDocument(Request $request, Document $document): RedirectResponse
+    {
+        $this->authorize('approve', $document);
+
+        $document->update(['workflow_status' => 'archived']);
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'document.archived',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+        ]);
+
+        $this->notifyWorkflowParticipants($document, $request->user(), 'archived');
+
+        return back()->with('status', 'Document archived.');
+    }
+
+    public function assignDocument(Request $request, Document $document): RedirectResponse
+    {
+        $this->authorize('approve', $document);
+
+        $data = $request->validate([
+            'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
+        ]);
+
+        $document->update(['assigned_to' => $data['assigned_to'] ?? null]);
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'document.assigned',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+            'metadata' => ['assigned_to' => $data['assigned_to'] ?? null],
+        ]);
+
+        $this->notifyWorkflowParticipants($document, $request->user(), 'assigned');
+
+        return back()->with('status', 'Assignment updated.');
+    }
+
+    public function addDocumentComment(Request $request, Document $document): RedirectResponse
+    {
+        $this->authorize('view', $document);
+
+        $data = $request->validate([
+            'body' => ['required', 'string', 'max:2000'],
+            'section_ref' => ['nullable', 'string', 'max:200'],
+        ]);
+
+        DocumentComment::create([
+            'document_id' => $document->id,
+            'user_id' => $request->user()->id,
+            'body' => $data['body'],
+            'section_ref' => $data['section_ref'] ?? null,
+        ]);
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'document.commented',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+        ]);
+
+        $this->notifyWorkflowParticipants($document, $request->user(), 'commented');
+
+        return back()->with('status', 'Comment added.');
+    }
+
+    public function shareDocument(Request $request, Document $document): RedirectResponse
+    {
+        $this->authorize('update', $document);
+
+        $data = $request->validate([
+            'user_ids' => ['nullable', 'array'],
+            'user_ids.*' => ['integer', 'exists:users,id'],
+        ]);
+
+        $document->authorizedUsers()->sync($data['user_ids'] ?? []);
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'document.shared',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+            'metadata' => ['user_ids' => $data['user_ids'] ?? []],
+        ]);
+
+        return back()->with('status', 'Sharing updated.');
+    }
+
+    public function restoreVersion(Request $request, Document $document, DocumentVersion $version): RedirectResponse
+    {
+        $this->authorize('update', $document);
+        abort_unless((int) $version->document_id === (int) $document->id, 404);
+
+        if (! Storage::disk('private')->exists($version->storage_path)) {
+            return back()->withErrors(['version' => 'The selected version file is no longer available.']);
+        }
+
+        DB::transaction(function () use ($document, $version) {
+            DocumentVersion::create([
+                'document_id' => $document->id,
+                'version_number' => $document->version_number,
+                'uploaded_by' => $document->current_version_uploaded_by ?? $document->uploaded_by,
+                'original_filename' => $document->original_filename,
+                'storage_path' => $document->storage_path,
+                'file_hash' => $document->file_hash,
+                'mime_type' => $document->mime_type,
+                'file_size' => $document->file_size,
+            ]);
+
+            $document->update([
+                'version_number' => $document->version_number + 1,
+                'current_version_uploaded_by' => $request->user()->id,
+                'original_filename' => $version->original_filename,
+                'storage_path' => $version->storage_path,
+                'file_hash' => $version->file_hash,
+                'mime_type' => $version->mime_type,
+                'file_size' => $version->file_size,
+            ]);
+        });
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'document.version_restored',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+            'metadata' => ['restored_version' => $version->version_number],
+        ]);
+
+        return back()->with('status', 'Previous version restored.');
+    }
+
+    public function toggleFavorite(Request $request, Document $document): RedirectResponse
+    {
+        $this->authorize('view', $document);
+
+        $user = $request->user();
+        if ($document->favoritedBy()->where('users.id', $user->id)->exists()) {
+            $document->favoritedBy()->detach($user->id);
+        } else {
+            $document->favoritedBy()->attach($user->id);
+        }
+
+        return back()->with('status', 'Favorites updated.');
+    }
+
+    public function updateDocumentTags(Request $request, Document $document): RedirectResponse
+    {
+        $this->authorize('update', $document);
+
+        $data = $request->validate([
+            'tags' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $tags = collect(explode(',', (string) ($data['tags'] ?? '')))
+            ->map(fn ($t) => trim($t))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $document->update(['tags' => $tags]);
+
+        return back()->with('status', 'Tags updated.');
+    }
+
+    public function storageUsage(Request $request): View
+    {
+        abort_unless($request->user()->isAdmin() || $request->user()->isManager(), 403);
+
+        $usage = \App\Models\Department::query()
+            ->leftJoin('documents', 'documents.department_id', '=', 'departments.id')
+            ->selectRaw('departments.id, departments.name, COUNT(documents.id) as document_count, COALESCE(SUM(documents.file_size),0) as total_bytes')
+            ->groupBy('departments.id', 'departments.name')
+            ->orderBy('departments.name')
+            ->get();
+
+        $total = (int) Document::sum('file_size');
+
+        return view('documents.storage-usage', compact('usage', 'total'));
+    }
+
+    private function notifyWorkflowParticipants(Document $document, $actor, string $event): void
+    {
+        $recipients = collect([$document->uploader, $document->assignedTo])
+            ->filter()
+            ->unique('id')
+            ->reject(fn ($user) => $user->id === $actor->id);
+
+        foreach ($recipients as $recipient) {
+            if (! ($recipient->notify_doc_approval ?? true)) {
+                continue;
+            }
+            try {
+                Mail::raw(
+                    "Document \"{$document->title}\" status changed to {$event} by {$actor->name}.",
+                    function ($message) use ($recipient, $document, $event) {
+                        $message->to($recipient->email)
+                            ->subject("SmartDocs: {$document->title} — {$event}");
+                    }
+                );
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
     }
 
     private function notifyUploaderOfApproval(Document $document, Request $request, bool $approved, ?string $reviewNote): void

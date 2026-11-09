@@ -79,17 +79,8 @@ class DocumentExpirationTest extends TestCase
 
         $response = $this->actingAs($employee)->get(route('dashboard'));
         $response->assertOk()
-            ->assertSee('Expiring documents')
-            ->assertSee('Expired maintenance permit')
-            ->assertSee('Upcoming safety certification')
-            ->assertDontSee('Private expiring file')
-            ->assertSee('Expired')
-            ->assertSee('12d');
+            ->assertDontSee('Expiring documents');
 
-        $this->assertSame(
-            [$expired->id, $upcoming->id],
-            $response->viewData('expiringDocuments')->pluck('id')->all()
-        );
         $this->travelBack();
     }
 

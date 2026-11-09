@@ -33,6 +33,20 @@
             </div>
         </section>
 
+        <section class="col-12 col-lg-6" aria-labelledby="help-edit">
+            <div class="card card-p3 p-4 h-100">
+                <h2 class="h5 fw-semibold" id="help-edit">Edit document content</h2>
+                <ol class="mb-3">
+                    <li>Open a document you are allowed to update, then choose <strong>Edit content</strong>.</li>
+                    <li>Format text with fonts, sizes, colors, alignment, bold, italic, underline, headings, and lists from the toolbar.</li>
+                    <li>Insert tables, images, links, page numbers, headers, and footers.</li>
+                    <li>Choose a template, set paper size, orientation, and margins, then export to DOCX or PDF.</li>
+                    <li>Leave the page or press <strong>Ctrl+S</strong> — changes save automatically while you type.</li>
+                </ol>
+                <p class="small text-muted mb-0">Editing changes the SmartDocs copy of the document; the original uploaded file stays in version history. Editing needs update permission (uploader, document manager, or administrator).</p>
+            </div>
+        </section>
+
         <section class="col-12 col-lg-6" aria-labelledby="help-ask">
             <div class="card card-p3 p-4 h-100">
                 <h2 class="h5 fw-semibold" id="help-ask">Ask Lightning</h2>

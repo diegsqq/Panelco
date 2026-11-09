@@ -11,7 +11,10 @@
                 <small class="text-muted text-truncate d-inline-block" style="max-width:22rem" title="{{ $document->original_filename }}">{{ $document->original_filename }}</small>
             </div>
         </div>
-        <a href="{{ route('documents.show', $document) }}" class="btn btn-sm btn-outline-secondary text-nowrap"><i class="bi bi-arrow-left me-1"></i>Back</a>
+        <div class="d-flex gap-2">
+            <a href="{{ route('documents.edit-content', $document) }}" class="btn btn-sm btn-outline-success text-nowrap"><i class="bi bi-file-earmark-text me-1"></i>Edit content</a>
+            <a href="{{ route('documents.show', $document) }}" class="btn btn-sm btn-outline-secondary text-nowrap"><i class="bi bi-arrow-left me-1"></i>Back</a>
+        </div>
     </div>
 
     <div class="card card-p3 p-4">

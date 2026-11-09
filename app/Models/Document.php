@@ -27,6 +27,12 @@ class Document extends Model
         'approval_status', 'approval_reviewed_at', 'approval_reviewed_by', 'approval_review_note',
         'suggested_category_reason', 'suggested_department_reason',
         'reference_number', 'sender', 'recipient',
+        'content', 'content_header', 'content_footer',
+        'content_updated_at', 'content_updated_by',
+        'page_paper', 'page_orientation', 'page_margins',
+        'workflow_status', 'assigned_to', 'submitted_at', 'reviewed_at',
+        'reviewed_by', 'review_decision_note',
+        'tags', 'last_opened_at', 'view_count',
     ];
 
     protected function casts(): array
@@ -34,6 +40,11 @@ class Document extends Model
         return [
             'document_date' => 'date',
             'expiration_date' => 'date',
+            'content_updated_at' => 'datetime',
+            'submitted_at' => 'datetime',
+            'reviewed_at' => 'datetime',
+            'tags' => 'array',
+            'last_opened_at' => 'datetime',
             'approved_at' => 'datetime',
             'classification_reviewed_at' => 'datetime',
             'approval_reviewed_at' => 'datetime',
@@ -67,9 +78,39 @@ class Document extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 
+    public function contentEditor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'content_updated_by');
+    }
+
     public function approvalReviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approval_reviewed_by');
+    }
+
+    public function assignedTo(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    public function reviewedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(DocumentComment::class)->latest();
+    }
+
+    public function favoritedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'document_favorites')->withTimestamps();
+    }
+
+    public function accessLogs(): HasMany
+    {
+        return $this->hasMany(DocumentAccessLog::class)->latest();
     }
 
     public function classificationReviewer(): BelongsTo

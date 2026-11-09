@@ -2,282 +2,276 @@
 
 @section('content')
 <style>
-    .recent-row { transition: background-color .15s ease; }
-    .recent-row:hover { background: #e6f3ea; }
-    .recent-row + .recent-row { border-top: 0; }
-    .recent-list .recent-row { flex: 1 0 auto; align-items: center; }
-    .recent-list .recent-row:last-child { border-bottom: 0 !important; }
-
-    /* Dashboard fits the viewport: page itself never scrolls,
-       inner panels scroll instead. */
-    .p3-dashboard { display: flex; flex-direction: column; gap: 1rem; overflow: hidden; }
-    .p3-dashboard .row { flex: 1 1 auto; min-height: 0; margin: 0; }
-    .p3-dashboard .row > [class*="col-"] { min-height: 0; }
-    .p3-dashboard .col-lg-7 .card { height: 100%; }
-    .p3-dashboard .col-lg-5 { overflow-y: auto; overflow-x: hidden; }
-    /* Hard lock: page itself never scrolls on the dashboard. */
-    html:has(#p3Dashboard), body:has(#p3Dashboard) { overflow: hidden; }
-    /* Hide the white topbar strip above the Welcome back banner (dashboard only). */
+    /* ── Layout ── */
+    .p3-dash { display: flex; flex-direction: column; gap: 1.5rem; }
+    html:has(#p3Dashboard), body:has(#p3Dashboard) { overflow: auto; }
     body:has(#p3Dashboard) .p3-topbar { display: none; }
-    @media (max-width: 991.98px) {
-        .p3-dashboard .row { overflow-y: auto; overflow-x: hidden; }
-    }
     @media (max-width: 767.98px) {
         body:has(#p3Dashboard) .p3-topbar { display: flex !important; }
     }
+
+    /* ── Welcome header ── */
+    .p3-welcome-title { font-size: 1.65rem; font-weight: 800; color: #00A868; line-height: 1.15; }
+    .p3-welcome-sub   { color: #5a9e7a; font-size: .875rem; margin-top: .2rem; }
+    [data-theme="dark"] .p3-welcome-title { color: #7fe0ac; }
+    [data-theme="dark"] .p3-welcome-sub   { color: #8fa59a; }
+
+    /* ── Panel cards ── */
+    .p3-panel { border: 1px solid #d5e8db; border-radius: 1rem; background: #fff; overflow: hidden; }
+    [data-theme="dark"] .p3-panel { background: #16211c; border-color: #26362e; }
+
+    /* ── Overview left ── */
+    .p3-ov-header { padding: 1rem 1.1rem .6rem; display: flex; justify-content: space-between; align-items: flex-start; }
+    .p3-ov-title  { font-weight: 700; font-size: .95rem; color: #00743F; }
+    .p3-ov-sub    { font-size: .75rem; color: #5a9e7a; margin-top: .15rem; }
+    [data-theme="dark"] .p3-ov-title { color: #7fe0ac; }
+    [data-theme="dark"] .p3-ov-sub   { color: #8fa59a; }
+
+    .p3-ov-preview { margin: 0 1.1rem; border: 1px solid #d5e8db; border-radius: .65rem; overflow: hidden; background: #f0f9f3; min-height: 170px; display: flex; align-items: center; justify-content: center; }
+    [data-theme="dark"] .p3-ov-preview { background: #0f1512; border-color: #26362e; }
+
+    .p3-ov-view-btn { display: block; margin: .8rem 1.1rem; text-align: center; background: #00A868; color: #fff; border: none; border-radius: .65rem; padding: .65rem 1rem; font-weight: 700; font-size: .88rem; text-decoration: none; transition: background-color .15s ease; }
+    .p3-ov-view-btn:hover { background: #00743F; color: #fff; }
+
+    .p3-ov-meta { padding: .75rem 1.1rem 1.1rem; border-top: 1px solid #e6f3ea; display: flex; flex-direction: column; gap: .7rem; }
+    [data-theme="dark"] .p3-ov-meta { border-color: #26362e; }
+    .p3-ov-meta-item { display: flex; flex-direction: column; gap: .12rem; }
+    .p3-ov-meta-label { font-size: .72rem; color: #5a9e7a; display: flex; align-items: center; gap: .35rem; }
+    .p3-ov-meta-val   { font-size: .88rem; font-weight: 600; color: #00743F; }
+    [data-theme="dark"] .p3-ov-meta-val { color: #7fe0ac; }
+
+    /* ── Activity right ── */
+    .p3-act-header { padding: 1rem 1.1rem .5rem; }
+    .p3-act-title  { font-weight: 700; font-size: .95rem; color: #00743F; }
+    .p3-act-sub    { font-size: .75rem; color: #5a9e7a; margin-top: .1rem; }
+    [data-theme="dark"] .p3-act-title { color: #7fe0ac; }
+    [data-theme="dark"] .p3-act-sub   { color: #8fa59a; }
+
+    /* Tab row */
+    .p3-act-tabs  { display: flex; gap: .4rem; padding: 0 1.1rem .6rem; }
+    .p3-act-tab   { flex: 1; text-align: center; padding: .45rem .5rem; border-radius: .55rem; border: 1px solid #d5e8db; font-size: .8rem; font-weight: 600; color: #5a9e7a; background: #fff; cursor: pointer; transition: all .15s ease; white-space: nowrap; }
+    .p3-act-tab.active { background: #00A868; color: #fff; border-color: #00A868; }
+    .p3-act-tab:not(.active):hover { background: #e6f3ea; border-color: #b7e0c8; color: #00743F; }
+    [data-theme="dark"] .p3-act-tab         { background: #1d2b24; border-color: #2c3d34; color: #b8c8bf; }
+    [data-theme="dark"] .p3-act-tab.active  { background: #00A868; border-color: #00A868; color: #fff; }
+
+    /* Week label */
+    .p3-act-week  { padding: .3rem 1.1rem .45rem; font-size: .8rem; font-weight: 700; color: #00743F; display: flex; align-items: center; gap: .3rem; }
+    [data-theme="dark"] .p3-act-week { color: #7fe0ac; }
+
+    /* Activity rows */
+    .p3-act-body  { max-height: 400px; overflow-y: auto; }
+    .p3-act-row   { display: flex; align-items: center; gap: .75rem; padding: .75rem 1.1rem; border-top: 1px solid #e6f3ea; transition: background-color .15s ease; }
+    .p3-act-row:hover { background: #f0f9f3; }
+    [data-theme="dark"] .p3-act-row           { border-color: #1d2b24; }
+    [data-theme="dark"] .p3-act-row:hover     { background: #1a2820; }
+    .p3-act-check { color: #00A868; font-size: 1.1rem; flex: 0 0 auto; }
+    .p3-act-info  { flex: 1 1 auto; min-width: 0; }
+    .p3-act-time  { font-size: .72rem; color: #5a9e7a; }
+    .p3-act-name  { font-weight: 600; font-size: .88rem; color: #00743F; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    [data-theme="dark"] .p3-act-name { color: #7fe0ac; }
+    .p3-act-see   { font-size: .75rem; color: #5a9e7a; white-space: nowrap; display: flex; align-items: center; gap: .2rem; flex: 0 0 auto; text-decoration: none; }
+    .p3-act-see:hover { color: #00A868; }
+
+    /* Stat pills inside overview */
+    .p3-stat-row { display: flex; gap: .5rem; padding: .6rem 1.1rem; flex-wrap: wrap; }
+    .p3-stat-pill { flex: 1 1 0; min-width: 0; background: #e6f3ea; border: 1px solid #d5e8db; border-radius: .65rem; padding: .55rem .7rem; text-align: center; }
+    [data-theme="dark"] .p3-stat-pill { background: #0f1512; border-color: #1d2b24; }
+    .p3-stat-pill-val  { font-weight: 800; font-size: 1.1rem; color: #00A868; }
+    .p3-stat-pill-lbl  { font-size: .67rem; color: #5a9e7a; margin-top: .05rem; }
+    [data-theme="dark"] .p3-stat-pill-val { color: #7fe0ac; }
+
+    /* Create new button */
+    .p3-create-btn { background: #00A868; color: #fff; border: none; border-radius: .75rem; font-weight: 700; font-size: .88rem; padding: .6rem 1.15rem; display: inline-flex; align-items: center; gap: .4rem; text-decoration: none; transition: background-color .15s ease; white-space: nowrap; }
+    .p3-create-btn:hover { background: #00743F; color: #fff; }
 </style>
-<div class="p3-dashboard" id="p3Dashboard">
-<div class="d-flex flex-wrap justify-content-between align-items-center">
-    <div>
-        <h3 class="fw-bold mb-0" style="color:#00A868">Welcome back, {{ auth()->user()->isAdmin() ? 'Admin' : strtok(auth()->user()->name, ' ') }}</h3>
-    </div>
-    <div class="d-flex gap-3 mt-2 mt-md-0">
-        <a href="{{ route('documents.upload') }}" class="btn btn-lg" style="background:#ffffff;color:#00A868;border:1px solid #00A868;font-weight:700"><i class="bi bi-cloud-upload me-1"></i>Upload</a>
-        <a href="{{ route('chat.index') }}" class="btn btn-lg" style="background:#ffffff;color:#00A868;border:1px solid #00A868;font-weight:700"><i class="bi bi-chat-dots me-1"></i>Ask Lightning</a>
-    </div>
-</div>
 
-<div class="row g-4">
-    <div class="col-lg-7">
-        <div class="card card-p3 lift p-4 d-flex flex-column" style="min-height:0">
-            <div class="d-flex justify-content-between align-items-center mb-3"><h5 class="fw-bold mb-0">Recently uploaded</h5><a href="{{ route('documents.library') }}" class="small">View library</a></div>
-            <div class="recent-list flex-grow-1" style="min-height:0;display:flex;flex-direction:column;overflow-y:hidden;overflow-x:hidden;padding-right:4px">
-            @forelse ($recent as $doc)
-                @php
-                    $mime = $doc->mime_type ?? '';
-                    $docIcon = str_contains($mime, 'pdf') ? ['bi-file-earmark-pdf-fill', '#dc3545', '#fdeaea']
-                        : (str_contains($mime, 'word') ? ['bi-file-earmark-word-fill', '#0d6efd', '#e7f0ff']
-                        : (str_starts_with($mime, 'image/') ? ['bi-file-earmark-image-fill', '#00A868', '#e6f3ea']
-                        : (str_contains($mime, 'text') ? ['bi-file-earmark-text-fill', '#6c757d', '#f1f3f5']
-                        : ['bi-file-earmark-fill', '#00A868', '#e6f3ea'])));
-                @endphp
-                <a href="{{ route('documents.show', $doc) }}" class="d-flex gap-2 align-items-center recent-row text-decoration-none border-bottom py-1 px-2" style="border-color:#e8f0ea !important;border-radius:.5rem">
-                    <span class="stat-icon flex-shrink-0" style="width:30px;height:30px;background:{{ $docIcon[2] }};color:{{ $docIcon[1] }};font-size:.85rem"><i class="bi {{ $docIcon[0] }}"></i></span>
-                    <div class="flex-grow-1" style="min-width:0">
-                        <div class="fw-semibold text-truncate" style="color:#00743F;font-size:.95rem">{{ $doc->title ?? $doc->original_filename }}</div>
-                        <div class="text-truncate" style="font-size:.82rem;color:#7d8f86">{{ $doc->category?->name ?? $doc->suggestedCategory?->name ?? 'Uncategorized' }}{{ $doc->department ? ' · '.$doc->department->name : '' }} · {{ $doc->created_at->diffForHumans() }}</div>
-                        @if($doc->summary)<div class="text-truncate" style="font-size:.84rem;color:#9aa8a1">{{ $doc->summary }}</div>@endif
-                    </div>
-                    @unless($doc->processing_status === 'completed')<span class="badge status-{{ $doc->processing_status }} flex-shrink-0">{{ $doc->processing_status }}</span>@endunless
-                    <i class="bi bi-chevron-right flex-shrink-0" style="font-size:.85rem;color:#b7c4bd"></i>
-                </a>
-            @empty
-                <div class="text-center py-4"><i class="bi bi-inbox fs-2 text-muted"></i><p class="fw-semibold mt-2 mb-2">No documents yet.</p><a href="{{ route('documents.upload') }}" class="btn btn-sm" style="background:#ffffff;color:#00A868;border:1px solid #00A868">Upload your first document</a></div>
-            @endforelse
-            </div>
+<div class="p3-dash" id="p3Dashboard">
+
+    {{-- ── Welcome header ── --}}
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+        <div>
+            <div class="p3-welcome-title">Welcome, {{ strtok(auth()->user()->name, ' ') }} !</div>
+            <div class="p3-welcome-sub">Let's take a look at your latest activity.</div>
         </div>
+        <a href="{{ route('documents.upload') }}" class="p3-create-btn">
+            Upload Document <i class="bi bi-plus-lg"></i>
+        </a>
     </div>
-    <div class="col-lg-5 d-flex flex-column gap-3">
-        <div class="card card-p3 p-4 d-flex flex-column" style="min-height:0">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="fw-semibold" style="color:#00A868">Category distribution</span>
-            <span class="text-muted small">{{ $stats['total'] }} docs</span>
-            </div>
 
-            @if($categoryDistribution->isNotEmpty())
-            <div style="width:100%;height:260px;">
-                <div id="categoryLine" style="width:100%;height:100%;"></div>
-            </div>
-            @else
-                <p class="text-muted mb-0">No categories yet.</p>
-            @endif
+    {{-- ── Two-column body ── --}}
+    <div class="row g-3 align-items-start">
 
-        </div>
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="fw-semibold" style="color:#00A868">Expiring documents</span>
-                <span class="small text-muted">Next 30 days</span>
-            </div>
-            @forelse($expiringDocuments as $document)
-                @php $daysUntilExpiration = now()->startOfDay()->diffInDays($document->expiration_date->startOfDay(), false); @endphp
-                <div class="d-flex justify-content-between align-items-center gap-2 border-bottom py-2 small">
-                    <a href="{{ route('documents.show', $document) }}" class="text-truncate text-decoration-none fw-semibold" style="color:#00743F">{{ $document->title ?? $document->original_filename }}</a>
-                    <span class="badge {{ $daysUntilExpiration < 0 ? 'text-bg-danger' : 'text-bg-warning' }} flex-shrink-0">
-                        {{ $daysUntilExpiration < 0 ? 'Expired' : ($daysUntilExpiration === 0 ? 'Today' : $daysUntilExpiration . 'd') }}
-                    </span>
-                </div>
-            @empty
-                <p class="text-muted small mb-0">No expired or soon-to-expire documents.</p>
-            @endforelse
-            <p class="form-text mt-2 mb-0">Reminders only; documents are not automatically archived or deleted.</p>
-        </div>
-        <div class="card card-p3 p-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <span class="fw-semibold" style="color:#00A868">Department distribution</span>
-                <span class="text-muted small">{{ $departmentDistribution->sum('total') }} docs</span>
-            </div>
-            @if($departmentDistribution->isNotEmpty())
-                @php $maxDepartmentCount = max(1, (int) $departmentDistribution->max('total')); @endphp
-                <div class="d-flex flex-column gap-3">
-                    @foreach($departmentDistribution as $department)
-                        <div>
-                            <div class="d-flex justify-content-between gap-2 small mb-1">
-                                <span class="text-truncate">{{ $department->department_name }}</span>
-                                <span class="text-muted flex-shrink-0">{{ $department->total }}</span>
-                            </div>
-                            <div class="progress" role="progressbar" aria-label="{{ $department->department_name }}" aria-valuenow="{{ $department->total }}" aria-valuemin="0" aria-valuemax="{{ $maxDepartmentCount }}" style="height:6px">
-                                <div class="progress-bar" style="width:{{ round(((int) $department->total / $maxDepartmentCount) * 100) }}%;background:#00A868"></div>
-                            </div>
+        {{-- ── LEFT: Docs Overview ── --}}
+        <div class="col-12 col-lg-5">
+            <div class="p3-panel">
+                <div class="p3-ov-header">
+                    <div>
+                        <div class="p3-ov-title">Docs Overview</div>
+                        <div class="p3-ov-sub">
+                            Last updated:
+                            @if($recent->first())
+                                <strong>{{ $recent->first()->updated_at->diffForHumans() }}</strong>
+                                <i class="bi bi-arrow-repeat ms-1" title="Auto-synced"></i>
+                            @else
+                                <strong>No documents yet</strong>
+                            @endif
                         </div>
+                    </div>
+                    <a href="{{ route('documents.library') }}" class="text-muted" title="Go to library"><i class="bi bi-pencil-square"></i></a>
+                </div>
+
+                {{-- Stat pills --}}
+                <div class="p3-stat-row">
+                    @foreach([
+                        ['val' => $stats['total'],     'lbl' => 'Total',    'color' => '#00A868'],
+                        ['val' => $stats['completed'], 'lbl' => 'Done',     'color' => '#00743F'],
+                        ['val' => $stats['pending'],   'lbl' => 'Pending',  'color' => '#fd7e14'],
+                        ['val' => $stats['failed'],    'lbl' => 'Failed',   'color' => '#dc3545'],
+                    ] as $s)
+                    <div class="p3-stat-pill">
+                        <div class="p3-stat-pill-val" style="color:{{ $s['color'] }}">{{ number_format($s['val']) }}</div>
+                        <div class="p3-stat-pill-lbl">{{ $s['lbl'] }}</div>
+                    </div>
                     @endforeach
                 </div>
-            @else
-                <p class="text-muted mb-0">No department data yet.</p>
-            @endif
-        </div>
-        <div class="card card-p3 p-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <span class="fw-semibold" style="color:#00A868">Document upload trend</span>
-                <span class="text-muted small">Last 6 months</span>
-            </div>
-            <div class="d-flex align-items-end justify-content-between gap-2" style="height:105px" role="img" aria-label="Monthly document uploads for the last six months">
-                @foreach($monthlyUploads as $month)
-                    <div class="d-flex flex-column align-items-center justify-content-end gap-1 flex-fill h-100">
-                        <span class="small text-muted">{{ $month['count'] }}</span>
-                        <div class="w-100 rounded-top" style="height:{{ $month['count'] > 0 ? max(6, round(($month['count'] / $maxMonthlyUploads) * 70)) : 3 }}px;background:{{ $month['count'] > 0 ? '#00A868' : '#dfe9e3' }}" aria-hidden="true"></div>
-                        <span class="small text-muted">{{ $month['label'] }}</span>
+
+                {{-- Preview: recent doc list --}}
+                <div class="p3-ov-preview p-0" style="min-height:140px;">
+                    @if($recent->isNotEmpty())
+                    <div class="w-100">
+                        @foreach($recent->take(4) as $doc)
+                        <a href="{{ route('documents.show', $doc) }}" class="d-flex align-items-center gap-2 px-3 py-2 text-decoration-none border-bottom" style="border-color:#f0f0f0!important;transition:background-color .12s ease" onmouseover="this.style.background='#f0f9f3'" onmouseout="this.style.background=''">
+                            <i class="bi bi-file-earmark-text" style="color:#00A868;font-size:1rem;flex:0 0 auto"></i>
+                            <div class="min-w-0 flex-fill overflow-hidden">
+                                <div class="fw-semibold small text-truncate" style="color:#111;max-width:100%">{{ $doc->title ?? $doc->original_filename }}</div>
+                                <div style="font-size:.7rem;color:#aaa">{{ $doc->updated_at->format('M j, Y') }}</div>
+                            </div>
+                            <span class="badge rounded-pill px-2 py-1" style="font-size:.65rem;background:
+                                @if($doc->processing_status === 'completed') #d4edda;color:#155724
+                                @elseif($doc->processing_status === 'pending') #fff3cd;color:#856404
+                                @else #f8d7da;color:#721c24 @endif
+                            ">{{ ucfirst($doc->processing_status) }}</span>
+                        </a>
+                        @endforeach
                     </div>
-                @endforeach
-            </div>
-        </div>
-        <div class="card card-p3 p-4">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="fw-semibold" style="color:#00A868">Recent document activity</span>
-                <i class="bi bi-activity" aria-hidden="true"></i>
-            </div>
-            @forelse($recentActivity as $activity)
-                <div class="border-bottom py-2 small">
-                    <div>
-                        <span class="fw-semibold">{{ $activity['actor'] }}</span>
-                        {{ $activity['action'] }}
-                        <a href="{{ route('documents.show', $activity['document']) }}" class="text-decoration-none fw-semibold" style="color:#00743F">{{ $activity['document']->title ?? $activity['document']->original_filename }}</a>
+                    @else
+                    <div class="text-center text-muted p-4">
+                        <i class="bi bi-folder2-open fs-2 d-block mb-2 opacity-50"></i>
+                        <span class="small">No documents uploaded yet.</span>
                     </div>
-                    <div class="text-muted">{{ $activity['created_at']->diffForHumans() }}</div>
+                    @endif
                 </div>
-            @empty
-                <p class="text-muted small mb-0">No recent document activity.</p>
-            @endforelse
-        </div>
-        <div class="card card-p3 p-4">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="fw-semibold" style="color:#00A868">Most accessed documents</span>
-                <i class="bi bi-bar-chart-line" aria-hidden="true"></i>
-            </div>
-            @forelse($mostAccessedDocuments as $item)
-                <div class="d-flex justify-content-between align-items-center gap-2 border-bottom py-2 small">
-                    <a href="{{ route('documents.show', $item['document']) }}" class="text-truncate text-decoration-none fw-semibold" style="color:#00743F">{{ $item['document']->title ?? $item['document']->original_filename }}</a>
-                    <span class="badge text-bg-secondary flex-shrink-0">{{ $item['access_count'] }} {{ \Illuminate\Support\Str::plural('access', $item['access_count']) }}</span>
-                </div>
-            @empty
-                <p class="text-muted small mb-0">No document views or downloads have been recorded yet.</p>
-            @endforelse
-        </div>
-        @if(auth()->user()->isManager())
-            <div class="card card-p3 p-4">
-                <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
-                    <span class="fw-semibold" style="color:#00A868">Pending approvals</span>
-                    <a href="{{ route('documents.approvals') }}" class="small text-decoration-none">View queue ({{ $pendingApprovalCount }})</a>
-                </div>
-                @forelse($pendingApprovals as $document)
-                    <div class="border-bottom py-2 small">
-                        <a href="{{ route('documents.show', $document) }}" class="text-decoration-none fw-semibold" style="color:#00743F">{{ $document->title ?? $document->original_filename }}</a>
-                        <div class="text-muted">Uploaded by {{ $document->uploader?->name ?? 'Former user' }}</div>
+
+                {{-- View all button --}}
+                <a href="{{ route('documents.library') }}" class="p3-ov-view-btn">
+                    View Document Library →
+                </a>
+
+                {{-- Meta info --}}
+                <div class="p3-ov-meta">
+                    <div class="p3-ov-meta-item">
+                        <span class="p3-ov-meta-label"><i class="bi bi-building"></i> Department</span>
+                        <span class="p3-ov-meta-val">
+                            {{ auth()->user()->department?->name ?? 'All Departments' }}
+                        </span>
                     </div>
-                @empty
-                    <p class="text-muted small mb-0">No documents are waiting for approval.</p>
-                @endforelse
-            </div>
-            <div class="card card-p3 p-4">
-                <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
-                    <span class="fw-semibold" style="color:#00A868">Classification suggestions to review</span>
-                    <a href="{{ route('documents.classification-reviews') }}" class="small text-decoration-none">View queue ({{ $pendingClassificationReviewCount }})</a>
+                    <div class="p3-ov-meta-item">
+                        <span class="p3-ov-meta-label"><i class="bi bi-person-badge"></i> Role</span>
+                        <span class="p3-ov-meta-val">{{ ucfirst(auth()->user()->role ?? 'Employee') }}</span>
+                    </div>
+                    <div class="p3-ov-meta-item">
+                        <span class="p3-ov-meta-label"><i class="bi bi-lightning-charge"></i> Lightning AI</span>
+                        <span class="p3-ov-meta-val">
+                            <a href="{{ route('chat.index') }}" class="text-decoration-none fw-semibold" style="color:#00A868">
+                                {{ $recentConversations->count() }} conversation{{ $recentConversations->count() !== 1 ? 's' : '' }}
+                            </a>
+                        </span>
+                    </div>
                 </div>
-                @forelse($pendingClassificationReviews as $document)
-                    <div class="border-bottom py-2 small">
-                        <a href="{{ route('documents.show', $document) }}" class="text-decoration-none fw-semibold" style="color:#00743F">{{ $document->title ?? $document->original_filename }}</a>
-                        <div class="text-muted">
-                            Suggested: {{ $document->suggestedCategory?->name ?? 'No category' }}
-                            · {{ $document->suggestedDepartment?->name ?? 'No department' }}
+            </div>
+        </div>
+
+        {{-- ── RIGHT: Recent Activity ── --}}
+        <div class="col-12 col-lg-7">
+            <div class="p3-panel">
+                <div class="p3-act-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="p3-act-title">Recent Activity</div>
+                            <div class="p3-act-sub">Recent document changes history</div>
                         </div>
+                        <button class="btn btn-sm p-1" style="background:none;border:none;color:#5a9e7a" title="More options"><i class="bi bi-three-dots-vertical"></i></button>
                     </div>
-                @empty
-                    <p class="text-muted small mb-0">No classification suggestions need review.</p>
-                @endforelse
+                </div>
+
+                {{-- Tabs --}}
+                <div class="p3-act-tabs">
+                    <button class="p3-act-tab active" id="tabCompleted" onclick="switchTab('completed')">
+                        <i class="bi bi-link-45deg me-1"></i>Completed Docs
+                    </button>
+                    <button class="p3-act-tab" id="tabPending" onclick="switchTab('pending')">
+                        <i class="bi bi-hourglass-split me-1"></i>Pending Docs
+                    </button>
+                </div>
+
+                {{-- This Week label --}}
+                <div class="p3-act-week">
+                    This Week <i class="bi bi-chevron-down" style="font-size:.7rem"></i>
+                </div>
+
+                {{-- Activity list --}}
+                <div class="p3-act-body" id="actCompleted">
+                    @forelse($recentActivity->filter(fn($a) => optional($a['document'])->processing_status === 'completed')->take(8) as $activity)
+                    <div class="p3-act-row">
+                        <div class="p3-act-check"><i class="bi bi-check-circle-fill"></i></div>
+                        <div class="p3-act-info">
+                            <div class="p3-act-time">{{ $activity['created_at']->format('D, g:i A') }}</div>
+                            <div class="p3-act-name">{{ $activity['document']->title ?? $activity['document']->original_filename }}</div>
+                        </div>
+                        <a href="{{ route('documents.show', $activity['document']) }}" class="p3-act-see">
+                            See details <i class="bi bi-chevron-down"></i>
+                        </a>
+                    </div>
+                    @empty
+                    <div class="text-center text-muted py-4 small">
+                        <i class="bi bi-check-circle d-block fs-3 mb-2 opacity-40"></i>
+                        No completed document activity this week.
+                    </div>
+                    @endforelse
+                </div>
+
+                <div class="p3-act-body d-none" id="actPending">
+                    @forelse($recentActivity->filter(fn($a) => in_array(optional($a['document'])->processing_status, ['pending','processing']))->take(8) as $activity)
+                    <div class="p3-act-row">
+                        <div class="p3-act-check" style="color:#00A868"><i class="bi bi-hourglass-split"></i></div>
+                        <div class="p3-act-info">
+                            <div class="p3-act-time">{{ $activity['created_at']->format('D, g:i A') }}</div>
+                            <div class="p3-act-name">{{ $activity['document']->title ?? $activity['document']->original_filename }}</div>
+                        </div>
+                        <a href="{{ route('documents.show', $activity['document']) }}" class="p3-act-see">
+                            See details <i class="bi bi-chevron-down"></i>
+                        </a>
+                    </div>
+                    @empty
+                    <div class="text-center text-muted py-4 small">
+                        <i class="bi bi-hourglass d-block fs-3 mb-2 opacity-40"></i>
+                        No pending documents.
+                    </div>
+                    @endforelse
+                </div>
             </div>
-        @endif
-        <div class="card card-p3 p-4">
-            <h5 class="fw-bold mb-2">Recent conversations</h5>
-            @forelse ($recentConversations as $c)
-                <div class="border-bottom py-2"><a href="{{ route('chat.show', $c) }}" class="text-decoration-none" style="color:#00743F;font-size:1rem">{{ $c->title }}</a> <span class="text-muted">· {{ $c->created_at->diffForHumans() }}</span></div>
-            @empty
-                <p class="text-muted mb-0">No conversations yet.</p>
-            @endforelse
         </div>
+
     </div>
 </div>
-</div>
-@if($categoryDistribution->isNotEmpty())
-<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+
 <script>
-(function () {
-    var el = document.getElementById('categoryLine');
-    if (!el) return;
-    function init() {
-        if (!el.offsetWidth || !el.offsetHeight) { setTimeout(init, 50); return; }
-        var chart = echarts.init(el);
-        var categories = @json($categoryDistribution->pluck('category_name')->values());
-        var values = @json($categoryDistribution->pluck('total')->values());
-        chart.setOption({
-            tooltip: { trigger: 'axis', textStyle: { fontSize: 11 } },
-            grid: { left: '3%', right: '4%', bottom: '6%', containLabel: true },
-            xAxis: { type: 'category', data: categories, axisLabel: { show: false }, axisTick: { show: false }, axisLine: { show: false } },
-            yAxis: { type: 'value' },
-            series: [{
-                type: 'line',
-                data: values,
-                smooth: true,
-                symbol: 'circle',
-                symbolSize: 8,
-                showSymbol: false,
-                emphasis: { focus: 'series', itemStyle: { color: '#00A868', borderColor: '#fff', borderWidth: 2, shadowBlur: 10, shadowColor: '#00A868' }, scale: 1.5 },
-                lineStyle: { width: 2, color: '#00A868', shadowBlur: 8, shadowColor: 'rgba(0,168,104,0.5)' },
-                itemStyle: { color: '#00A868' },
-                areaStyle: { color: 'rgba(0,168,104,0.12)' }
-            }]
-        });
-        window.addEventListener('resize', function () { chart.resize(); });
-    }
-    init();
-})();
-</script>
-@endif
-<script>
-(function () {
-    var dash = document.getElementById('p3Dashboard');
-    if (!dash) return;
-    // Lock the page: only inner panels scroll.
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-    window.scrollTo(0, 0);
-
-    function fit() {
-        var main = dash.closest('main');
-        var rect = dash.getBoundingClientRect();
-        var padBottom = main ? (parseFloat(getComputedStyle(main).paddingBottom) || 0) : 0;
-        var available = window.innerHeight - rect.top - padBottom;
-        dash.style.height = Math.max(360, Math.floor(available)) + 'px';
-
-        var chartEl = document.getElementById('categoryLine');
-        if (chartEl && typeof echarts !== 'undefined') {
-            var inst = echarts.getInstanceByDom(chartEl);
-            if (inst) inst.resize();
-        }
-    }
-
-    fit();
-    window.addEventListener('resize', fit);
-    window.addEventListener('load', fit);
-    // Re-run after the main fade-in animation settles.
-    setTimeout(fit, 400);
-})();
+function switchTab(tab) {
+    document.getElementById('actCompleted').classList.toggle('d-none', tab !== 'completed');
+    document.getElementById('actPending').classList.toggle('d-none', tab !== 'pending');
+    document.getElementById('tabCompleted').classList.toggle('active', tab === 'completed');
+    document.getElementById('tabPending').classList.toggle('active', tab === 'pending');
+}
 </script>
 @endsection

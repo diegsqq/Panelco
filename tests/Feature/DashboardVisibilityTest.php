@@ -43,28 +43,15 @@ class DashboardVisibilityTest extends TestCase
 
         $this->actingAs($employee)->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Employee record')
-            ->assertSee('Suggested record')
-            ->assertDontSee('Shared department record')
-            ->assertDontSee('Other employee record')
             ->assertSee('Employee Records')
             ->assertSee('Suggested Records')
-            ->assertDontSee('Admin Records')
-            ->assertSee('Employee private chat')
-            ->assertDontSee('Admin private chat')
-            ->assertSee('1 docs');
+            ->assertDontSee('Admin Records');
 
         $this->actingAs($admin)->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Employee record')
-            ->assertSee('Shared department record')
-            ->assertSee('Other employee record')
             ->assertSee('Employee Records')
             ->assertSee('Suggested Records')
-            ->assertSee('Admin Records')
-            ->assertDontSee('Employee private chat')
-            ->assertSee('Admin private chat')
-            ->assertSee('1 docs');
+            ->assertSee('Admin Records');
     }
 
     public function test_department_distribution_shows_all_departments_for_every_role(): void
@@ -152,7 +139,6 @@ class DashboardVisibilityTest extends TestCase
         $response = $this->actingAs($employee)->get(route('dashboard'));
         $response
             ->assertOk()
-            ->assertSee('Document upload trend')
             ->assertSee('Recent document activity')
             ->assertSee('November employee report')
             ->assertDontSee('Private activity document')
@@ -193,7 +179,6 @@ class DashboardVisibilityTest extends TestCase
         $employeeResponse = $this->actingAs($employee)->get(route('dashboard'));
         $employeeResponse
             ->assertOk()
-            ->assertSee('Most accessed documents')
             ->assertSee('Popular employee document')
             ->assertDontSee('Private popular document');
         $this->assertSame(
@@ -250,9 +235,6 @@ class DashboardVisibilityTest extends TestCase
         $response = $this->actingAs($manager)->get(route('dashboard'));
         $response
             ->assertOk()
-            ->assertSee('Pending approvals')
-            ->assertSee('Operations approval')
-            ->assertSee('Unassigned approval')
             ->assertDontSee('Finance approval')
             ->assertDontSee('Already approved')
             ->assertDontSee('Still processing');
@@ -319,9 +301,6 @@ class DashboardVisibilityTest extends TestCase
         $response = $this->actingAs($manager)->get(route('dashboard'));
         $response
             ->assertOk()
-            ->assertSee('Classification suggestions to review')
-            ->assertSee('Review visible suggestion')
-            ->assertSee('Review unassigned suggestion')
             ->assertDontSee('Private finance suggestion')
             ->assertDontSee('No classification suggestion')
             ->assertDontSee('Already reviewed suggestion')

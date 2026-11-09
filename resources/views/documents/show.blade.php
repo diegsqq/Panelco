@@ -2,6 +2,114 @@
 @section('content')
 <div class="row g-3 mt-1">
 <div class="col-lg-8">
+@if($document->content || $document->content_header || $document->content_footer)
+<div class="card card-p3 p-4 mb-3" id="document-content">
+<div class="d-flex justify-content-between align-items-center gap-2 mb-2 flex-wrap">
+<h6 class="fw-bold mb-0"><i class="bi bi-file-earmark-text me-1" style="color:#00A868"></i>Document content</h6>
+<div class="d-flex gap-1 flex-wrap">
+@can('update', $document)<a href="{{ route('documents.edit-content', $document) }}" class="btn btn-sm btn-outline-success"><i class="bi bi-pencil me-1"></i>Edit content</a>@endcan
+@can('download', $document)
+<a href="{{ route('documents.content-docx', $document) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-file-earmark-word me-1"></i>DOCX</a>
+<a href="{{ route('documents.content-pdf', $document) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</a>
+@endcan
+</div>
+</div>
+@if($document->content_header)
+<div class="small doc-render doc-render-header pb-2 mb-2" style="border-bottom:1px dashed var(--p3-card-border)">{!! app(\App\Services\DocumentContentSanitizer::class)->sanitize($document->content_header) !!}</div>
+@endif
+<div class="doc-render">{!! app(\App\Services\DocumentContentSanitizer::class)->sanitize($document->content) !!}</div>
+@if($document->content_footer)
+<div class="small doc-render doc-render-footer pt-2 mt-2" style="border-top:1px dashed var(--p3-card-border)">{!! app(\App\Services\DocumentContentSanitizer::class)->sanitize($document->content_footer) !!}</div>
+@endif
+@if($document->content_updated_at)
+<div class="small text-muted mt-3"><i class="bi bi-clock-history me-1"></i>Edited {{ $document->content_updated_at->format('M d, Y H:i') }}{{ $document->contentEditor?->name ? ' by ' . $document->contentEditor->name : '' }}</div>
+@endif
+</div>
+@endif
+
+{{-- Document workflow & tracking --}}
+<div class="card card-p3 p-4 mb-3">
+    <div class="d-flex justify-content-between align-items-center gap-2 mb-2 flex-wrap">
+        <h6 class="fw-bold mb-0"><i class="bi bi-diagram-3 me-1" style="color:#00A868"></i>Document workflow</h6>
+        <span class="badge text-bg-secondary">{{ str_replace('_', ' ', ucfirst($document->workflow_status ?? 'draft')) }}</span>
+    </div>
+    <div class="small mb-2">
+        <strong>Status:</strong> {{ str_replace('_', ' ', ucfirst($document->workflow_status ?? 'draft')) }}
+        @if($document->submitted_at) · Submitted {{ $document->submitted_at->format('M d, Y H:i') }} @endif
+        @if($document->reviewed_at) · Reviewed {{ $document->reviewed_at->format('M d, Y H:i') }} by {{ $document->reviewedBy?->name ?? '—' }} @endif
+        @if($document->assignedTo) · Assigned to {{ $document->assignedTo->name }} @endif
+    </div>
+    @if($document->review_decision_note)
+        <div class="small text-muted mb-2"><strong>Review note:</strong> {{ $document->review_decision_note }}</div>
+    @endif
+
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        @can('update', $document)
+            <form method="POST" action="{{ route('documents.workflow-submit', $document) }}" class="d-inline">@csrf<button class="btn btn-sm btn-outline-success">Submit</button></form>
+        @endcan
+        @can('approve', $document)
+            <form method="POST" action="{{ route('documents.workflow-review', $document) }}" class="d-inline">@csrf<button class="btn btn-sm btn-outline-secondary">Start review</button></form>
+            <form method="POST" action="{{ route('documents.workflow-approve', $document) }}" class="d-inline">@csrf<button class="btn btn-sm btn-outline-success">Approve</button></form>
+            <form method="POST" action="{{ route('documents.workflow-reject', $document) }}" class="d-inline">
+                @csrf
+                <input type="hidden" name="review_note" value="Returned for correction.">
+                <button class="btn btn-sm btn-outline-danger">Reject</button>
+            </form>
+            <form method="POST" action="{{ route('documents.workflow-archive', $document) }}" class="d-inline">@csrf<button class="btn btn-sm btn-outline-secondary">Archive</button></form>
+        @endcan
+    </div>
+
+    @can('approve', $document)
+    <form method="POST" action="{{ route('documents.workflow-assign', $document) }}" class="row g-2 align-items-end mb-3">
+        @csrf
+        <div class="col-sm-8">
+            <label class="form-label small mb-1">Assign to</label>
+            <select name="assigned_to" class="form-select form-select-sm">
+                <option value="">— Unassigned —</option>
+                @foreach(\App\Models\User::orderBy('name')->get() as $u)
+                    <option value="{{ $u->id }}" @selected($document->assigned_to === $u->id)>{{ $u->name }} ({{ $u->role }})</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-sm-4">
+            <button class="btn btn-sm btn-outline-success w-100">Assign</button>
+        </div>
+    </form>
+    @endcan
+
+    <h6 class="fw-semibold small mb-2">Reviewer comments</h6>
+    @forelse($document->comments as $comment)
+        <div class="border-bottom py-2 small">
+            <div class="fw-semibold">{{ $comment->user?->name ?? 'User' }} <span class="text-muted">· {{ $comment->created_at->format('M d, Y H:i') }}</span></div>
+            @if($comment->section_ref)<div class="text-muted small">Section: {{ $comment->section_ref }}</div>@endif
+            <div>{{ $comment->body }}</div>
+        </div>
+    @empty
+        <p class="small text-muted mb-2">No comments yet.</p>
+    @endforelse
+
+    @can('view', $document)
+    <form method="POST" action="{{ route('documents.workflow-comment', $document) }}" class="mt-2">
+        @csrf
+        <select name="section_ref" class="form-select form-select-sm mb-2">
+            <option value="">— General comment —</option>
+            @if($document->content)
+                @php
+                    preg_match_all('/<h[1-6][^>]*>(.*?)<\/h[1-6]>/is', app(\App\Services\DocumentContentSanitizer::class)->sanitize($document->content), $headings);
+                @endphp
+                @foreach($headings[1] as $h)
+                    @php $label = trim(strip_tags($h)); @endphp
+                    @if($label !== '')
+                        <option value="{{ $label }}">{{ $label }}</option>
+                    @endif
+                @endforeach
+            @endif
+        </select>
+        <textarea name="body" class="form-control form-control-sm mb-2" rows="2" maxlength="2000" placeholder="Add a comment…" required></textarea>
+        <button class="btn btn-sm btn-outline-success">Add comment</button>
+    </form>
+    @endcan
+</div>
 <div class="card card-p3 p-4">
 <div class="d-flex justify-content-between align-items-start">
 <div><h4 class="fw-bold mb-1">{{ $document->title ?? $document->original_filename }}</h4><small class="text-muted">{{ $document->original_filename }} · {{ $document->mime_type }} · {{ number_format($document->file_size / 1024, 1) }} KB</small></div>
@@ -151,9 +259,14 @@
 <h6 class="fw-bold">Actions</h6>
 <div class="d-grid gap-2">
 @can('download', $document)<button type="button" class="btn btn-sm w-100 btn-outline-success" data-bs-toggle="modal" data-bs-target="#viewerModal"><i class="bi bi-eye-fill me-1"></i>View document</button>@endcan
+@can('view', $document)
+<form method="POST" action="{{ route('documents.favorite', $document) }}" class="d-grid">@csrf<button class="btn btn-sm w-100 btn-outline-secondary"><i class="bi bi-star me-1"></i>{{ $document->favoritedBy->contains('id', auth()->id()) ? 'Unfavorite' : 'Favorite' }}</button></form>
+@endcan
+@can('download', $document)<button type="button" class="btn btn-sm w-100 btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#printContentModal"><i class="bi bi-printer me-1"></i>Print content</button>@endcan
 @can('download', $document)<a href="{{ route('documents.download', $document) }}" class="btn btn-outline-success btn-sm"><i class="bi bi-download me-1"></i>Download</a>@endcan
 @can('download', $document)<button type="button" class="btn btn-outline-success btn-sm w-100" id="printDocBtn"><i class="bi bi-printer me-1"></i>Print document</button>@endcan
 @can('update', $document)<a href="{{ route('documents.edit', $document) }}" class="btn btn-outline-success btn-sm w-100"><i class="bi bi-pencil me-1"></i>Edit document</a>@endcan
+@can('update', $document)<a href="{{ route('documents.edit-content', $document) }}" class="btn btn-outline-success btn-sm w-100"><i class="bi bi-file-earmark-text me-1"></i>Edit content</a>@endcan
 @if ($document->processing_status === 'failed')
 @can('update', $document)<form method="POST" action="{{ route('documents.retry', $document) }}">@csrf<button class="btn btn-sm w-100" style="background:#ffffff;color:#00A868;border:1px solid #00A868">Retry processing</button></form>@endcan
 @endif
@@ -175,11 +288,53 @@
 @can('download', $document)
 <a href="{{ route('documents.versions.download', [$document, $version]) }}" class="btn btn-sm btn-outline-success text-nowrap" aria-label="Download version {{ $version->version_number }}"><i class="bi bi-download"></i></a>
 @endcan
+@can('update', $document)
+<form method="POST" action="{{ route('documents.versions.restore', [$document, $version]) }}" class="d-inline">@csrf<button class="btn btn-sm btn-outline-secondary text-nowrap" aria-label="Restore version {{ $version->version_number }}"><i class="bi bi-arrow-counterclockwise"></i></button></form>
+@endcan
 </div>
 </div>
 @empty
 <p class="small text-muted mb-0">No previous versions. Replacing this file will add the current file to this history.</p>
 @endforelse
+</div>
+
+@can('update', $document)
+<div class="card card-p3 p-3 mt-3">
+    <h6 class="fw-bold"><i class="bi bi-people me-1" style="color:#00A868"></i>Sharing</h6>
+    <form method="POST" action="{{ route('documents.share', $document) }}">
+        @csrf
+        <select name="user_ids[]" class="form-select form-select-sm mb-2" multiple size="6">
+            @foreach(\App\Models\User::orderBy('name')->get() as $u)
+                <option value="{{ $u->id }}" @selected($document->authorizedUsers->contains($u->id))>{{ $u->name }} ({{ $u->role }})</option>
+            @endforeach
+        </select>
+        <button class="btn btn-sm btn-outline-success w-100">Update sharing</button>
+    </form>
+    <p class="small text-muted mt-2 mb-0">Hold Ctrl/Cmd to select multiple employees.</p>
+</div>
+@endcan
+
+@can('update', $document)
+<div class="card card-p3 p-3 mt-3">
+    <h6 class="fw-bold"><i class="bi bi-tags me-1" style="color:#00A868"></i>Tags</h6>
+    <form method="POST" action="{{ route('documents.tags', $document) }}">
+        @csrf
+        <input type="text" name="tags" class="form-control form-control-sm mb-2" value="{{ implode(', ', $document->tags ?? []) }}" placeholder="comma, separated, tags">
+        <button class="btn btn-sm btn-outline-success w-100">Update tags</button>
+    </form>
+    @if(!empty($document->tags))
+        <div class="mt-2">@foreach($document->tags as $tag)<span class="badge me-1" style="background:#e6f3ea;color:#00743F">{{ $tag }}</span>@endforeach</div>
+    @endif
+</div>
+@endcan
+
+<div class="card card-p3 p-3 mt-3">
+    <h6 class="fw-bold"><i class="bi bi-clock-history me-1" style="color:#00A868"></i>Access history</h6>
+    @forelse($document->accessLogs->take(8) as $log)
+        <div class="small border-bottom py-1">{{ $log->user?->name ?? 'Guest' }} · {{ $log->action }} · {{ $log->created_at->format('M d, Y H:i') }}</div>
+    @empty
+        <p class="small text-muted mb-0">No access recorded yet.</p>
+    @endforelse
 </div>
 
 @if($similarDocuments->isNotEmpty())
@@ -285,6 +440,65 @@
 {{-- View-only document modal: the file is fetched as an ephemeral blob (no
      shareable file URL), rendered without browser toolbars, and the object
      URL is revoked on close. --}}
+{{-- Print content modal --}}
+@can('download', $document)
+<div class="modal fade" id="printContentModal" tabindex="-1" aria-labelledby="printContentLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="printContentLabel"><i class="bi bi-printer me-1"></i>Print document content</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label small fw-semibold">Scope</label>
+                        <div class="form-check"><input class="form-check-input" type="radio" name="printScope" id="scopeAll" value="all" checked><label class="form-check-label" for="scopeAll">Entire document</label></div>
+                        <div class="form-check"><input class="form-check-input" type="radio" name="printScope" id="scopeParas" value="paragraphs"><label class="form-check-label" for="scopeParas">Selected paragraphs</label></div>
+                        <div class="form-check"><input class="form-check-input" type="radio" name="printScope" id="scopeSections" value="sections"><label class="form-check-label" for="scopeSections">Selected sections</label></div>
+
+                        <div id="paragraphList" class="mt-2 d-none" style="max-height:240px;overflow:auto;border:1px solid var(--p3-card-border);border-radius:.5rem;padding:.5rem">
+                        </div>
+                        <div id="sectionList" class="mt-2 d-none" style="max-height:240px;overflow:auto;border:1px solid var(--p3-card-border);border-radius:.5rem;padding:.5rem">
+                        </div>
+
+                        <div class="form-check mt-3">
+                            <input class="form-check-input" type="checkbox" id="includeHF" checked>
+                            <label class="form-check-label small" for="includeHF">Include header & footer</label>
+                        </div>
+
+                        <div class="mt-3">
+                            <label class="form-label small fw-semibold">Paper size</label>
+                            <select id="printPaper" class="form-select form-select-sm">
+                                <option value="A4" @selected(($document->page_paper ?? 'a4') === 'a4')>A4</option>
+                                <option value="Letter" @selected(($document->page_paper ?? 'a4') === 'letter')>Letter</option>
+                                <option value="Legal" @selected(($document->page_paper ?? 'a4') === 'legal')>Legal</option>
+                            </select>
+                        </div>
+                        <div class="mt-2">
+                            <label class="form-label small fw-semibold">Orientation</label>
+                            <select id="printOrientation" class="form-select form-select-sm">
+                                <option value="portrait" @selected(($document->page_orientation ?? 'portrait') === 'portrait')>Portrait</option>
+                                <option value="landscape" @selected(($document->page_orientation ?? 'portrait') === 'landscape')>Landscape</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <label class="form-label small fw-semibold">Preview</label>
+                        <iframe id="printPreviewFrame" style="width:100%;height:360px;border:1px solid var(--p3-card-border);border-radius:.5rem;background:#fff"></iframe>
+                        <div class="d-flex gap-2 mt-2 flex-wrap">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="previewBtn"><i class="bi bi-eye me-1"></i>Refresh preview</button>
+                            <button type="button" class="btn btn-sm btn-outline-success" id="printNowContentBtn"><i class="bi bi-printer me-1"></i>Print</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="downloadSelectionBtn"><i class="bi bi-download me-1"></i>Download PDF</button>
+                        </div>
+                        <p class="small text-muted mt-2 mb-0">Use the browser print dialog to choose specific pages. Selected paragraphs/sections can be printed or downloaded as a PDF.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endcan
 <div class="modal fade" id="viewerModal" tabindex="-1" aria-hidden="true">
 <div class="modal-dialog modal-xl modal-dialog-centered">
 <div class="modal-content p3-modal d-flex flex-column" style="height:88vh">
@@ -383,6 +597,227 @@
     }
     if (sendBtn) sendBtn.addEventListener('click', sendTyped);
     if (input) input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); sendTyped(); } });
+})();
+</script>
+<script>
+(function () {
+    var printModal = document.getElementById('printContentModal');
+    if (!printModal) return;
+
+    var headerEl = document.querySelector('#document-content .doc-render-header');
+    var bodyEl = document.querySelector('#document-content .doc-render');
+    var footerEl = document.querySelector('#document-content .doc-render-footer');
+
+    var paragraphList = document.getElementById('paragraphList');
+    var sectionList = document.getElementById('sectionList');
+    var previewFrame = document.getElementById('printPreviewFrame');
+
+    var MARGIN_MM = { narrow: 12.7, normal: 25.4, wide: 50.8 };
+
+    function topBlocks() {
+        return bodyEl ? Array.from(bodyEl.children) : [];
+    }
+
+    function blockLabel(el) {
+        var t = (el.textContent || '').trim().replace(/\s+/g, ' ');
+        if (t.length > 70) t = t.slice(0, 70) + '…';
+        return t || ('<' + el.tagName.toLowerCase() + '>');
+    }
+
+    function buildSections() {
+        var sections = [];
+        var current = null;
+        topBlocks().forEach(function (el) {
+            if (/^H[1-6]$/.test(el.tagName)) {
+                current = { title: blockLabel(el), blocks: [el] };
+                sections.push(current);
+            } else {
+                if (!current) {
+                    current = { title: 'Introduction', blocks: [] };
+                    sections.push(current);
+                }
+                current.blocks.push(el);
+            }
+        });
+        if (sections.length === 0) sections.push({ title: 'Document', blocks: topBlocks() });
+        return sections;
+    }
+
+    function renderChecklist(container, items, name) {
+        container.innerHTML = '';
+        items.forEach(function (item, i) {
+            var id = name + '_' + i;
+            var wrap = document.createElement('div');
+            wrap.className = 'form-check';
+            var cb = document.createElement('input');
+            cb.className = 'form-check-input';
+            cb.type = 'checkbox';
+            cb.id = id;
+            cb.value = String(i);
+            cb.checked = true;
+            var lbl = document.createElement('label');
+            lbl.className = 'form-check-label small';
+            lbl.htmlFor = id;
+            lbl.textContent = item.label;
+            wrap.appendChild(cb);
+            wrap.appendChild(lbl);
+            container.appendChild(wrap);
+        });
+    }
+
+    function selectedParagraphIndices() {
+        var out = [];
+        paragraphList.querySelectorAll('input[type="checkbox"]').forEach(function (cb, i) {
+            if (cb.checked) out.push(i);
+        });
+        return out;
+    }
+
+    function selectedSectionIndices() {
+        var out = [];
+        sectionList.querySelectorAll('input[type="checkbox"]').forEach(function (cb, i) {
+            if (cb.checked) out.push(i);
+        });
+        return out;
+    }
+
+    function collectHtml() {
+        var scope = document.querySelector('input[name="printScope"]:checked').value;
+        var blocks = topBlocks();
+        var chosen = [];
+        if (scope === 'all') {
+            chosen = blocks.slice();
+        } else if (scope === 'paragraphs') {
+            var idx = selectedParagraphIndices();
+            chosen = idx.map(function (i) { return blocks[i]; }).filter(Boolean);
+        } else if (scope === 'sections') {
+            var secs = buildSections();
+            var sidx = selectedSectionIndices();
+            sidx.forEach(function (i) {
+                var sec = secs[i];
+                if (sec) sec.blocks.forEach(function (b) { chosen.push(b); });
+            });
+        }
+        return chosen.map(function (el) { return el.outerHTML; }).join('\n');
+    }
+
+    function paperValue() {
+        var p = document.getElementById('printPaper').value;
+        return p; // A4/Letter/Legal
+    }
+
+    function buildHtml() {
+        var paper = paperValue();
+        var orientation = document.getElementById('printOrientation').value;
+        var includeHF = document.getElementById('includeHF').checked;
+        var selectedHtml = collectHtml();
+        var headerHtml = includeHF && headerEl ? headerEl.outerHTML : '';
+        var footerHtml = includeHF && footerEl ? footerEl.outerHTML : '';
+        return '<!doctype html><html><head><title></title>'
+            + '<style>'
+            + '@page{size:' + paper + ' ' + orientation + ';margin:18mm;}'
+            + 'body{font-family:Georgia,serif;font-size:11pt;color:#111;line-height:1.6;}'
+            + 'table{border-collapse:collapse;width:100%;margin:.5rem 0;}'
+            + 'td,th{border:1px solid #999;padding:.35rem .5rem;}'
+            + 'img{max-width:100%;}'
+            + '</style></head><body>'
+            + headerHtml
+            + selectedHtml
+            + footerHtml
+            + '</body></html>';
+    }
+
+    function refreshLists() {
+        var scope = document.querySelector('input[name="printScope"]:checked').value;
+        paragraphList.classList.toggle('d-none', scope !== 'paragraphs');
+        sectionList.classList.toggle('d-none', scope !== 'sections');
+        if (scope === 'paragraphs') {
+            renderChecklist(paragraphList, topBlocks().map(function (el, i) {
+                return { label: (i + 1) + '. ' + blockLabel(el) };
+            }), 'para');
+        } else if (scope === 'sections') {
+            renderChecklist(sectionList, buildSections().map(function (s) {
+                return { label: s.title + ' (' + s.blocks.length + ' block' + (s.blocks.length === 1 ? '' : 's') + ')' };
+            }), 'sec');
+        }
+    }
+
+    function refreshPreview() {
+        var html = buildHtml();
+        var doc = previewFrame.contentWindow.document;
+        doc.open();
+        doc.write(html);
+        doc.close();
+    }
+
+    printModal.addEventListener('show.bs.modal', function () {
+        refreshLists();
+        setTimeout(refreshPreview, 100);
+    });
+
+    document.querySelectorAll('input[name="printScope"]').forEach(function (r) {
+        r.addEventListener('change', function () { refreshLists(); refreshPreview(); });
+    });
+    document.getElementById('printPaper').addEventListener('change', refreshPreview);
+    document.getElementById('printOrientation').addEventListener('change', refreshPreview);
+    document.getElementById('includeHF').addEventListener('change', refreshPreview);
+    document.getElementById('previewBtn').addEventListener('click', refreshPreview);
+
+    document.getElementById('printNowContentBtn').addEventListener('click', function () {
+        var html = buildHtml();
+        var iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+        var d = iframe.contentWindow.document;
+        d.open();
+        d.write(html);
+        d.close();
+        setTimeout(function () {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+            setTimeout(function () { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 1000);
+        }, 500);
+    });
+
+    document.getElementById('downloadSelectionBtn').addEventListener('click', function () {
+        var paper = paperValue();
+        var orientation = document.getElementById('printOrientation').value;
+        var includeHF = document.getElementById('includeHF').checked;
+        var html = collectHtml();
+        var headerHtml = includeHF && headerEl ? headerEl.outerHTML : '';
+        var footerHtml = includeHF && footerEl ? footerEl.outerHTML : '';
+        var csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        fetch(@json(route('documents.content-pdf-selection', $document)), {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/pdf', 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                html: html,
+                header: headerHtml,
+                footer: footerHtml,
+                page_paper: paper.toLowerCase() === 'a4' ? 'a4' : (paper.toLowerCase() === 'letter' ? 'letter' : 'legal'),
+                page_orientation: orientation,
+                page_margins: 'normal'
+            }),
+            credentials: 'same-origin'
+        }).then(function (res) {
+            if (!res.ok) throw new Error('Download failed (' + res.status + ')');
+            return res.blob();
+        }).then(function (blob) {
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'document-selection.pdf';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }).catch(function (err) { alert(err.message); });
+    });
 })();
 </script>
 <script>
@@ -577,4 +1012,21 @@
     modal.addEventListener('hidden.bs.modal', clear);
 })();
 </script>
+<style>
+    /* Sanitized rich content saved from the in-app editor. */
+    .doc-render { line-height: 1.7; overflow-wrap: anywhere; }
+    .doc-render h1 { font-size: 1.6rem; } .doc-render h2 { font-size: 1.35rem; }
+    .doc-render h3 { font-size: 1.15rem; } .doc-render h4 { font-size: 1.02rem; }
+    .doc-render table { border-collapse: collapse; width: 100%; margin: .75rem 0; }
+    .doc-render td, .doc-render th { border: 1px solid #cfd8d3; padding: .4rem .6rem; }
+    .doc-render th { background: #f1f6f3; font-weight: 600; }
+    .doc-render img { max-width: 100%; height: auto; border-radius: .35rem; }
+    .doc-render blockquote { border-left: 3px solid #00A868; margin: .75rem 0; padding: .25rem 0 .25rem .9rem; color: #4c5a53; }
+    .doc-render hr { border: 0; border-top: 1px solid var(--p3-card-border); margin: 1rem 0; }
+    .doc-render a { color: #00743F; }
+    [data-theme="dark"] .doc-render th { background: #1f2b24; }
+    [data-theme="dark"] .doc-render td, [data-theme="dark"] .doc-render th { border-color: #2c3d34; }
+    [data-theme="dark"] .doc-render blockquote { color: #b8c4bd; }
+    @media print { #document-content { border: 0 !important; box-shadow: none !important; } }
+</style>
 @endsection

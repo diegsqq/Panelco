@@ -50,7 +50,8 @@
         [data-theme="dark"] ::-webkit-scrollbar-track { background: transparent; }
         /* Smooth fade when switching themes */
         body, .card-p3, .p3-topbar, .form-control, .form-select, .input-group-text, .modal-content, .p3-notif-row, .p3-theme-tile, .p3-dept-pill { transition: background-color .5s ease, border-color .5s ease, color .5s ease; }
-        .p3-sidebar { background: #f8f8f8; border-right: 1px solid #e8e8e8; min-height: 100vh; max-height: 100vh; position: sticky; top: 0; overflow-y: auto; }
+        .p3-sidebar { background: #f8f8f8; border-right: 1px solid #e8e8e8; min-height: 100vh; height: 100vh; position: sticky; top: 0; overflow-y: auto; overflow-x: hidden; }
+.p3-sidebar nav { overflow-y: auto; max-height: calc(100vh - 140px); }
         .p3-sidebar .text-white { color: #242424 !important; }
         .p3-sidebar .nav-link { color: #555; border-radius: .55rem; padding: .45rem .6rem; font-weight: 500; display: flex; align-items: center; gap: .6rem; transition: background-color .25s ease, color .25s ease; }
         .p3-sidebar .nav-link:hover { background: #ededed; color: #171717; }
@@ -98,6 +99,14 @@
         .p3-logout { background: transparent; border: 1px solid #ddd; color: #555; border-radius: .75rem; font-weight: 600; padding: .6rem 1rem; letter-spacing: .3px; transition: all .18s ease; }
         .p3-logout:hover, .p3-logout:focus { background: #ededed; color: #c0392b; border-color: #ddd; }
         .p3-logout:active { transform: none; }
+        /* Topbar icon buttons */
+        .p3-topbar-btn { background: #fff; border: 1px solid #e2e2e2; color: #555; border-radius: .65rem; width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; font-size: .95rem; padding: 0; cursor: pointer; transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease; }
+        .p3-topbar-btn:hover { background: #f0f9f3; border-color: #b7e0c8; color: #00A868; }
+        .p3-topbar-btn.active { background: #e6f3ea; border-color: #00A868; color: #00743F; }
+        .p3-topbar-avatar-btn { width: auto; padding: 0 .45rem; gap: .3rem; }
+        [data-theme="dark"] .p3-topbar-btn { background: #1d2b24; border-color: #2c3d34; color: #c3d0c8; }
+        [data-theme="dark"] .p3-topbar-btn:hover { background: #243324; border-color: #3a5a46; color: #7fe0ac; }
+        [data-theme="dark"] .p3-topbar-btn.active { background: #12291d; border-color: #00A868; color: #7fe0ac; }
         .p3-modal { position: relative; border: none; border-radius: 1.25rem; overflow: hidden; box-shadow: 0 20px 50px rgba(0,100,60,.25); }
         .p3-modal .btn-close { position: absolute; top: .75rem; right: .75rem; opacity: .5; }
         .p3-meow { display: block; margin: 0 auto; filter: drop-shadow(0 6px 12px rgba(0,100,60,.25)); }
@@ -356,16 +365,55 @@
                     @endif
                     <span id="p3DateTime" class="small fw-semibold text-muted d-none d-sm-inline" style="white-space:nowrap"></span>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                    <span class="p3-avatar-sm" title="{{ auth()->user()->name }}">
-                    @if(auth()->user()->avatar_path)
-                        <img src="{{ route('profile.avatar') }}?v={{ auth()->user()->updated_at?->timestamp }}" alt="{{ auth()->user()->name }}" style="width:100%;height:100%;object-fit:cover">
-                    @else
-                        <span class="fw-bold">{{ auth()->user()->initials() }}</span>
-                    @endif
-                    </span>
-                    <i class="bi bi-shield-lock text-success" title="Private storage · authorized access only"></i>
-                    <span class="fw-semibold small" style="color:inherit">{{ auth()->user()->name }}</span>
+                <div class="d-flex align-items-center gap-1">
+                    {{-- Theme: Light --}}
+                    <form method="POST" action="{{ route('settings.theme') }}" class="d-inline">
+                        @csrf
+                        <input type="hidden" name="theme" value="light">
+                        <button type="submit" class="p3-topbar-btn{{ auth()->user()->theme !== 'dark' ? ' active' : '' }}" title="Light mode" aria-label="Switch to light mode">
+                            <i class="bi bi-sun-fill"></i>
+                        </button>
+                    </form>
+                    {{-- Theme: Dark --}}
+                    <form method="POST" action="{{ route('settings.theme') }}" class="d-inline">
+                        @csrf
+                        <input type="hidden" name="theme" value="dark">
+                        <button type="submit" class="p3-topbar-btn{{ auth()->user()->theme === 'dark' ? ' active' : '' }}" title="Dark mode" aria-label="Switch to dark mode">
+                            <i class="bi bi-moon-fill"></i>
+                        </button>
+                    </form>
+                    {{-- Notifications bell --}}
+                    <button type="button" class="p3-topbar-btn" title="Notifications" aria-label="Notifications">
+                        <i class="bi bi-bell-fill"></i>
+                    </button>
+                    {{-- User avatar dropdown --}}
+                    <div class="dropdown">
+                        <button class="p3-topbar-btn p3-topbar-avatar-btn d-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
+                            <span class="p3-avatar-sm" style="width:28px;height:28px;">
+                                @if(auth()->user()->avatar_path)
+                                    <img src="{{ route('profile.avatar') }}?v={{ auth()->user()->updated_at?->timestamp }}" alt="{{ auth()->user()->name }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                                @else
+                                    <span class="fw-bold" style="font-size:.7rem;">{{ auth()->user()->initials() }}</span>
+                                @endif
+                            </span>
+                            <i class="bi bi-chevron-down" style="font-size:.65rem;"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="min-width:200px;border-radius:.85rem;padding:.4rem;">
+                            <li class="px-3 py-2">
+                                <div class="fw-semibold" style="font-size:.88rem;">{{ auth()->user()->name }}</div>
+                                <div class="text-muted" style="font-size:.75rem;">{{ auth()->user()->email }}</div>
+                            </li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li><a class="dropdown-item rounded-2" href="{{ route('settings.index') }}"><i class="bi bi-sliders me-2"></i>Settings</a></li>
+                            <li><a class="dropdown-item rounded-2" href="{{ route('settings.security') }}"><i class="bi bi-shield-lock me-2"></i>Security</a></li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li>
+                                <button type="button" class="dropdown-item rounded-2 text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                                    <i class="bi bi-power me-2"></i>Logout
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             <main class="p-3" id="main-content" tabindex="-1">
