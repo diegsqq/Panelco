@@ -299,7 +299,7 @@
         }
     </style>
 </head>
-<body class="{{ request()->routeIs('chat.*') ? 'p3-no-scroll' : '' }}">
+<body class="{{ '' }}">
 <div class="container-fluid">
     <div class="row g-0" style="min-height:100vh;align-items:stretch;">
         @auth
@@ -415,6 +415,315 @@
         @endauth
     </div>
 </div>
+
+@auth
+{{-- ══════════════════════════════════════════════
+     SETTINGS MODAL — Chrome-style popup
+     Available on every page via the topbar dropdown
+     ══════════════════════════════════════════════ --}}
+<div class="modal fade" id="settingsModal" tabindex="-1" aria-label="Settings" aria-modal="true" role="dialog">
+    <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width:900px;height:90vh;margin:auto;">
+        <div class="modal-content" style="height:90vh;border-radius:1.25rem;overflow:hidden;border:none;box-shadow:0 24px 64px rgba(0,0,0,.18);">
+
+            {{-- Header --}}
+            <div class="d-flex align-items-center justify-content-between px-4 py-3" style="border-bottom:1px solid #ebebeb;flex:0 0 auto;">
+                <div class="fw-bold" style="font-size:1.1rem;color:#111">Settings</div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            {{-- Body: left nav + right panel --}}
+            <div class="d-flex" style="flex:1 1 auto;min-height:0;overflow:hidden;">
+
+                {{-- Left nav --}}
+                <div style="width:220px;flex:0 0 220px;border-right:1px solid #f0f0f0;padding:1rem .75rem;overflow-y:auto;background:#fafafa;">
+
+                    {{-- Search --}}
+                    <div class="position-relative mb-3">
+                        <i class="bi bi-search position-absolute" style="left:.75rem;top:50%;transform:translateY(-50%);color:#bbb;font-size:.8rem;pointer-events:none"></i>
+                        <input id="sModalSearch" type="text" class="form-control form-control-sm" placeholder="Search settings" style="padding-left:2.1rem;border-radius:2rem;border-color:#e0e0e0;font-size:.8rem;" aria-label="Search settings">
+                    </div>
+
+                    <div class="smn-section">Account</div>
+                    <button class="smn-item active" data-panel="account"><i class="bi bi-person-circle"></i> My Account</button>
+                    <button class="smn-item" data-panel="security"><i class="bi bi-shield-lock"></i> Privacy &amp; Security</button>
+                    <button class="smn-item" data-panel="appearance"><i class="bi bi-palette"></i> Appearance</button>
+                    <button class="smn-item" data-panel="notifications"><i class="bi bi-bell"></i> Notifications</button>
+                    @can('admin')
+                    <hr style="border-color:#ebebeb;margin:.5rem 0">
+                    <div class="smn-section">Administration</div>
+                    <a class="smn-item text-decoration-none" href="{{ route('admin.users.index') }}" onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).hide()"><i class="bi bi-people"></i> Users</a>
+                    <a class="smn-item text-decoration-none" href="{{ route('admin.categories.index') }}" onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).hide()"><i class="bi bi-tags"></i> Categories</a>
+                    <a class="smn-item text-decoration-none" href="{{ route('admin.departments.index') }}" onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).hide()"><i class="bi bi-diagram-3"></i> Departments</a>
+                    <a class="smn-item text-decoration-none" href="{{ route('admin.system-health.index') }}" onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).hide()"><i class="bi bi-heart-pulse"></i> System health</a>
+                    <a class="smn-item text-decoration-none" href="{{ route('admin.audit-logs.index') }}" onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).hide()"><i class="bi bi-journal-text"></i> Audit logs</a>
+                    @endcan
+                </div>
+
+                {{-- Right panels --}}
+                <div style="flex:1 1 auto;overflow-y:auto;padding:1.5rem 2rem;">
+
+                    {{-- ── Account panel ── --}}
+                    <div class="s-panel" id="sPanel-account">
+                        <div class="s-panel-title">My Account</div>
+                        <div class="s-panel-sub">Profile picture and personal details.</div>
+
+                        {{-- Avatar + name hero --}}
+                        <div class="s-group mb-3" style="padding:1.25rem">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="p3-avatar-lg" style="width:64px;height:64px;">
+                                    <div class="p3-avatar-inner">
+                                        @if(auth()->user()->avatar_path)
+                                            <img src="{{ route('profile.avatar') }}?v={{ auth()->user()->updated_at?->timestamp }}" alt="{{ auth()->user()->name }}">
+                                        @else
+                                            <span class="fw-bold" style="color:#00743F;font-size:1.4rem">{{ auth()->user()->initials() }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="fw-bold" style="font-size:1rem">{{ auth()->user()->name }}</div>
+                                    @if(auth()->user()->job_title)<div class="small" style="color:#00A868">{{ auth()->user()->job_title }}</div>@endif
+                                    <div class="small text-muted">{{ auth()->user()->email }}</div>
+                                </div>
+                                <a href="{{ route('settings.index') }}" class="btn btn-sm ms-auto" style="border:1px solid #d5e8db;color:#00743F;border-radius:.65rem;font-size:.8rem" onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).hide()">
+                                    <i class="bi bi-pencil me-1"></i>Edit profile
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="s-section-lbl">Account details</div>
+                        <div class="s-group">
+                            <div class="s-row">
+                                <div class="s-row-ico green"><i class="bi bi-person"></i></div>
+                                <div class="s-row-body"><div class="s-row-label">Full name</div><div class="s-row-sub">{{ auth()->user()->name }}</div></div>
+                                <a href="{{ route('settings.index') }}" class="s-row-action" onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).hide()"><i class="bi bi-chevron-right"></i></a>
+                            </div>
+                            <div class="s-row">
+                                <div class="s-row-ico green"><i class="bi bi-envelope"></i></div>
+                                <div class="s-row-body"><div class="s-row-label">Email address</div><div class="s-row-sub">{{ auth()->user()->email }}</div></div>
+                                <a href="{{ route('settings.index') }}" class="s-row-action" onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).hide()"><i class="bi bi-chevron-right"></i></a>
+                            </div>
+                            @if(auth()->user()->phone)
+                            <div class="s-row">
+                                <div class="s-row-ico green"><i class="bi bi-phone"></i></div>
+                                <div class="s-row-body"><div class="s-row-label">Phone</div><div class="s-row-sub">{{ auth()->user()->phone }}</div></div>
+                                <a href="{{ route('settings.index') }}" class="s-row-action" onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).hide()"><i class="bi bi-chevron-right"></i></a>
+                            </div>
+                            @endif
+                            <div class="s-row">
+                                <div class="s-row-ico green"><i class="bi bi-building"></i></div>
+                                <div class="s-row-body"><div class="s-row-label">Department</div><div class="s-row-sub">{{ auth()->user()->department?->name ?? 'Not assigned' }}</div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- ── Security panel ── --}}
+                    <div class="s-panel d-none" id="sPanel-security">
+                        <div class="s-panel-title">Privacy &amp; Security</div>
+                        <div class="s-panel-sub">Manage your password and two-factor authentication.</div>
+
+                        <div class="s-section-lbl">Sign-in</div>
+                        <div class="s-group">
+                            <div class="s-row">
+                                <div class="s-row-ico green"><i class="bi bi-key"></i></div>
+                                <div class="s-row-body"><div class="s-row-label">Password</div><div class="s-row-sub">Change your account password</div></div>
+                                <a href="{{ route('settings.security') }}" class="s-row-action" onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).hide()"><i class="bi bi-chevron-right"></i></a>
+                            </div>
+                            <div class="s-row">
+                                <div class="s-row-ico {{ auth()->user()->two_factor_enabled ? 'green' : '' }}"><i class="bi bi-phone-shield"></i></div>
+                                <div class="s-row-body">
+                                    <div class="s-row-label">Two-Factor Authentication</div>
+                                    <div class="s-row-sub">
+                                        @if(auth()->user()->two_factor_enabled)
+                                            <span class="badge text-bg-success" style="font-size:.68rem">ON</span> Authenticator app active
+                                        @else
+                                            <span class="badge border border-secondary text-secondary" style="font-size:.68rem">OFF</span> Add an extra layer of protection
+                                        @endif
+                                    </div>
+                                </div>
+                                <a href="{{ route('settings.security') }}" class="s-row-action" onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).hide()"><i class="bi bi-chevron-right"></i></a>
+                            </div>
+                        </div>
+
+                        <div class="s-section-lbl">Activity</div>
+                        <div class="s-group">
+                            <div class="s-row">
+                                <div class="s-row-ico"><i class="bi bi-clock-history"></i></div>
+                                <div class="s-row-body"><div class="s-row-label">Sign-in history</div><div class="s-row-sub">View your recent sign-in events</div></div>
+                                <a href="{{ route('settings.security') }}" class="s-row-action" onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).hide()"><i class="bi bi-chevron-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- ── Appearance panel ── --}}
+                    <div class="s-panel d-none" id="sPanel-appearance">
+                        <div class="s-panel-title">Appearance</div>
+                        <div class="s-panel-sub">Choose how SmartDocs looks for you.</div>
+
+                        <div class="s-section-lbl">Theme</div>
+                        <div class="s-group">
+                            <div class="s-row">
+                                <div class="s-row-ico green"><i class="bi bi-sun-fill"></i></div>
+                                <div class="s-row-body"><div class="s-row-label">Light</div><div class="s-row-sub">Bright white interface</div></div>
+                                <form method="POST" action="{{ route('settings.theme') }}">
+                                    @csrf<input type="hidden" name="theme" value="light">
+                                    <button type="submit" class="btn btn-sm" style="border-radius:.55rem;border:1px solid {{ auth()->user()->theme !== 'dark' ? '#00A868' : '#e0e0e0' }};color:{{ auth()->user()->theme !== 'dark' ? '#00743F' : '#888' }};font-size:.78rem;font-weight:600;background:{{ auth()->user()->theme !== 'dark' ? '#e6f3ea' : '#fff' }}">
+                                        {{ auth()->user()->theme !== 'dark' ? '✓ Active' : 'Set' }}
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="s-row">
+                                <div class="s-row-ico" style="background:#1d2b24"><i class="bi bi-moon-fill" style="color:#7fe0ac"></i></div>
+                                <div class="s-row-body"><div class="s-row-label">Dark</div><div class="s-row-sub">Easy on the eyes at night</div></div>
+                                <form method="POST" action="{{ route('settings.theme') }}">
+                                    @csrf<input type="hidden" name="theme" value="dark">
+                                    <button type="submit" class="btn btn-sm" style="border-radius:.55rem;border:1px solid {{ auth()->user()->theme === 'dark' ? '#00A868' : '#e0e0e0' }};color:{{ auth()->user()->theme === 'dark' ? '#00743F' : '#888' }};font-size:.78rem;font-weight:600;background:{{ auth()->user()->theme === 'dark' ? '#e6f3ea' : '#fff' }}">
+                                        {{ auth()->user()->theme === 'dark' ? '✓ Active' : 'Set' }}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="s-section-lbl">Language</div>
+                        <div class="s-group">
+                            <div class="s-row">
+                                <div class="s-row-ico green"><i class="bi bi-globe2"></i></div>
+                                <div class="s-row-body"><div class="s-row-label">Interface language</div><div class="s-row-sub">{{ (auth()->user()->locale ?? 'en') === 'tl' ? 'Tagalog / Filipino' : 'English' }}</div></div>
+                                <a href="{{ route('settings.preferences') }}" class="s-row-action" onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).hide()"><i class="bi bi-chevron-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- ── Notifications panel ── --}}
+                    <div class="s-panel d-none" id="sPanel-notifications">
+                        <div class="s-panel-title">Notifications</div>
+                        <div class="s-panel-sub">Choose which emails SmartDocs sends you.</div>
+
+                        <div class="s-group">
+                            <form method="POST" action="{{ route('settings.notifications') }}">
+                                @csrf
+                                <div class="s-row">
+                                    <div class="s-row-ico green"><i class="bi bi-check2-circle"></i></div>
+                                    <div class="s-row-body"><div class="s-row-label">Document processed</div><div class="s-row-sub">Email when text extraction finishes</div></div>
+                                    <div class="form-check form-switch mb-0"><input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_doc_done" value="1" {{ auth()->user()->notify_doc_done ? 'checked' : '' }}></div>
+                                </div>
+                                <div class="s-row">
+                                    <div class="s-row-ico green"><i class="bi bi-x-octagon"></i></div>
+                                    <div class="s-row-body"><div class="s-row-label">Processing failed</div><div class="s-row-sub">Get notified when processing fails</div></div>
+                                    <div class="form-check form-switch mb-0"><input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_doc_failed" value="1" {{ auth()->user()->notify_doc_failed ? 'checked' : '' }}></div>
+                                </div>
+                                <div class="s-row">
+                                    <div class="s-row-ico green"><i class="bi bi-clipboard-check"></i></div>
+                                    <div class="s-row-body"><div class="s-row-label">Approval decisions</div><div class="s-row-sub">Email when your document is approved or rejected</div></div>
+                                    <div class="form-check form-switch mb-0"><input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_doc_approval" value="1" {{ auth()->user()->notify_doc_approval ? 'checked' : '' }}></div>
+                                </div>
+                                <div class="s-row" style="border-bottom:0">
+                                    <div class="s-row-ico green"><i class="bi bi-fingerprint"></i></div>
+                                    <div class="s-row-body"><div class="s-row-label">Sign-in alerts</div><div class="s-row-sub">Security alert for every new sign-in</div></div>
+                                    <div class="form-check form-switch mb-0"><input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_login_alert" value="1" {{ auth()->user()->notify_login_alert ? 'checked' : '' }}></div>
+                                </div>
+                                <div class="px-3 py-2" style="border-top:1px solid #f0f0f0">
+                                    <button type="submit" class="btn btn-sm" style="background:#00A868;color:#fff;border-radius:.6rem;font-size:.8rem;font-weight:600;border:none">
+                                        <i class="bi bi-check-lg me-1"></i>Save notification preferences
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>{{-- /right panels --}}
+            </div>{{-- /body --}}
+        </div>{{-- /modal-content --}}
+    </div>{{-- /modal-dialog --}}
+</div>{{-- /settingsModal --}}
+
+<style>
+    /* ── Settings modal nav ── */
+    .smn-section { font-size:.67rem;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:.55px;padding:.5rem .5rem .2rem; }
+    .smn-item { display:flex;align-items:center;gap:.6rem;width:100%;padding:.48rem .7rem;border:none;background:transparent;border-radius:.6rem;font-size:.83rem;font-weight:500;color:#333;cursor:pointer;text-align:left;transition:background .12s ease,color .12s ease;white-space:nowrap; }
+    .smn-item:hover:not(.active) { background:#ebebeb;color:#111; }
+    .smn-item.active { background:#e6f3ea;color:#00743F;font-weight:600; }
+    .smn-item i { width:16px;text-align:center;font-size:.95rem;flex:0 0 16px; }
+    [data-theme="dark"] .smn-item { color:#c3d0c8; }
+    [data-theme="dark"] .smn-item:hover:not(.active) { background:#1d2b24;color:#e5eee8; }
+    [data-theme="dark"] .smn-item.active { background:#12291d;color:#7fe0ac; }
+    /* ── Settings modal panels ── */
+    .s-panel-title { font-size:1.3rem;font-weight:800;color:#111;margin-bottom:.15rem; }
+    .s-panel-sub   { font-size:.82rem;color:#888;margin-bottom:1.25rem; }
+    [data-theme="dark"] .s-panel-title { color:#fff; }
+    [data-theme="dark"] .s-panel-sub   { color:#8fa59a; }
+    .s-section-lbl { font-size:.73rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.45px;margin:.1rem 0 .4rem; }
+    .s-group { border:1px solid #ebebeb;border-radius:.85rem;overflow:hidden;margin-bottom:1.1rem;background:#fff; }
+    [data-theme="dark"] .s-group { background:#16211c;border-color:#26362e; }
+    .s-row { display:flex;align-items:center;gap:.85rem;padding:.75rem 1rem;border-bottom:1px solid #f5f5f5;transition:background .1s; }
+    .s-row:last-child { border-bottom:0; }
+    .s-row:hover { background:#fafafa; }
+    [data-theme="dark"] .s-row { border-color:#1d2b24; }
+    [data-theme="dark"] .s-row:hover { background:#1a2820; }
+    .s-row-ico { width:32px;height:32px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:.9rem;color:#666;flex:0 0 32px; }
+    .s-row-ico.green { background:#e6f3ea;color:#00A868; }
+    [data-theme="dark"] .s-row-ico { background:#1d2b24;color:#8fa59a; }
+    [data-theme="dark"] .s-row-ico.green { color:#7fe0ac; }
+    .s-row-body { flex:1 1 auto;min-width:0; }
+    .s-row-label { font-size:.85rem;font-weight:600;color:#111; }
+    .s-row-sub   { font-size:.74rem;color:#888; }
+    [data-theme="dark"] .s-row-label { color:#e5eee8; }
+    [data-theme="dark"] .s-row-sub   { color:#8fa59a; }
+    .s-row-action { color:#ccc;font-size:.85rem;text-decoration:none;flex:0 0 auto;transition:color .12s; }
+    .s-row-action:hover { color:#00A868; }
+    /* modal dark bg */
+    [data-theme="dark"] #settingsModal .modal-content { background:#16211c; }
+    [data-theme="dark"] #settingsModal .modal-content > div:first-child { border-color:#26362e!important; }
+    [data-theme="dark"] #settingsModal > .modal-dialog > .modal-content > .d-flex > div:first-child { background:#111a15!important;border-color:#26362e!important; }
+    [data-theme="dark"] .smn-section { color:#4a5e54; }
+    [data-theme="dark"] #settingsModal .modal-content > .d-flex > div:first-child { background:#111a15; }
+</style>
+
+<script>
+(function () {
+    /* ── Settings modal: tab switching ── */
+    var modal = document.getElementById('settingsModal');
+    if (!modal) return;
+
+    function switchPanel(name) {
+        modal.querySelectorAll('.s-panel').forEach(function(p){ p.classList.add('d-none'); });
+        modal.querySelectorAll('.smn-item[data-panel]').forEach(function(b){ b.classList.remove('active'); });
+        var panel = modal.querySelector('#sPanel-' + name);
+        var btn   = modal.querySelector('.smn-item[data-panel="' + name + '"]');
+        if (panel) panel.classList.remove('d-none');
+        if (btn)   btn.classList.add('active');
+    }
+
+    modal.querySelectorAll('.smn-item[data-panel]').forEach(function(btn) {
+        btn.addEventListener('click', function(){ switchPanel(btn.dataset.panel); });
+    });
+
+    /* Open to correct panel when triggered from specific URL hash */
+    modal.addEventListener('show.bs.modal', function(e) {
+        var trigger = e.relatedTarget;
+        var panel = trigger ? (trigger.dataset.panel || 'account') : 'account';
+        switchPanel(panel);
+    });
+
+    /* ── Notification toggles: auto-submit on change ── */
+    modal.querySelectorAll('.s-notif-toggle').forEach(function(toggle) {
+        toggle.addEventListener('change', function() {
+            toggle.closest('form').requestSubmit();
+        });
+    });
+
+    /* ── Nav search ── */
+    var search = document.getElementById('sModalSearch');
+    if (search) {
+        search.addEventListener('input', function() {
+            var q = search.value.trim().toLowerCase();
+            modal.querySelectorAll('.smn-item').forEach(function(el) {
+                el.style.display = (!q || el.textContent.trim().toLowerCase().includes(q)) ? '' : 'none';
+            });
+        });
+    }
+})();
+</script>
+@endauth
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 (function () {

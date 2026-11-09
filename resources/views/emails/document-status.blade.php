@@ -15,7 +15,7 @@
 </div>
 @if(! $failed)
 <div style="font-size:14px;color:#4b5a52;line-height:1.6;margin-bottom:16px">
-Text extraction finished — open it in the Document Library to read, search, and ask Lightning about it.
+Text extraction finished — open it in the Document Library to read, search, and ask Lightning AI about it.
 </div>
 <a href="{{ route('documents.show', $document) }}" style="display:inline-block;background:#ffffff;color:#00A868;text-decoration:none;font-weight:600;padding:10px 18px;border-radius:8px;border:1px solid #00A868">Open document</a>
 @else

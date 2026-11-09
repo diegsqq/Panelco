@@ -422,7 +422,7 @@
 @endif
 
 <div class="card card-p3 p-3">
-<h6 class="fw-bold"><i class="bi bi-lightning-charge-fill me-1" style="color:#00A868"></i>Ask Lightning about this document</h6>
+<h6 class="fw-bold"><i class="bi bi-lightning-charge-fill me-1" style="color:#00A868"></i>Ask Lightning AI about this document</h6>
 <div class="d-flex flex-wrap gap-2" id="askChips">
 <button type="button" class="btn btn-sm btn-outline-success ask-chip" data-question="Summarize this document in vertical sections: Document Summary, Important Details, and Corrective Actions. Use only facts from the document.">Summarize it</button>
 <button type="button" class="btn btn-sm btn-outline-success ask-chip" data-question="What are the important details in this document?">Important details</button>
@@ -553,7 +553,7 @@
         chips.forEach(function (c) { c.disabled = true; });
         if (sendBtn) sendBtn.disabled = true;
         result.classList.remove('d-none');
-        result.innerHTML = '<div class="d-flex align-items-center gap-2 small text-muted"><span class="spinner-border spinner-border-sm" style="width:.85rem;height:.85rem"></span>Lightning is reading this document…</div>';
+        result.innerHTML = '<div class="d-flex align-items-center gap-2 small text-muted"><span class="spinner-border spinner-border-sm" style="width:.85rem;height:.85rem"></span>Lightning AI is reading this document…</div>';
 
         fetch(askUrl, {
             method: 'POST',
@@ -570,7 +570,7 @@
 
                 result.innerHTML =
                     '<div class="p-3" style="background:#f7fbf8;border:1px solid #d5e8db;border-radius:.75rem">'
-                    + '<div class="d-flex align-items-center gap-2 mb-2 small fw-semibold" style="color:#00743F"><i class="bi bi-lightning-charge-fill"></i>Lightning</div>'
+                    + '<div class="d-flex align-items-center gap-2 mb-2 small fw-semibold" style="color:#00743F"><i class="bi bi-lightning-charge-fill"></i>Lightning AI</div>'
                     + '<div class="ask-answer" style="font-size:.88rem;color:#2f3b35">' + (res.ok && res.body.answer ? res.body.answer : '<span class="text-danger">Could not reach the server. Try again.</span>') + '</div>'
                     + (sources ? '<div class="mt-3 pt-2 border-top small"><div class="fw-semibold text-muted mb-1" style="font-size:.72rem">SOURCES</div><ul class="ps-3 mb-0">' + sources + '</ul></div>' : '')
                     + '</div>';

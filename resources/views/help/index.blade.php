@@ -49,9 +49,9 @@
 
         <section class="col-12 col-lg-6" aria-labelledby="help-ask">
             <div class="card card-p3 p-4 h-100">
-                <h2 class="h5 fw-semibold" id="help-ask">Ask Lightning</h2>
+                <h2 class="h5 fw-semibold" id="help-ask">Ask Lightning AI</h2>
                 <ol class="mb-3">
-                    <li>Open <a href="{{ route('chat.index') }}">Lightning</a> and ask a clear question about your authorized documents.</li>
+                    <li>Open <a href="{{ route('chat.index') }}">Lightning AI</a> and ask a clear question about your authorized documents.</li>
                     <li>Optionally choose a document to focus the search, or choose two documents to compare them.</li>
                     <li>Review the cited source documents and passages before relying on an answer.</li>
                 </ol>

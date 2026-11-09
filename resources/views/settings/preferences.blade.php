@@ -167,7 +167,7 @@
 <input id="settingsAiMaxTokens" name="ai_max_tokens" type="number" min="64" max="8192" class="form-control" value="{{ old('ai_max_tokens', $val('ai_max_tokens', '1024')) }}" required>
 </div>
 <div class="col-12 d-flex flex-wrap gap-3 pt-1">
-<label class="btn btn-sm p3-dept-pill" role="checkbox" tabindex="0" aria-checked="{{ $on('ai_chat_enabled') ? 'true' : 'false' }}" id="aiChatPill"><input type="checkbox" name="ai_chat_enabled" class="d-none" value="1" {{ $on('ai_chat_enabled') ? 'checked' : '' }}><i class="bi bi-chat-dots me-1"></i>Lightning</label>
+<label class="btn btn-sm p3-dept-pill" role="checkbox" tabindex="0" aria-checked="{{ $on('ai_chat_enabled') ? 'true' : 'false' }}" id="aiChatPill"><input type="checkbox" name="ai_chat_enabled" class="d-none" value="1" {{ $on('ai_chat_enabled') ? 'checked' : '' }}><i class="bi bi-chat-dots me-1"></i>Lightning AI</label>
 <label class="btn btn-sm p3-dept-pill" role="checkbox" tabindex="0" aria-checked="{{ $on('ai_autofill_enabled') ? 'true' : 'false' }}" id="aiAutofillPill"><input type="checkbox" name="ai_autofill_enabled" class="d-none" value="1" {{ $on('ai_autofill_enabled') ? 'checked' : '' }}><i class="bi bi-magic me-1"></i>Upload Autofill</label>
 <label class="btn btn-sm p3-dept-pill" role="checkbox" tabindex="0" aria-checked="{{ $on('ai_suggest_enabled') ? 'true' : 'false' }}" id="aiSuggestPill"><input type="checkbox" name="ai_suggest_enabled" class="d-none" value="1" {{ $on('ai_suggest_enabled') ? 'checked' : '' }}><i class="bi bi-tags me-1"></i>Category Suggestions</label>
 </div>
