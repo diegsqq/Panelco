@@ -321,20 +321,6 @@
                 @endif
                 <a class="nav-link {{ request()->routeIs('chat.*') ? 'active' : '' }}" aria-current="{{ request()->routeIs('chat.*') ? 'page' : 'false' }}" href="{{ route('chat.index') }}"><span class="nav-ico"><i class="bi bi-lightning-charge-fill"></i></span>{{ __('nav.lightning') }}</a>
                 <a class="nav-link {{ request()->routeIs('help') ? 'active' : '' }}" aria-current="{{ request()->routeIs('help') ? 'page' : 'false' }}" href="{{ route('help') }}"><span class="nav-ico"><i class="bi bi-question-circle-fill" aria-hidden="true"></i></span>Help</a>
-                @php $settingsOpen = request()->routeIs('settings.*') || request()->routeIs('admin.*'); @endphp
-                <a class="nav-link {{ $settingsOpen ? 'active' : '' }}" data-bs-toggle="collapse" href="#settingsMenu" role="button" aria-controls="settingsMenu" aria-expanded="{{ $settingsOpen ? 'true' : 'false' }}"><span class="nav-ico"><i class="bi bi-gear-fill"></i></span>{{ __('nav.settings') }}<i class="bi bi-chevron-down ms-auto small"></i></a>
-                <div class="collapse {{ $settingsOpen ? 'show' : '' }} ps-3" id="settingsMenu">
-                    <a class="nav-link {{ request()->routeIs('settings.index') ? 'active' : '' }}" aria-current="{{ request()->routeIs('settings.index') ? 'page' : 'false' }}" href="{{ route('settings.index') }}"><span class="nav-ico"><i class="bi bi-sliders"></i></span>{{ __('nav.general') }}</a>
-                    <a class="nav-link {{ request()->routeIs('settings.security') ? 'active' : '' }}" aria-current="{{ request()->routeIs('settings.security') ? 'page' : 'false' }}" href="{{ route('settings.security') }}"><span class="nav-ico"><i class="bi bi-shield-lock"></i></span>{{ __('nav.security') }}</a>
-                    <a class="nav-link {{ request()->routeIs('settings.preferences') ? 'active' : '' }}" aria-current="{{ request()->routeIs('settings.preferences') ? 'page' : 'false' }}" href="{{ route('settings.preferences') }}"><span class="nav-ico"><i class="bi bi-palette-fill"></i></span>{{ __('nav.preferences') }}</a>
-                    @can('admin')
-                    <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" aria-current="{{ request()->routeIs('admin.users.*') ? 'page' : 'false' }}" href="{{ route('admin.users.index') }}"><span class="nav-ico"><i class="bi bi-people-fill"></i></span>{{ __('nav.users') }}</a>
-                    <a class="nav-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}" aria-current="{{ request()->routeIs('admin.categories.*') ? 'page' : 'false' }}" href="{{ route('admin.categories.index') }}"><span class="nav-ico"><i class="bi bi-tags-fill"></i></span>{{ __('nav.categories') }}</a>
-                    <a class="nav-link {{ request()->routeIs('admin.departments.*') ? 'active' : '' }}" aria-current="{{ request()->routeIs('admin.departments.*') ? 'page' : 'false' }}" href="{{ route('admin.departments.index') }}"><span class="nav-ico"><i class="bi bi-diagram-3-fill"></i></span>{{ __('nav.departments') }}</a>
-                    <a class="nav-link {{ request()->routeIs('admin.system-health.*') ? 'active' : '' }}" aria-current="{{ request()->routeIs('admin.system-health.*') ? 'page' : 'false' }}" href="{{ route('admin.system-health.index') }}"><span class="nav-ico"><i class="bi bi-heart-pulse-fill"></i></span>System health</a>
-                    <a class="nav-link {{ request()->routeIs('admin.audit-logs.*') ? 'active' : '' }}" aria-current="{{ request()->routeIs('admin.audit-logs.*') ? 'page' : 'false' }}" href="{{ route('admin.audit-logs.index') }}"><span class="nav-ico"><i class="bi bi-journal-text"></i></span>Audit logs</a>
-                    @endcan
-                </div>
             </nav>
             <div class="mt-3">
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
@@ -403,6 +389,8 @@
                                 <div class="fw-semibold" style="font-size:.88rem;">{{ auth()->user()->name }}</div>
                                 <div class="text-muted" style="font-size:.75rem;">{{ auth()->user()->email }}</div>
                             </li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li><a class="dropdown-item rounded-2" href="#" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="bi bi-gear me-2"></i>Settings</a></li>
                             <li><hr class="dropdown-divider my-1"></li>
                             <li>
                                 <button type="button" class="dropdown-item rounded-2 text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">

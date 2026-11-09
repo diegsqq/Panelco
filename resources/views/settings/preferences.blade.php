@@ -1,17 +1,14 @@
-@extends('layouts.app')
-@section('content')
+@extends('layouts.settings')
+
+@section('settings-content')
 @php
     $me = auth()->user();
     $s = $settings ?? [];
     $val = fn (string $key, string $default = '') => $s[$key] ?? $default;
     $on = fn (string $key, string $default = '1') => $val($key, $default) === '1';
 @endphp
-<div class="d-flex justify-content-between align-items-center mb-3">
-<div>
-<h4 class="mb-0 fw-bold">{{ __('settings.preferences') }}</h4>
-<small class="text-muted">How SmartDocs looks and what it emails you about.</small>
-</div>
-</div>
+<div class="cfg-page-title">Appearance</div>
+<div class="cfg-page-sub">How SmartDocs looks and what it emails you about.</div>
 
 <div class="row g-4 mb-1">
 <div class="col-lg-6">

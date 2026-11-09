@@ -1,16 +1,13 @@
-@extends('layouts.app')
-@section('content')
+@extends('layouts.settings')
+
+@section('settings-content')
 @php
     $s = $settings;
     $val = fn (string $key, string $default = '') => $s[$key] ?? $default;
     $on = fn (string $key, string $default = '1') => $val($key, $default) === '1';
 @endphp
-<div class="d-flex justify-content-between align-items-center mb-3">
-<div>
-<h4 class="mb-0 fw-bold">{{ __('settings.title') }}</h4>
-<small class="text-muted">Profile picture, personal details and verification.</small>
-</div>
-</div>
+<div class="cfg-page-title">My Account</div>
+<div class="cfg-page-sub">Profile picture, personal details and verification.</div>
 
 <div class="row g-4 mb-1">
 <div class="col-12">

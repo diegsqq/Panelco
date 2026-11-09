@@ -1,5 +1,6 @@
-@extends('layouts.app')
-@section('content')
+@extends('layouts.settings')
+
+@section('settings-content')
 @php
     $me = auth()->user();
     $val = fn (string $key, string $default = '') => $settings[$key] ?? $default;
@@ -22,16 +23,13 @@
         }
     }
 @endphp
-<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-<div>
-<h4 class="mb-0 fw-bold">{{ __('settings.security') }}</h4>
-<small class="text-muted">Protect your account with a strong password and a second login step.</small>
-</div>
-@if($me->two_factor_enabled)
-<span class="badge rounded-pill text-bg-success p-2"><i class="bi bi-shield-fill-check me-1"></i>2FA ON</span>
-@else
-<span class="badge rounded-pill border border-secondary text-secondary p-2"><i class="bi bi-shield-exclamation me-1"></i>2FA OFF</span>
-@endif
+<div class="cfg-page-title">Privacy and security</div>
+<div class="cfg-page-sub">Protect your account with a strong password and a second login step.
+    @if($me->two_factor_enabled)
+        <span class="badge rounded-pill text-bg-success ms-2"><i class="bi bi-shield-fill-check me-1"></i>2FA ON</span>
+    @else
+        <span class="badge rounded-pill border border-secondary text-secondary ms-2"><i class="bi bi-shield-exclamation me-1"></i>2FA OFF</span>
+    @endif
 </div>
 
 <div class="row g-4 mb-1">
