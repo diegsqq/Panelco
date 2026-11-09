@@ -37,7 +37,17 @@
     .lg-composer-wrap { display: flex; flex-direction: column; align-items: center; gap: .75rem; width: 100%; max-width: 720px; }
     .lg-composer { width: 100%; max-width: 680px; background: #2f2f2f; border-radius: 1.1rem; border: 1px solid #3a3a3a; overflow: hidden; transition: border-color .15s ease; }
     .lg-composer:focus-within { border-color: #00A868; }
-    .lg-composer-top { display: flex; align-items: flex-end; gap: .5rem; padding: .7rem 1rem .7rem .85rem; }
+    .lg-composer-top { display: flex; align-items: center; gap: .5rem; padding: .7rem 1rem .7rem .85rem; }
+    .lg-plus-btn { width: 28px; height: 28px; border-radius: 50%; background: transparent; border: 1px solid #4a4a4a; color: #888; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s ease; flex: 0 0 28px; font-size: .85rem; }
+    .lg-plus-btn:hover { background: #3a3a3a; border-color: #666; color: #ececec; }
+    /* ── Plus popup menu ── */
+    .lg-plus-menu { position: absolute; bottom: calc(100% + .5rem); left: 0; background: #2a2a2a; border: 1px solid #3a3a3a; border-radius: .85rem; padding: .4rem; min-width: 200px; box-shadow: 0 8px 24px rgba(0,0,0,.5); z-index: 100; display: none; flex-direction: column; gap: .15rem; }
+    .lg-plus-menu.open { display: flex; }
+    .lg-plus-menu-item { display: flex; align-items: center; gap: .65rem; padding: .55rem .75rem; border-radius: .6rem; font-size: .83rem; color: #c0c0c0; cursor: pointer; border: none; background: transparent; width: 100%; text-align: left; transition: background .12s ease, color .12s ease; }
+    .lg-plus-menu-item:hover { background: #383838; color: #fff; }
+    .lg-plus-menu-item i { font-size: 1rem; color: #00A868; width: 18px; text-align: center; flex: 0 0 18px; }
+    .lg-plus-menu-sep { border: 0; border-top: 1px solid #3a3a3a; margin: .25rem 0; }
+    .lg-composer-wrap-inner { position: relative; width: 100%; max-width: 680px; }
     .lg-composer input { flex: 1 1 auto; background: transparent; border: none; outline: none; color: #ececec; font-size: .9rem; resize: none; min-width: 0; }
     .lg-composer input::placeholder { color: #666; }
     .lg-composer-actions { display: flex; align-items: center; gap: .4rem; padding: .45rem .7rem .55rem; border-top: 1px solid #3a3a3a; }
@@ -88,18 +98,8 @@
         </div>
 
         <div class="lg-sidebar-foot">
-            <a href="{{ route('dashboard') }}" class="lg-user-row text-decoration-none">
-                <div class="lg-user-avatar">
-                    @if(auth()->user()->avatar_path)
-                        <img src="{{ route('profile.avatar') }}?v={{ auth()->user()->updated_at?->timestamp }}" alt="{{ auth()->user()->name }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">
-                    @else
-                        {{ auth()->user()->initials() }}
-                    @endif
-                </div>
-                <div>
-                    <div class="lg-user-name">{{ auth()->user()->name }}</div>
-                    <div class="lg-user-sub">{{ ucfirst(auth()->user()->role ?? 'Employee') }}</div>
-                </div>
+            <a href="{{ route('dashboard') }}" class="lg-new-btn" style="color:#aaa;font-size:.83rem">
+                <i class="bi bi-arrow-left"></i> Back to SmartDocs
             </a>
         </div>
     </aside>
@@ -123,8 +123,22 @@
 
                 {{-- Composer --}}
                 <div class="lg-composer-wrap">
-                    <div class="lg-composer" style="width:100%;max-width:680px">
+                    <div class="lg-composer-wrap-inner">
+                        {{-- Plus popup menu --}}
+                        <div class="lg-plus-menu" id="lgPlusMenu">
+                            <button type="button" class="lg-plus-menu-item" id="lgChooseDoc">
+                                <i class="bi bi-folder2-open"></i> Choose from library
+                            </button>
+                            <hr class="lg-plus-menu-sep">
+                            <a href="{{ route('documents.upload') }}" class="lg-plus-menu-item">
+                                <i class="bi bi-cloud-upload"></i> Upload a new document
+                            </a>
+                        </div>
+                        <div class="lg-composer" style="width:100%">
                         <div class="lg-composer-top">
+                            <button type="button" class="lg-plus-btn" aria-label="Attach" title="Attach">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
                             <input name="question" id="lgQuestion" maxlength="2000" required
                                    placeholder="Ask Lightning AI about your documents…"
                                    value="{{ request('q') }}" autocomplete="off"
@@ -149,7 +163,8 @@
                             </select>
                         </div>
                         @endunless
-                    </div>
+                        </div>{{-- /lg-composer --}}
+                    </div>{{-- /lg-composer-wrap-inner --}}
 
                     {{-- Suggestion chips --}}
                     <div class="lg-chips">
@@ -178,6 +193,31 @@
     var form    = document.getElementById('lgForm');
     var input   = document.getElementById('lgQuestion');
     var sendBtn = document.getElementById('lgSendBtn');
+    var plusBtn = document.getElementById('lgPlusBtn') || document.querySelector('.lg-plus-btn');
+    var plusMenu = document.getElementById('lgPlusMenu');
+
+    /* ── Plus menu toggle ── */
+    if (plusBtn && plusMenu) {
+        plusBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            plusMenu.classList.toggle('open');
+        });
+        document.addEventListener('click', function() {
+            plusMenu.classList.remove('open');
+        });
+        plusMenu.addEventListener('click', function(e) { e.stopPropagation(); });
+    }
+
+    /* ── Choose from library: fills the document select ── */
+    var chooseDoc = document.getElementById('lgChooseDoc');
+    var docSelect = document.getElementById('document_id');
+    if (chooseDoc && docSelect) {
+        chooseDoc.addEventListener('click', function() {
+            plusMenu.classList.remove('open');
+            docSelect.closest('.lg-composer-actions').style.display = 'flex';
+            docSelect.focus();
+        });
+    }
 
     /* Chips fill the input and submit */
     document.querySelectorAll('.lg-chip').forEach(function(chip) {
