@@ -299,9 +299,9 @@
         }
     </style>
 </head>
-<body class="{{ request()->routeIs('chat.*') || request()->routeIs('documents.library') ? 'p3-no-scroll' : '' }}">
+<body class="{{ request()->routeIs('chat.*') ? 'p3-no-scroll' : '' }}">
 <div class="container-fluid">
-    <div class="row">
+    <div class="row g-0" style="min-height:100vh;align-items:stretch;">
         @auth
         <a class="p3-skip-link" href="#main-content">Skip to main content</a>
         <aside class="col-md-3 col-lg-2 d-none d-md-flex p3-sidebar p-3 flex-column" id="p3Sidebar" aria-label="Primary navigation">
@@ -356,7 +356,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-9 col-lg-10 p-0">
+        <div class="col-md-9 col-lg-10 p-0 d-flex flex-column" style="height:100vh;overflow-y:auto;overflow-x:hidden;">
             <div class="p3-topbar px-3 px-md-4 py-2 d-flex justify-content-between align-items-center sticky-top">
                 <div class="d-flex align-items-center gap-2">
                     <button type="button" class="btn btn-sm d-md-none" id="sidebarToggle" aria-label="Open menu" aria-controls="p3Sidebar" aria-expanded="false" style="border:1px solid #d5e8db"><i class="bi bi-list" aria-hidden="true"></i></button>
@@ -403,9 +403,6 @@
                                 <div class="fw-semibold" style="font-size:.88rem;">{{ auth()->user()->name }}</div>
                                 <div class="text-muted" style="font-size:.75rem;">{{ auth()->user()->email }}</div>
                             </li>
-                            <li><hr class="dropdown-divider my-1"></li>
-                            <li><a class="dropdown-item rounded-2" href="{{ route('settings.index') }}"><i class="bi bi-sliders me-2"></i>Settings</a></li>
-                            <li><a class="dropdown-item rounded-2" href="{{ route('settings.security') }}"><i class="bi bi-shield-lock me-2"></i>Security</a></li>
                             <li><hr class="dropdown-divider my-1"></li>
                             <li>
                                 <button type="button" class="dropdown-item rounded-2 text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">

@@ -2,210 +2,455 @@
 
 @section('content')
 <style>
-    body:has(#libPage) main { padding: .75rem 1rem .25rem !important; }
-    .lib-page { min-height: 0; display: flex; flex-direction: column; }
-    .lib-shell { min-height: 0; flex: 1 1 auto; display: flex; flex-direction: column; padding: .75rem; background: #fff; border: 1px solid #e5e5e5; border-radius: 1rem; }
-    .lib-breadcrumb { color: #858585; font-size: .78rem; }
-    .lib-breadcrumb .bi-chevron-right { font-size: .6rem; }
-    .lib-toolbar { background: #f7f7f7; }
-    .lib-table-wrap { min-height: 0; flex: 1 1 auto; overflow: hidden; border: 1px solid #dedede; border-radius: .65rem; display: flex; flex-direction: column; }
-    .lib-table { width: 100%; margin: 0; font-size: .79rem; table-layout: auto; height: 100%; flex: 1 1 auto; }
-    .lib-table > :not(caption) > * > * { padding: .35rem .45rem; border-color: #e4e4e4; vertical-align: middle; }
-    .lib-table thead th { position: sticky; top: 0; z-index: 1; background: #f7f7f7; color: #777; font-weight: 500; white-space: nowrap; }
-    .lib-table tbody tr:nth-child(odd) { background: #fcfcfc; }
-    .lib-table tbody tr:hover { background: #f0f7f3; }
-    .lib-doc-name { max-width: 245px; color: #252525; }
-    .lib-file-icon { font-size: 1rem; }
-    .lib-avatar { width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 22px; border-radius: 50%; background: #e9f1ed; color: #41624f; font-size: .58rem; font-weight: 700; }
-    .lib-status, .lib-category { display: inline-block; padding: .16rem .4rem; border-radius: .3rem; font-size: .68rem; line-height: 1.25; white-space: nowrap; }
-    .lib-status-completed { background: #d9f3e5; color: #18764a; }
-    .lib-status-pending { background: #fff0dc; color: #a45b12; }
-    .lib-status-processing { background: #dff3f5; color: #13727d; }
-    .lib-status-failed { background: #fbe2e2; color: #a83232; }
-    .lib-category { background: #edf2ef; color: #59665f; }
-    .lib-pagination { flex: 0 0 auto; }
-    [data-theme="dark"] .lib-shell { background: #121b16; border-color: #26362e; }
-    [data-theme="dark"] .lib-toolbar { background: #16211c; border-color: #26362e !important; color: #d7e5dc; }
-    [data-theme="dark"] .lib-table-wrap { border-color: #2c3d34; }
-    [data-theme="dark"] .lib-table { --bs-table-bg: transparent; --bs-table-color: #d7e5dc; --bs-table-border-color: #26362e; --bs-table-striped-bg: #131d18; --bs-table-hover-bg: #1d2b24; }
-    [data-theme="dark"] .lib-table thead th { background: #16211c; color: #9db2a7; }
-    [data-theme="dark"] .lib-table tbody tr:nth-child(odd) { background: #131d18; }
+    body:has(#libPage) main { padding: .75rem 1rem .5rem !important; }
+
+    /* ── Page shell ── */
+    .lib-page { display: flex; flex-direction: column; gap: 1.25rem; }
+
+    /* ── Header ── */
+    .lib-hero-title { font-size: 1.55rem; font-weight: 800; color: #00743F; line-height: 1.2; }
+    .lib-hero-sub   { color: #5a9e7a; font-size: .85rem; margin-top: .2rem; }
+    [data-theme="dark"] .lib-hero-title { color: #7fe0ac; }
+    [data-theme="dark"] .lib-hero-sub   { color: #8fa59a; }
+
+    /* ── Stat bar ── */
+    .lib-stat-bar { display: flex; align-items: center; gap: 0; background: #fff; border: 1px solid #ebebeb; border-radius: 1rem; overflow: hidden; flex-wrap: wrap; }
+    [data-theme="dark"] .lib-stat-bar { background: #16211c; border-color: #26362e; }
+    .lib-stat-item { display: flex; align-items: center; gap: .7rem; padding: 1rem 1.5rem; border-right: 1px solid #f0f0f0; flex: 1 1 0; min-width: 0; }
+    .lib-stat-item:last-child { border-right: 0; }
+    [data-theme="dark"] .lib-stat-item { border-color: #26362e; }
+    .lib-stat-ico  { width: 38px; height: 38px; border-radius: .6rem; background: #f4f4f6; display: flex; align-items: center; justify-content: center; color: #7b7fa8; font-size: 1.05rem; flex: 0 0 38px; }
+    .lib-stat-val  { font-weight: 800; font-size: 1.3rem; color: #1a1a2e; line-height: 1.1; }
+    .lib-stat-lbl  { font-size: .72rem; color: #9a9ab0; margin-top: .1rem; }
+    .lib-stat-right { flex: 1.4 1 0; border-right: 0; justify-content: flex-end; gap: .5rem; }
+    .lib-stat-right .lib-stat-ico { background: #f4f4f6; color: #7b7fa8; }
+    [data-theme="dark"] .lib-stat-ico  { background: #1d2b24; color: #8fa59a; }
+    [data-theme="dark"] .lib-stat-val  { color: #fff; }
+    [data-theme="dark"] .lib-stat-lbl  { color: #8fa59a; }
+
+    /* ── Department cards ── */
+    .lib-dept-section { background: #fff; border: 1px solid #ebebeb; border-radius: 1rem; padding: 1rem 1.25rem 1.1rem; }
+    [data-theme="dark"] .lib-dept-section { background: #16211c; border-color: #26362e; }
+    .lib-dept-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; }
+    @media (max-width: 991.98px) { .lib-dept-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 575.98px)  { .lib-dept-grid { grid-template-columns: 1fr 1fr; } }
+    .lib-dept-card { background: #fff; border: 1px solid #ebebeb; border-radius: .85rem; padding: .9rem 1rem; display: flex; flex-direction: column; gap: .3rem; cursor: pointer; transition: border-color .15s ease, box-shadow .15s ease; text-decoration: none; }
+    .lib-dept-card:hover { border-color: #c5c5db; box-shadow: 0 4px 14px rgba(0,0,0,.07); }
+    .lib-dept-card.active { border-color: #00A868; background: #f0f9f3; }
+    [data-theme="dark"] .lib-dept-card { background: #1a2620; border-color: #26362e; }
+    [data-theme="dark"] .lib-dept-card:hover { border-color: #3a5a46; box-shadow: none; }
+    [data-theme="dark"] .lib-dept-card.active { background: #12291d; border-color: #00A868; }
+    .lib-dept-ico  { width: 34px; height: 34px; border-radius: .55rem; background: #f4f4f6; display: flex; align-items: center; justify-content: center; color: #7b7fa8; font-size: 1rem; }
+    [data-theme="dark"] .lib-dept-ico { background: #1d2b24; color: #8fa59a; }
+    .lib-dept-card.active .lib-dept-ico { background: #e6f3ea; color: #00A868; }
+    .lib-dept-name { font-weight: 700; font-size: .88rem; color: #1a1a2e; margin-top: .1rem; }
+    .lib-dept-meta { font-size: .71rem; color: #9a9ab0; }
+    [data-theme="dark"] .lib-dept-name { color: #e5eee8; }
+    [data-theme="dark"] .lib-dept-meta { color: #8fa59a; }
+
+    /* ── Main content area (table + optional detail panel) ── */
+    .lib-content-row { display: flex; gap: .85rem; }
+    .lib-table-col   { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; background: #fff; border: 1px solid #d5e8db; border-radius: 1rem; overflow: hidden; }
+    [data-theme="dark"] .lib-table-col { background: #16211c; border-color: #26362e; }
+
+    /* ── Tabs ── */
+    .lib-tabs { display: flex; gap: .25rem; padding: .75rem 1rem .5rem; border-bottom: 1px solid #e6f3ea; }
+    [data-theme="dark"] .lib-tabs { border-color: #26362e; }
+    .lib-tab  { padding: .38rem .9rem; border-radius: .55rem; font-size: .82rem; font-weight: 600; color: #5a9e7a; background: transparent; border: none; cursor: pointer; transition: all .15s ease; display: flex; align-items: center; gap: .35rem; }
+    .lib-tab.active { background: #e6f3ea; color: #00743F; }
+    .lib-tab:hover:not(.active) { background: #f0f9f3; color: #00A868; }
+    [data-theme="dark"] .lib-tab       { color: #8fa59a; }
+    [data-theme="dark"] .lib-tab.active { background: #1d2b24; color: #7fe0ac; }
+    .lib-tab-count { font-size: .7rem; background: #d5e8db; color: #00743F; border-radius: 2rem; padding: .05rem .45rem; font-weight: 700; }
+    [data-theme="dark"] .lib-tab-count { background: #1d2b24; color: #7fe0ac; }
+
+    /* ── Toolbar (search/filters) ── */
+    .lib-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; padding: .6rem 1rem; border-bottom: 1px solid #e6f3ea; background: #fbfefc; }
+    [data-theme="dark"] .lib-toolbar { background: #131d18; border-color: #26362e; }
+
+    /* ── Table ── */
+    .lib-table-wrap { overflow-x: auto; }
+    .lib-table { width: 100%; margin: 0; font-size: .8rem; }
+    .lib-table > :not(caption) > * > * { padding: .55rem .75rem; border-color: #e6f3ea; vertical-align: middle; }
+    .lib-table thead th { background: #fbfefc; color: #5a9e7a; font-weight: 600; font-size: .7rem; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; border-bottom: 1px solid #d5e8db !important; }
+    .lib-table tbody tr { border-color: #e6f3ea; transition: background-color .1s ease; cursor: pointer; }
+    .lib-table tbody tr:hover { background: #f0f9f3; }
+    .lib-table tbody tr.selected { background: #e6f3ea; }
+    [data-theme="dark"] .lib-table { --bs-table-bg: transparent; --bs-table-color: #d7e5dc; --bs-table-border-color: #26362e; }
+    [data-theme="dark"] .lib-table thead th { background: #131d18; color: #8fa59a; border-color: #2c3d34 !important; }
     [data-theme="dark"] .lib-table tbody tr:hover { background: #1d2b24; }
-    [data-theme="dark"] .lib-doc-name { color: #e5eee8; }
-    [data-theme="dark"] .lib-avatar { background: #1d2b24; color: #a9c4b6; }
-    [data-theme="dark"] .lib-category { background: #1d2b24; color: #c3d0c8; }
-    [data-theme="dark"] .lib-status-completed { background: #12291d; color: #8fe0b3; }
-    [data-theme="dark"] .lib-status-pending { background: #3a3010; color: #ffe08a; }
-    [data-theme="dark"] .lib-status-processing { background: #10304d; color: #8fc6ff; }
-    [data-theme="dark"] .lib-status-failed { background: #3a1616; color: #f1a8a8; }
+    [data-theme="dark"] .lib-table tbody tr.selected { background: #12291d; }
+    .lib-doc-name { max-width: 220px; color: #00743F; font-weight: 600; }
+    [data-theme="dark"] .lib-doc-name { color: #7fe0ac; }
+    .lib-file-icon { font-size: 1.05rem; }
+    .lib-avatar { width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 22px; border-radius: 50%; background: #e6f3ea; color: #00743F; font-size: .58rem; font-weight: 700; }
+    [data-theme="dark"] .lib-avatar { background: #1d2b24; color: #7fe0ac; }
+    .lib-cat-badge { display: inline-block; padding: .18rem .55rem; border-radius: 2rem; font-size: .68rem; font-weight: 600; background: #e6f3ea; color: #00743F; border: 1px solid #d5e8db; white-space: nowrap; }
+    [data-theme="dark"] .lib-cat-badge { background: #1d2b24; color: #7fe0ac; border-color: #2c3d34; }
+    .lib-ver { font-size: .68rem; color: #5a9e7a; background: #e6f3ea; border-radius: .3rem; padding: .08rem .35rem; }
+    [data-theme="dark"] .lib-ver { background: #1d2b24; color: #8fa59a; }
+
+    /* ── Pagination ── */
+    .lib-pagination { padding: .6rem 1rem; border-top: 1px solid #e6f3ea; display: flex; align-items: center; justify-content: space-between; gap: .5rem; flex-wrap: wrap; }
+    [data-theme="dark"] .lib-pagination { border-color: #26362e; }
+    .lib-pagination-info { font-size: .78rem; color: #5a9e7a; }
+    .lib-pg-btn { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: .45rem; border: 1px solid #d5e8db; background: #fff; color: #00743F; font-size: .75rem; text-decoration: none; transition: all .15s ease; }
+    .lib-pg-btn:hover { background: #e6f3ea; border-color: #00A868; }
+    .lib-pg-btn.disabled { opacity: .4; pointer-events: none; color: #aaa; }
+    [data-theme="dark"] .lib-pg-btn { background: #16211c; border-color: #2c3d34; color: #7fe0ac; }
+
+    /* ── Detail side panel ── */
+    .lib-detail { width: 280px; flex: 0 0 280px; background: #fff; border: 1px solid #d5e8db; border-radius: 1rem; overflow: hidden; display: none; flex-direction: column; }
+    .lib-detail.open { display: flex; }
+    [data-theme="dark"] .lib-detail { background: #16211c; border-color: #26362e; }
+    .lib-detail-head { display: flex; align-items: center; justify-content: space-between; padding: .75rem 1rem; border-bottom: 1px solid #e6f3ea; }
+    [data-theme="dark"] .lib-detail-head { border-color: #26362e; }
+    .lib-detail-title { font-weight: 700; font-size: .88rem; color: #00743F; }
+    [data-theme="dark"] .lib-detail-title { color: #7fe0ac; }
+    .lib-detail-close { background: none; border: none; color: #5a9e7a; font-size: 1rem; cursor: pointer; padding: 0; line-height: 1; }
+    .lib-detail-body  { flex: 1 1 auto; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: .85rem; }
+    .lib-detail-ico   { width: 44px; height: 44px; border-radius: .65rem; background: #e6f3ea; display: flex; align-items: center; justify-content: center; color: #00A868; font-size: 1.3rem; flex: 0 0 44px; }
+    [data-theme="dark"] .lib-detail-ico { background: #1d2b24; }
+    .lib-detail-doc-title { font-weight: 700; font-size: .95rem; color: #00743F; line-height: 1.3; }
+    [data-theme="dark"] .lib-detail-doc-title { color: #7fe0ac; }
+    .lib-detail-doc-sub   { font-size: .75rem; color: #5a9e7a; margin-top: .15rem; }
+    .lib-detail-open-btn  { display: block; text-align: center; background: #00A868; color: #fff; border-radius: .65rem; padding: .55rem 1rem; font-weight: 700; font-size: .83rem; text-decoration: none; transition: background-color .15s ease; }
+    .lib-detail-open-btn:hover { background: #00743F; color: #fff; }
+    .lib-detail-meta { display: flex; flex-direction: column; gap: .5rem; }
+    .lib-detail-row  { display: flex; justify-content: space-between; align-items: flex-start; gap: .5rem; font-size: .78rem; }
+    .lib-detail-key  { color: #5a9e7a; flex: 0 0 auto; }
+    .lib-detail-val  { color: #00743F; font-weight: 600; text-align: right; }
+    [data-theme="dark"] .lib-detail-val { color: #7fe0ac; }
+    .lib-detail-divider { border: 0; border-top: 1px solid #e6f3ea; margin: 0; }
+    [data-theme="dark"] .lib-detail-divider { border-color: #26362e; }
+    .lib-detail-section-title { font-weight: 700; font-size: .8rem; color: #5a9e7a; text-transform: uppercase; letter-spacing: .4px; }
+    .lib-detail-chip { display: inline-flex; align-items: center; gap: .3rem; font-size: .75rem; color: #5a9e7a; background: #e6f3ea; border-radius: 2rem; padding: .25rem .65rem; }
+    [data-theme="dark"] .lib-detail-chip { background: #1d2b24; color: #8fa59a; }
+
     @media (max-width: 767.98px) {
         body:has(#libPage) main { padding: .5rem !important; }
-        .lib-shell { padding: .8rem; }
+        .lib-detail { width: 100%; flex: 0 0 auto; }
+        .lib-content-row { flex-direction: column; }
     }
 </style>
 
-<div class="lib-page p3-chat-page" id="libPage">
-    <section class="lib-shell">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
-            <div class="d-flex align-items-center gap-2">
-                <h3 class="fw-bold mb-0">{{ auth()->user()->role === \App\Models\User::ROLE_EMPLOYEE ? 'Your documents' : 'Documents' }}</h3>
-                <span class="badge text-capitalize" style="background:#e6f3ea;color:#00743F;font-weight:500">{{ number_format($documents->total()) }} {{ \Illuminate\Support\Str::plural('document', $documents->total()) }}</span>
-            </div>
+<div class="lib-page" id="libPage">
+
+    {{-- ── Header ── --}}
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+        <div>
+            <div class="lib-hero-title">Your documents, connected.</div>
+            <div class="lib-hero-sub">Find, edit and share the latest knowledge across your organization.</div>
+        </div>
+        <div class="d-flex gap-2">
             @if(auth()->user()->isManager())
-                <a href="{{ route('documents.trash') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-trash3 me-1"></i>Recycle bin</a>
+            <a href="{{ route('documents.trash') }}" class="btn btn-sm" style="border:1px solid #d5e8db;background:#fff;color:#5a9e7a;border-radius:.65rem;font-weight:600">
+                <i class="bi bi-trash3 me-1"></i>Recycle bin
+            </a>
             @endif
-            <div class="d-flex flex-wrap align-items-center gap-2 ms-auto">
-            <form method="GET" action="{{ route('documents.library') }}" class="d-flex flex-wrap align-items-center gap-2" role="search">
-                <div class="input-group input-group-sm" style="width:min(18rem, 55vw)">
-                    <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-                    <input type="search" name="q" value="{{ $search }}" class="form-control" placeholder="Title, keywords, or content" aria-label="Search title, keywords, or content">
+            <a href="{{ route('documents.upload') }}" class="btn btn-sm" style="background:#00A868;color:#fff;border:none;border-radius:.65rem;font-weight:700">
+                <i class="bi bi-plus-lg me-1"></i>New document
+            </a>
+        </div>
+    </div>
+
+    {{-- ── Stat bar ── --}}
+    @php
+        $updatedThisWeek = $documents->getCollection()->filter(fn($d) => $d->updated_at?->gte(now()->startOfWeek()))->count();
+        $deptCount = $departments->count();
+    @endphp
+    <div class="lib-stat-bar">
+        <div class="lib-stat-item">
+            <div class="lib-stat-ico"><i class="bi bi-files"></i></div>
+            <div>
+                <div class="lib-stat-val">{{ number_format($documents->total()) }}</div>
+                <div class="lib-stat-lbl">Total documents</div>
+            </div>
+        </div>
+        <div class="lib-stat-item">
+            <div class="lib-stat-ico"><i class="bi bi-pencil-square"></i></div>
+            <div>
+                <div class="lib-stat-val">{{ $updatedThisWeek }}</div>
+                <div class="lib-stat-lbl">Updated this week</div>
+            </div>
+        </div>
+        <div class="lib-stat-item">
+            <div class="lib-stat-ico"><i class="bi bi-diagram-3"></i></div>
+            <div>
+                <div class="lib-stat-val">{{ $deptCount }}</div>
+                <div class="lib-stat-lbl">Departments</div>
+            </div>
+        </div>
+        <div class="lib-stat-item lib-stat-right">
+            <div class="lib-stat-ico"><i class="bi bi-chat-text"></i></div>
+            <div>
+                <div style="font-weight:700;font-size:.82rem;color:#1a1a2e">Everything is up to date</div>
+                <div class="lib-stat-lbl">Edited versions are saved automatically</div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ── Department cards ── --}}
+    @if($departments->isNotEmpty())
+    <div class="lib-dept-section">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="fw-bold" style="color:#1a1a2e;font-size:.88rem">Browse by department</span>
+            <a href="{{ route('documents.library') }}" class="small fw-semibold text-decoration-none" style="color:#7b7fa8">View all departments →</a>
+        </div>
+        <div class="lib-dept-grid">
+            @foreach($departments->take(4) as $dept)
+            @php
+                $deptDocCount = $documents->getCollection()->filter(fn($d) =>
+                    ($d->department_id ?? $d->suggested_department_id) == $dept->id
+                )->count();
+                $catCountForDept = $categories->count();
+            @endphp
+            <a href="{{ route('documents.library', ['department_id' => $dept->id]) }}"
+               class="lib-dept-card {{ request('department_id') == $dept->id ? 'active' : '' }}">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                    <div class="lib-dept-ico"><i class="bi bi-building"></i></div>
+                    <button type="button" class="p-0 border-0 bg-transparent" style="color:#c8c8d8;font-size:.8rem;line-height:1" onclick="event.preventDefault()" aria-label="More options"><i class="bi bi-three-dots"></i></button>
                 </div>
-                <select name="status" class="form-select form-select-sm" aria-label="Filter by processing status" style="width:auto" onchange="this.form.submit()">
-                    <option value="">All statuses</option>
-                    @foreach(['completed' => 'Complete', 'pending' => 'Pending', 'processing' => 'In Progress', 'failed' => 'Failed'] as $value => $label)
-                        <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
+                <div class="lib-dept-name">{{ $dept->name }}</div>
+                <div class="lib-dept-meta">{{ $deptDocCount }} documents · {{ $catCountForDept }} categories</div>
+            </a>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+    {{-- ── Table + detail panel ── --}}
+    <div class="lib-content-row" id="libContentRow">
+
+        {{-- Left: table card ── --}}
+        <div class="lib-table-col" id="libTableCol">
+
+            {{-- Tabs --}}
+            <div class="lib-tabs">
+                <button class="lib-tab {{ !request('favorite') && !request('recent') ? 'active' : '' }}"
+                        onclick="location.href='{{ route('documents.library', array_merge(request()->except(['favorite','recent','page']), [])) }}'">
+                    <i class="bi bi-files"></i> All documents
+                    <span class="lib-tab-count">{{ $documents->total() }}</span>
+                </button>
+                <button class="lib-tab {{ request('recent') ? 'active' : '' }}"
+                        onclick="location.href='{{ route('documents.library', array_merge(request()->except(['favorite','recent','page']), ['recent'=>1])) }}'">
+                    <i class="bi bi-clock-history"></i> Recently edited
+                </button>
+                <button class="lib-tab {{ request('favorite') ? 'active' : '' }}"
+                        onclick="location.href='{{ route('documents.library', array_merge(request()->except(['favorite','recent','page']), ['favorite'=>1])) }}'">
+                    <i class="bi bi-star"></i> Starred
+                </button>
+            </div>
+
+            {{-- Toolbar --}}
+            <div class="lib-toolbar">
+                <form method="GET" action="{{ route('documents.library') }}" class="d-flex flex-wrap align-items-center gap-2 w-100" role="search" id="libFilterForm">
+                    @foreach(request()->except(['q','page']) as $k => $v)
+                        <input type="hidden" name="{{ $k }}" value="{{ $v }}">
                     @endforeach
-                </select>
-                <select name="category_id" class="form-select form-select-sm" aria-label="Filter by category" style="width:auto" onchange="this.form.submit()">
-                    <option value="">All categories</option>
-                    @foreach($categories as $category)
-                        <option value="{{ $category->id }}" @selected((string) request('category_id') === (string) $category->id)>{{ $category->name }}</option>
-                    @endforeach
-                </select>
-                <select name="department_id" class="form-select form-select-sm" aria-label="Filter by department" style="width:auto" onchange="this.form.submit()">
-                    <option value="">All departments</option>
-                    @foreach($departments as $department)
-                        <option value="{{ $department->id }}" @selected((string) request('department_id') === (string) $department->id)>{{ $department->name }}</option>
-                    @endforeach
-                </select>
-                @if(auth()->user()->isManager())
-                    <select name="uploader_id" class="form-select form-select-sm" aria-label="Filter by uploader" style="width:auto" onchange="this.form.submit()">
-                        <option value="">All uploaders</option>
-                        @foreach($uploaders as $uploader)
-                            <option value="{{ $uploader->id }}" @selected((string) request('uploader_id') === (string) $uploader->id)>{{ $uploader->name }}</option>
+                    <div class="input-group input-group-sm" style="width:min(16rem,100%);border-radius:.55rem;overflow:hidden;border:1px solid #d5e8db;">
+                        <span class="input-group-text" style="background:#fff;border:0"><i class="bi bi-search" style="color:#00A868"></i></span>
+                        <input type="search" name="q" value="{{ $search }}" class="form-control border-0" placeholder="Search by name, topic or keyword..." aria-label="Search documents" style="background:#fff">
+                    </div>
+                    <select name="department_id" class="form-select form-select-sm" aria-label="Filter by department" style="width:auto;border-color:#d5e8db;color:#00743F;font-weight:600" onchange="this.form.submit()">
+                        <option value="">Department</option>
+                        @foreach($departments as $department)
+                            <option value="{{ $department->id }}" @selected((string)request('department_id') === (string)$department->id)>{{ $department->name }}</option>
                         @endforeach
                     </select>
-                @endif
-                <input type="date" name="date_from" value="{{ $validated['date_from'] ?? '' }}" class="form-control form-control-sm" aria-label="Document date from" title="Document date from" style="width:auto" onchange="this.form.submit()">
-                <input type="date" name="date_to" value="{{ $validated['date_to'] ?? '' }}" class="form-control form-control-sm" aria-label="Document date to" title="Document date to" style="width:auto" onchange="this.form.submit()">
-                <select name="sort" class="form-select form-select-sm" aria-label="Sort documents" style="width:auto" onchange="this.form.submit()">
-                    <option value="newest" @selected($sort === 'newest')>Newest</option>
-                    <option value="oldest" @selected($sort === 'oldest')>Oldest</option>
-                    <option value="alphabetical" @selected($sort === 'alphabetical')>A–Z</option>
-                </select>
-                @if(collect($validated)->filter(fn ($value) => $value !== null && $value !== '' && $value !== 'newest')->isNotEmpty())
-                    <a href="{{ route('documents.library') }}" class="btn btn-sm btn-outline-secondary">Clear</a>
-                @endif
-            </form>
-            <a href="{{ route('documents.export', request()->query()) }}" class="btn btn-sm btn-outline-success">
-                <i class="bi bi-download me-1" aria-hidden="true"></i>Export CSV
-            </a>
+                    <select name="category_id" class="form-select form-select-sm" aria-label="Filter by category" style="width:auto;border-color:#d5e8db;color:#00743F;font-weight:600" onchange="this.form.submit()">
+                        <option value="">Category</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}" @selected((string)request('category_id') === (string)$category->id)>{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                    <div class="d-flex gap-1 ms-auto">
+                        @if(collect($validated)->filter(fn($v) => $v !== null && $v !== '' && $v !== 'newest')->isNotEmpty())
+                            <a href="{{ route('documents.library') }}" class="btn btn-sm" style="border:1px solid #d5e8db;color:#5a9e7a;border-radius:.55rem">Clear</a>
+                        @endif
+                        <a href="{{ route('documents.export', request()->query()) }}" class="btn btn-sm" style="border:1px solid #d5e8db;color:#5a9e7a;border-radius:.55rem" title="Export CSV">
+                            <i class="bi bi-download"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            {{-- Table --}}
+            <div class="lib-table-wrap">
+                <table class="table lib-table" id="libTable">
+                    <caption class="visually-hidden">Document library results</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col" style="width:30px"><input type="checkbox" class="form-check-input" id="libCheckAll" aria-label="Select all"></th>
+                            <th scope="col">Document name <i class="bi bi-arrow-up" style="font-size:.6rem"></i></th>
+                            <th scope="col">Last modified</th>
+                            <th scope="col">Access</th>
+                            <th scope="col"><span class="visually-hidden">Actions</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($documents as $doc)
+                        @php
+                            $mime = $doc->mime_type ?? '';
+                            $fileType = str_contains($mime, 'pdf')   ? ['PDF',   'bi-file-earmark-pdf-fill',  '#dc3545']
+                                      : (str_contains($mime, 'word') ? ['Word',  'bi-file-earmark-word-fill', '#0d6efd']
+                                      : (str_starts_with($mime, 'image/') ? ['Image','bi-file-earmark-image-fill','#00A868']
+                                      : (str_contains($mime, 'text')  ? ['Text',  'bi-file-earmark-text-fill','#6c757d']
+                                      : ['File', 'bi-file-earmark-fill', '#6c757d'])));
+                            $uploaderInitials = $doc->uploader?->initials() ?? '?';
+                            $uploaderColor = '#00A868';
+                        @endphp
+                        <tr class="lib-doc-row" data-id="{{ $doc->id }}"
+                            data-title="{{ $doc->title ?? $doc->original_filename }}"
+                            data-sub="{{ $doc->category?->name ?? $doc->suggestedCategory?->name ?? 'Uncategorized' }} / {{ $doc->department?->name ?? $doc->suggestedDepartment?->name ?? '—' }}"
+                            data-modified="{{ $doc->updated_at?->format('M d, Y') ?? '—' }}"
+                            data-status="{{ ucfirst($doc->processing_status ?? 'pending') }}"
+                            data-version="v{{ $doc->version_number ?? '1' }}"
+                            data-dept="{{ $doc->department?->name ?? $doc->suggestedDepartment?->name ?? '—' }}"
+                            data-cat="{{ $doc->category?->name ?? $doc->suggestedCategory?->name ?? 'Uncategorized' }}"
+                            data-uploader="{{ $doc->uploader?->name ?? 'Unknown' }}"
+                            data-filetype="{{ $fileType[0] }}"
+                            data-size="{{ $doc->file_size >= 1048576 ? number_format($doc->file_size/1048576,1).' MB' : number_format($doc->file_size/1024,0).' KB' }}"
+                            data-url="{{ route('documents.show', $doc) }}"
+                            data-icon="{{ $fileType[1] }}"
+                            data-iconcolor="{{ $fileType[2] }}"
+                            data-initials="{{ $uploaderInitials }}">
+                            <td><input type="checkbox" class="form-check-input lib-row-check" aria-label="Select {{ $doc->title ?? $doc->original_filename }}"></td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="lib-file-icon {{ $fileType[1] }}" style="color:{{ $fileType[2] }};flex:0 0 auto" aria-hidden="true"></i>
+                                    <div style="min-width:0">
+                                        <a href="{{ route('documents.show', $doc) }}" class="lib-doc-name text-decoration-none d-block text-truncate" title="{{ $doc->title ?? $doc->original_filename }}">
+                                            {{ $doc->title ?? $doc->original_filename }}
+                                        </a>
+                                        <div style="font-size:.68rem;color:#5a9e7a">
+                                            {{ $doc->category?->name ?? $doc->suggestedCategory?->name ?? 'Uncategorized' }} / {{ $doc->department?->name ?? $doc->suggestedDepartment?->name ?? '—' }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-nowrap">
+                                <div style="font-size:.75rem;color:#5a9e7a">{{ $doc->updated_at?->format('M d, Y') ?? '—' }}</div>
+                                <div class="d-flex align-items-center gap-1 mt-1">
+                                    <span class="lib-avatar" title="{{ $doc->uploader?->name ?? 'Unknown' }}" style="background:{{ $uploaderColor }}20;color:{{ $uploaderColor }}">{{ $uploaderInitials }}</span>
+                                    <span class="lib-ver">v{{ $doc->version_number ?? '1' }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-1" style="font-size:.75rem;color:#5a9e7a">
+                                    <i class="bi bi-people-fill" style="color:#00A868"></i>
+                                    All employees
+                                </div>
+                            </td>
+                            <td class="text-end">
+                                @canany(['update','delete'], $doc)
+                                <div class="dropdown">
+                                    <button type="button" class="btn btn-sm p-1" style="background:none;border:none;color:#5a9e7a" title="Actions for {{ $doc->title ?? $doc->original_filename }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" style="border-radius:.75rem;border-color:#d5e8db">
+                                        <li><a class="dropdown-item" href="{{ route('documents.show', $doc) }}"><i class="bi bi-eye me-2" style="color:#00A868"></i>View</a></li>
+                                        @can('update', $doc)
+                                        <li><a class="dropdown-item" href="{{ route('documents.edit', $doc) }}"><i class="bi bi-pencil me-2" style="color:#00A868"></i>Edit</a></li>
+                                        @endcan
+                                        @can('delete', $doc)
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><button type="button" class="dropdown-item text-danger" data-delete-url="{{ route('documents.destroy', $doc) }}" onclick="window.__libDeleteUrl=this.getAttribute('data-delete-url');bootstrap.Modal.getOrCreateInstance(document.getElementById('libDeleteModal')).show()"><i class="bi bi-trash me-2"></i>Delete</button></li>
+                                        @endcan
+                                    </ul>
+                                </div>
+                                @endcanany
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <i class="bi bi-folder2-open fs-2" style="color:#b7e0c8"></i>
+                                <p class="fw-semibold mt-2 mb-2" style="color:#5a9e7a">No documents found.</p>
+                                <a href="{{ route('documents.upload') }}" class="btn btn-sm" style="background:#00A868;color:#fff;border-radius:.65rem">Upload a document</a>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Pagination --}}
+            <div class="lib-pagination">
+                <span class="lib-pagination-info">
+                    Showing {{ $documents->firstItem() }}&ndash;{{ $documents->lastItem() }} of {{ number_format($documents->total()) }} documents
+                </span>
+                <div class="d-flex align-items-center gap-1">
+                    @if($documents->onFirstPage())
+                        <span class="lib-pg-btn disabled"><i class="bi bi-chevron-left"></i></span>
+                    @else
+                        <a class="lib-pg-btn" href="{{ $documents->previousPageUrl() }}" rel="prev" aria-label="Previous page"><i class="bi bi-chevron-left"></i></a>
+                    @endif
+                    @foreach(range(max(1,$documents->currentPage()-1), min($documents->lastPage(),$documents->currentPage()+1)) as $pg)
+                        @if($pg === $documents->currentPage())
+                            <span class="lib-pg-btn" style="background:#00A868;color:#fff;border-color:#00A868;font-weight:700">{{ $pg }}</span>
+                        @else
+                            <a class="lib-pg-btn" href="{{ $documents->url($pg) }}">{{ $pg }}</a>
+                        @endif
+                    @endforeach
+                    @if($documents->currentPage() < $documents->lastPage() - 1)
+                        <span class="lib-pg-btn disabled" style="border:0;background:none;color:#5a9e7a">…</span>
+                        <a class="lib-pg-btn" href="{{ $documents->url($documents->lastPage()) }}">{{ $documents->lastPage() }}</a>
+                    @endif
+                    @if($documents->hasMorePages())
+                        <a class="lib-pg-btn" href="{{ $documents->nextPageUrl() }}" rel="next" aria-label="Next page"><i class="bi bi-chevron-right"></i></a>
+                    @else
+                        <span class="lib-pg-btn disabled"><i class="bi bi-chevron-right"></i></span>
+                    @endif
+                </div>
+            </div>
+
+        </div>{{-- /lib-table-col --}}
+
+        {{-- Right: detail side panel ── --}}
+        <div class="lib-detail" id="libDetail">
+            <div class="lib-detail-head">
+                <span class="lib-detail-title">Document details</span>
+                <button class="lib-detail-close" id="libDetailClose" aria-label="Close detail panel"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="lib-detail-body" id="libDetailBody">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="lib-detail-ico" id="libDetailIco"><i class="bi bi-file-earmark-text" id="libDetailIcoIcon"></i></div>
+                </div>
+                <div>
+                    <div class="lib-detail-doc-title" id="libDetailDocTitle">—</div>
+                    <div class="lib-detail-doc-sub" id="libDetailDocSub">—</div>
+                </div>
+                <div class="d-flex gap-2 align-items-center flex-wrap">
+                    <span class="lib-cat-badge" id="libDetailStatus">—</span>
+                </div>
+                <a href="#" class="lib-detail-open-btn" id="libDetailOpenBtn">
+                    <i class="bi bi-box-arrow-up-right me-1"></i> Open in editor
+                </a>
+                <hr class="lib-detail-divider">
+                <div class="lib-detail-meta">
+                    <div class="lib-detail-row"><span class="lib-detail-key">Department</span><span class="lib-detail-val" id="libDetailDept">—</span></div>
+                    <div class="lib-detail-row"><span class="lib-detail-key">Category</span><span class="lib-detail-val" id="libDetailCat">—</span></div>
+                    <div class="lib-detail-row"><span class="lib-detail-key">Owner</span><span class="lib-detail-val" id="libDetailOwner">—</span></div>
+                    <div class="lib-detail-row"><span class="lib-detail-key">Updated</span><span class="lib-detail-val" id="libDetailUpdated">—</span></div>
+                    <div class="lib-detail-row"><span class="lib-detail-key">Size</span><span class="lib-detail-val" id="libDetailSize">—</span></div>
+                    <div class="lib-detail-row"><span class="lib-detail-key">Version</span><span class="lib-detail-val" id="libDetailVersion">—</span></div>
+                </div>
+                <hr class="lib-detail-divider">
+                <div>
+                    <div class="lib-detail-section-title mb-2">Access</div>
+                    <div class="lib-detail-chip"><i class="bi bi-people-fill" style="color:#00A868"></i> All employees can view</div>
+                </div>
             </div>
         </div>
 
-        <div class="lib-table-wrap">
-            <table class="table table-sm lib-table">
-                <caption class="visually-hidden">Document library results</caption>
-                <thead>
-                    <tr>
-                        <th scope="col" class="text-center">No.</th>
-                        <th scope="col">Document</th>
-                        <th scope="col">Type</th>
-                        <th scope="col">Department</th>
-                        <th scope="col">Category</th>
+    </div>{{-- /lib-content-row --}}
 
-                        <th scope="col">Uploaded by</th>
-                        <th scope="col">Date added</th>
-                        <th scope="col" class="text-end">Size</th>
-                        <th scope="col"><span class="visually-hidden">Actions</span></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($documents as $doc)
-                        @php
-                            $mime = $doc->mime_type ?? '';
-                            $fileType = str_contains($mime, 'pdf') ? ['PDF', 'bi-file-earmark-pdf-fill', '#dc3545']
-                                : (str_contains($mime, 'word') ? ['Word', 'bi-file-earmark-word-fill', '#0d6efd']
-                                : (str_starts_with($mime, 'image/') ? ['Image', 'bi-file-earmark-image-fill', '#00A868']
-                                : (str_contains($mime, 'text') ? ['Text', 'bi-file-earmark-text-fill', '#6c757d']
-                                : ['File', 'bi-file-earmark-fill', '#6c757d'])));
-                            $status = $doc->processing_status ?? 'pending';
-                            $statusLabel = ['completed' => 'Complete', 'pending' => 'Pending', 'processing' => 'In Progress', 'failed' => 'Failed'][$status] ?? ucfirst($status);
-                            $size = $doc->file_size >= 1048576 ? number_format($doc->file_size / 1048576, 1) . ' MB' : number_format($doc->file_size / 1024, 0) . ' KB';
-                        @endphp
-                        <tr>
-                            <td class="text-center text-muted">{{ $documents->firstItem() + $loop->index }}</td>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <i class="lib-file-icon {{ $fileType[1] }}" style="color:{{ $fileType[2] }}" aria-hidden="true"></i>
-                                    <a href="{{ route('documents.show', $doc) }}" class="lib-doc-name text-decoration-none text-truncate fw-semibold" title="{{ $doc->title ?? $doc->original_filename }}">
-                                        {{ $doc->title ?? $doc->original_filename }}
-                                    </a>
-                                </div>
-                            </td>
-                            <td>{{ $fileType[0] }}</td>
-                            <td>{{ $doc->department?->name ?? $doc->suggestedDepartment?->name ?? '—' }}</td>
-                            <td><span class="lib-category">{{ $doc->category?->name ?? $doc->suggestedCategory?->name ?? 'Uncategorized' }}</span></td>
 
-                            <td>
-                                @if($doc->uploader)
-                                    <span class="d-inline-flex align-items-center gap-2 text-nowrap"><span class="lib-avatar">{{ $doc->uploader->initials() }}</span>{{ $doc->uploader->name }}</span>
-                                @else
-                                    <span class="text-muted">Unknown</span>
-                                @endif
-                            </td>
-                            <td class="text-nowrap">{{ $doc->created_at?->format('m/d/Y') ?? '—' }}</td>
-                            <td class="text-end text-nowrap">{{ $size }}</td>
-                            <td class="text-end">
-                                @canany(['update', 'delete'], $doc)
-                                    <div class="dropdown">
-                                        <button type="button" class="btn btn-sm text-muted p-1" title="Document actions" aria-label="Actions for {{ $doc->title ?? $doc->original_filename }}" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="bi bi-three-dots"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            @can('update', $doc)
-                                                <li><a class="dropdown-item" href="{{ route('documents.edit', $doc) }}"><i class="bi bi-pencil me-2"></i>Edit</a></li>
-                                            @endcan
-                                            @can('delete', $doc)
-                                                <li><button type="button" class="dropdown-item text-danger" data-delete-url="{{ route('documents.destroy', $doc) }}" onclick="window.__libDeleteUrl=this.getAttribute('data-delete-url'); bootstrap.Modal.getOrCreateInstance(document.getElementById('libDeleteModal')).show();"><i class="bi bi-trash me-2"></i>Delete</button></li>
-                                            @endcan
-                                        </ul>
-                                    </div>
-                                @endcan
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="9" class="text-center py-5">
-                                <i class="bi bi-inbox fs-2 text-muted"></i>
-                                <p class="fw-semibold mt-2 mb-2">No documents found.</p>
-                                <a href="{{ route('documents.upload') }}" class="btn btn-sm btn-outline-success">Upload a document</a>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
 
-        <nav id="libPagination" class="lib-pagination d-flex flex-wrap justify-content-center align-items-center gap-3 pt-3" aria-label="Document result pages">
-                <small class="text-muted">{{ $documents->firstItem() }}&ndash;{{ $documents->lastItem() }} of {{ $documents->total() }}</small>
-                <div class="d-flex align-items-center gap-2">
-                    @if ($documents->onFirstPage())
-                        <span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true"><i class="bi bi-chevron-left"></i></span>
-                    @else
-                        <a class="btn btn-sm btn-outline-success" href="{{ $documents->previousPageUrl() }}" rel="prev" aria-label="Previous page"><i class="bi bi-chevron-left"></i></a>
-                    @endif
-                    <span class="px-1 fw-semibold" aria-label="Page {{ $documents->currentPage() }} of {{ $documents->lastPage() }}" aria-current="page">{{ $documents->currentPage() }}/{{ $documents->lastPage() }}</span>
-                    @if ($documents->hasMorePages())
-                        <a class="btn btn-sm btn-outline-success" href="{{ $documents->nextPageUrl() }}" rel="next" aria-label="Next page"><i class="bi bi-chevron-right"></i></a>
-                    @else
-                        <span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true"><i class="bi bi-chevron-right"></i></span>
-                    @endif
-                </nav>
-        </div>
-    </section>
-</div>
+</div>{{-- /lib-page --}}
 
+{{-- Delete modal --}}
 <div class="modal fade" id="libDeleteModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered" style="max-width:420px;width:calc(100% - 2rem)">
         <div class="modal-content p3-modal">
@@ -222,50 +467,83 @@
     </div>
 </div>
 <form id="libDeleteForm" method="POST" style="display:none">@csrf @method('DELETE')</form>
+
 <script>
 (function () {
-    var modal = document.getElementById('libDeleteModal');
+    /* ── Delete modal ── */
     var form = document.getElementById('libDeleteForm');
-    var btn = document.getElementById('libConfirmDeleteBtn');
+    var btn  = document.getElementById('libConfirmDeleteBtn');
     var pendingUrl = null;
+    var modal = document.getElementById('libDeleteModal');
     if (modal) {
         modal.addEventListener('show.bs.modal', function (e) {
-            var trigger = e.relatedTarget;
-            if (trigger && trigger.getAttribute('data-delete-url')) {
-                pendingUrl = trigger.getAttribute('data-delete-url');
-            }
-            if (!pendingUrl && window.__libDeleteUrl) {
-                pendingUrl = window.__libDeleteUrl;
-            }
+            var t = e.relatedTarget;
+            if (t && t.getAttribute('data-delete-url')) pendingUrl = t.getAttribute('data-delete-url');
+            if (!pendingUrl && window.__libDeleteUrl) pendingUrl = window.__libDeleteUrl;
         });
     }
     document.addEventListener('click', function (e) {
-        var target = e.target && e.target.closest ? e.target.closest('[data-delete-url]') : null;
-        if (target) { window.__libDeleteUrl = target.getAttribute('data-delete-url'); pendingUrl = window.__libDeleteUrl; }
+        var t = e.target && e.target.closest ? e.target.closest('[data-delete-url]') : null;
+        if (t) { window.__libDeleteUrl = t.getAttribute('data-delete-url'); pendingUrl = window.__libDeleteUrl; }
     }, true);
     if (btn) {
         btn.addEventListener('click', function () {
             var url = pendingUrl || window.__libDeleteUrl;
-            if (url && form) {
-                form.action = url;
-                form.submit();
-            }
+            if (url && form) { form.action = url; form.submit(); }
         });
     }
-})();
-</script>
-<script>
-(function () {
-    function fit() {
-        var el = document.getElementById('libPage');
-        if (!el) return;
-        var top = el.getBoundingClientRect().top;
-        el.style.height = Math.max(320, window.innerHeight - top - 8) + 'px';
+
+    /* ── Detail panel ── */
+    var detail = document.getElementById('libDetail');
+    var closeBtn = document.getElementById('libDetailClose');
+    var tableCol = document.getElementById('libTableCol');
+    var currentRow = null;
+
+    function openDetail(row) {
+        if (currentRow) currentRow.classList.remove('selected');
+        currentRow = row;
+        row.classList.add('selected');
+
+        var d = row.dataset;
+        document.getElementById('libDetailDocTitle').textContent  = d.title    || '—';
+        document.getElementById('libDetailDocSub').textContent    = d.sub      || '—';
+        document.getElementById('libDetailStatus').textContent    = d.status   || '—';
+        document.getElementById('libDetailDept').textContent      = d.dept     || '—';
+        document.getElementById('libDetailCat').textContent       = d.cat      || '—';
+        document.getElementById('libDetailOwner').textContent     = d.uploader || '—';
+        document.getElementById('libDetailUpdated').textContent   = d.modified || '—';
+        document.getElementById('libDetailSize').textContent      = d.size     || '—';
+        document.getElementById('libDetailVersion').textContent   = d.version  || '—';
+        document.getElementById('libDetailOpenBtn').href          = d.url      || '#';
+
+        var icoEl = document.getElementById('libDetailIcoIcon');
+        if (icoEl) { icoEl.className = 'bi ' + (d.icon || 'bi-file-earmark-text'); icoEl.style.color = d.iconcolor || '#00A868'; }
+
+        detail.classList.add('open');
     }
-    fit();
-    window.addEventListener('resize', fit);
-    window.addEventListener('load', fit);
-    setTimeout(fit, 400);
+
+    function closeDetail() {
+        detail.classList.remove('open');
+        if (currentRow) { currentRow.classList.remove('selected'); currentRow = null; }
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', closeDetail);
+
+    document.querySelectorAll('.lib-doc-row').forEach(function (row) {
+        row.addEventListener('click', function (e) {
+            if (e.target.closest('a') || e.target.closest('.dropdown') || e.target.closest('.form-check-input')) return;
+            if (detail.classList.contains('open') && currentRow === row) { closeDetail(); return; }
+            openDetail(row);
+        });
+    });
+
+    /* ── Select all checkbox ── */
+    var checkAll = document.getElementById('libCheckAll');
+    if (checkAll) {
+        checkAll.addEventListener('change', function () {
+            document.querySelectorAll('.lib-row-check').forEach(function (c) { c.checked = checkAll.checked; });
+        });
+    }
 })();
 </script>
 @endsection
