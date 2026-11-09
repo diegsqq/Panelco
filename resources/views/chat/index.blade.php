@@ -27,13 +27,14 @@
 
     /* ── Main area ── */
     .lg-main { flex: 1 1 auto; display: flex; flex-direction: column; overflow: hidden; }
+    .lg-main form { flex: 1 1 auto; display: flex; flex-direction: column; overflow: hidden; }
 
     /* ── Landing center ── */
-    .lg-center { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 1rem 1rem; gap: 1.5rem; }
+    .lg-center { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 1.5rem; gap: 1.5rem; }
     .lg-welcome { font-size: 1.85rem; font-weight: 700; color: #ececec; text-align: center; }
 
     /* ── Input bar ── */
-    .lg-composer-wrap { flex: 0 0 auto; padding: .75rem 1.5rem 1.25rem; display: flex; flex-direction: column; align-items: center; gap: .85rem; width: 100%; }
+    .lg-composer-wrap { display: flex; flex-direction: column; align-items: center; gap: .75rem; width: 100%; max-width: 720px; }
     .lg-composer { width: 100%; max-width: 680px; background: #2f2f2f; border-radius: 1.1rem; border: 1px solid #3a3a3a; overflow: hidden; transition: border-color .15s ease; }
     .lg-composer:focus-within { border-color: #00A868; }
     .lg-composer-top { display: flex; align-items: flex-end; gap: .5rem; padding: .7rem 1rem .7rem .85rem; }
@@ -109,7 +110,7 @@
             @csrf
             @if($document)<input type="hidden" name="document_id" value="{{ $document->id }}">@endif
 
-            {{-- Center content --}}
+            {{-- Center content + composer as one centered block --}}
             <div class="lg-center">
                 @if($document)
                 <div style="background:#2a2a2a;border:1px solid #3a3a3a;border-radius:.75rem;padding:.55rem 1rem;font-size:.8rem;color:#aaa;max-width:680px;width:100%">
@@ -119,54 +120,54 @@
                 </div>
                 @endif
                 <div class="lg-welcome">Where should we begin?</div>
-            </div>
 
-            {{-- Composer --}}
-            <div class="lg-composer-wrap">
-                <div class="lg-composer" style="max-width:680px;width:100%">
-                    <div class="lg-composer-top">
-                        <input name="question" id="lgQuestion" maxlength="2000" required
-                               placeholder="Ask Lightning AI about your documents…"
-                               value="{{ request('q') }}" autocomplete="off"
-                               aria-label="Ask Lightning AI">
-                        <button type="submit" class="lg-send-btn" id="lgSendBtn" aria-label="Send">
-                            <i class="bi bi-arrow-up-short" style="font-size:1.2rem"></i>
+                {{-- Composer --}}
+                <div class="lg-composer-wrap">
+                    <div class="lg-composer" style="width:100%;max-width:680px">
+                        <div class="lg-composer-top">
+                            <input name="question" id="lgQuestion" maxlength="2000" required
+                                   placeholder="Ask Lightning AI about your documents…"
+                                   value="{{ request('q') }}" autocomplete="off"
+                                   aria-label="Ask Lightning AI">
+                            <button type="submit" class="lg-send-btn" id="lgSendBtn" aria-label="Send">
+                                <i class="bi bi-arrow-up-short" style="font-size:1.2rem"></i>
+                            </button>
+                        </div>
+                        @unless($document)
+                        <div class="lg-composer-actions">
+                            <select name="document_id" class="lg-doc-select" aria-label="Focus on a document (optional)">
+                                <option value="">All accessible documents</option>
+                                @foreach($availableDocuments as $item)
+                                <option value="{{ $item->id }}" @selected((string)old('document_id') === (string)$item->id)>{{ \Illuminate\Support\Str::limit($item->title ?? $item->original_filename, 55) }}</option>
+                                @endforeach
+                            </select>
+                            <select name="comparison_document_id" class="lg-doc-select" aria-label="Compare with (optional)">
+                                <option value="">No comparison</option>
+                                @foreach($availableDocuments as $item)
+                                <option value="{{ $item->id }}" @selected((string)old('comparison_document_id') === (string)$item->id)>{{ \Illuminate\Support\Str::limit($item->title ?? $item->original_filename, 55) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @endunless
+                    </div>
+
+                    {{-- Suggestion chips --}}
+                    <div class="lg-chips">
+                        @foreach([
+                            ['ico'=>'bi-file-text',      'txt'=>'Summarize the latest report'],
+                            ['ico'=>'bi-search',          'txt'=>'Find transformer maintenance docs'],
+                            ['ico'=>'bi-list-check',      'txt'=>'Extract action items and deadlines'],
+                            ['ico'=>'bi-arrow-left-right','txt'=>'Compare two documents'],
+                            ['ico'=>'bi-translate',       'txt'=>'Translate report to Filipino'],
+                        ] as $chip)
+                        <button type="button" class="lg-chip" data-q="{{ $chip['txt'] }}">
+                            <i class="bi {{ $chip['ico'] }}"></i>{{ $chip['txt'] }}
                         </button>
+                        @endforeach
                     </div>
-                    @unless($document)
-                    <div class="lg-composer-actions">
-                        <select name="document_id" class="lg-doc-select" aria-label="Focus on a document (optional)">
-                            <option value="">All accessible documents</option>
-                            @foreach($availableDocuments as $item)
-                            <option value="{{ $item->id }}" @selected((string)old('document_id') === (string)$item->id)>{{ \Illuminate\Support\Str::limit($item->title ?? $item->original_filename, 55) }}</option>
-                            @endforeach
-                        </select>
-                        <select name="comparison_document_id" class="lg-doc-select" aria-label="Compare with (optional)">
-                            <option value="">No comparison</option>
-                            @foreach($availableDocuments as $item)
-                            <option value="{{ $item->id }}" @selected((string)old('comparison_document_id') === (string)$item->id)>{{ \Illuminate\Support\Str::limit($item->title ?? $item->original_filename, 55) }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @endunless
-                </div>
 
-                {{-- Suggestion chips --}}
-                <div class="lg-chips">
-                    @foreach([
-                        ['ico'=>'bi-file-text',    'txt'=>'Summarize the latest report'],
-                        ['ico'=>'bi-search',        'txt'=>'Find transformer maintenance docs'],
-                        ['ico'=>'bi-list-check',    'txt'=>'Extract action items and deadlines'],
-                        ['ico'=>'bi-arrow-left-right','txt'=>'Compare two documents'],
-                        ['ico'=>'bi-translate',     'txt'=>'Translate report to Filipino'],
-                    ] as $chip)
-                    <button type="button" class="lg-chip" data-q="{{ $chip['txt'] }}">
-                        <i class="bi {{ $chip['ico'] }}"></i>{{ $chip['txt'] }}
-                    </button>
-                    @endforeach
+                    <div class="lg-footnote">Lightning AI answers strictly from your authorized documents with cited sources.</div>
                 </div>
-
-                <div class="lg-footnote">Lightning AI answers strictly from your authorized documents with cited sources.</div>
             </div>
         </form>
     </main>
