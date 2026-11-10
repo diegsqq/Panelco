@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\Conversation;
 use App\Models\Document;
+use App\Models\DocumentCategory;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Support\Facades\DB;
 
@@ -87,6 +88,10 @@ class HomeController extends Controller
 
         $recent = (clone $documentQuery)->with(['category', 'suggestedCategory', 'department'])
             ->latest()->limit(9)->get();
+        $recentFiles = (clone $documentQuery)->with(['category', 'uploader:id,name'])
+            ->latest()->limit(3)->get();
+        $allFiles = (clone $documentQuery)->with(['category', 'uploader:id,name'])
+            ->latest()->limit(10)->get();
         $expiringDocuments = (clone $documentQuery)
             ->whereNotNull('expiration_date')
             ->whereDate('expiration_date', '<=', now()->addDays(30)->toDateString())
@@ -102,14 +107,16 @@ class HomeController extends Controller
                     DB::raw('COALESCE(documents.category_id, documents.suggested_category_id)')
                 );
             })
-            ->selectRaw("COALESCE(resolved_category.name, 'Uncategorized') as category_name, COUNT(documents.id) as total")
-            ->groupBy('resolved_category.name')
+            ->selectRaw("COALESCE(resolved_category.id, 0) as category_id, COALESCE(resolved_category.name, 'Uncategorized') as category_name, COUNT(documents.id) as total")
+            ->groupBy('resolved_category.id', 'resolved_category.name')
             ->get();
+        $folders = $categoryDistribution->sortByDesc('total')->values();
 
         // Department distribution shows every department for all roles, so
         // employees can see organization-wide totals, not only their uploads.
         // Documents with neither a department nor a suggested one are left
         // out, so no "Unassigned" row appears.
+        $categories = DocumentCategory::orderBy('name')->get();
         $departmentDistribution = Document::query()
             ->where(function ($q) {
                 $q->whereNotNull('department_id')->orWhereNotNull('suggested_department_id');
@@ -212,8 +219,12 @@ class HomeController extends Controller
             'pendingClassificationReviews',
             'pendingClassificationReviewCount',
             'recent',
+            'recentFiles',
+            'allFiles',
             'expiringDocuments',
             'categoryDistribution',
+            'folders',
+            'categories',
             'departmentDistribution',
             'recentConversations',
             'monthlyUploads',

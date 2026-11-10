@@ -240,6 +240,10 @@
         [data-theme="dark"] mark { background: #4a3d12; color: #ffe9a8; }
         [data-theme="dark"] ::selection { background: rgba(0,168,104,.35); }
         [data-theme="dark"] .table, [data-theme="dark"] .table-p3 { --bs-table-bg: transparent; --bs-table-color: #d7e5dc; --bs-table-border-color: #26362e; }
+        [data-theme="dark"] .table-light, [data-theme="dark"] thead.table-light, [data-theme="dark"] tbody.table-light { --bs-table-bg: #131d18; --bs-table-color: #d7e5dc; --bs-table-border-color: #26362e; }
+        [data-theme="dark"] .table-light > tr > th, [data-theme="dark"] .table-light > * > th, [data-theme="dark"] .table-light td, [data-theme="dark"] .table-light th { background-color: #131d18 !important; color: #d7e5dc !important; border-color: #26362e !important; }
+        [data-theme="dark"] .alert-info { background: #10304d; border-color: #1d4a75; color: #a8d5ff; }
+        [data-theme="dark"] .badge[style*="e6f3ea"] { background: #12291d !important; color: #7fe0ac !important; }
         [data-theme="dark"] .table-p3 { --bs-table-striped-bg: #131d18; --bs-table-hover-bg: #1d2b24; }
         [data-theme="dark"] .table-p3 tbody tr:hover { background: #1d2b24; }
         [data-theme="dark"] .p3-docx h1, [data-theme="dark"] .p3-docx h2, [data-theme="dark"] .p3-docx h3, [data-theme="dark"] .p3-docx h4 { color: #ffffff; }
@@ -317,7 +321,7 @@
                 <a class="nav-link {{ request()->routeIs('dashboard','home') ? 'active' : '' }}" aria-current="{{ request()->routeIs('dashboard','home') ? 'page' : 'false' }}" href="{{ route('dashboard') }}"><span class="nav-ico"><i class="bi bi-grid-1x2-fill"></i></span>{{ __('nav.dashboard') }}</a>
                 <a class="nav-link {{ request()->routeIs('documents.upload') ? 'active' : '' }}" aria-current="{{ request()->routeIs('documents.upload') ? 'page' : 'false' }}" href="{{ route('documents.upload') }}"><span class="nav-ico"><i class="bi bi-cloud-arrow-up-fill"></i></span>{{ __('nav.upload') }}</a>
                 <a class="nav-link {{ request()->routeIs('documents.library') ? 'active' : '' }}" aria-current="{{ request()->routeIs('documents.library') ? 'page' : 'false' }}" href="{{ route('documents.library') }}"><span class="nav-ico"><i class="bi bi-folder-fill"></i></span>{{ __('nav.library') }}</a>
-                @if(auth()->user()->isManager())
+                @if(auth()->user()->isAdmin())
                 <a class="nav-link {{ request()->routeIs('documents.approvals') ? 'active' : '' }}" aria-current="{{ request()->routeIs('documents.approvals') ? 'page' : 'false' }}" href="{{ route('documents.approvals') }}"><span class="nav-ico"><i class="bi bi-clipboard-check-fill"></i></span>Document approvals</a>
                 @endif
                 <a class="nav-link {{ request()->routeIs('chat.*') ? 'active' : '' }}" aria-current="{{ request()->routeIs('chat.*') ? 'page' : 'false' }}" href="{{ route('chat.index') }}"><span class="nav-ico"><i class="bi bi-lightning-charge-fill"></i></span>{{ __('nav.lightning') }}</a>
@@ -325,7 +329,6 @@
             </nav>
             <div class="mt-3">
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
-                <button type="button" class="btn w-100 p3-logout justify-content-center" data-bs-toggle="modal" data-bs-target="#logoutModal" title="Logout"><i class="bi bi-power me-2"></i>{{ __('nav.logout') }}</button>
             </div>
         </aside>
         @endunless
@@ -683,7 +686,6 @@
     [data-theme="dark"] .smn-section { color:#4a5e54; }
     [data-theme="dark"] #settingsModal .modal-content > .d-flex > div:first-child { background:#111a15; }
 </style>
-
 <script>
 (function () {
     /* ── Settings modal: tab switching ── */

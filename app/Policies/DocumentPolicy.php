@@ -17,6 +17,11 @@ class DocumentPolicy
             return true;
         }
 
+        // Access level: anyone signed in can view shared documents
+        if ($document->access_level === 'all_employees' || $document->access_level === 'link') {
+            return true;
+        }
+
         if ($user->role === User::ROLE_EMPLOYEE) {
             return false;
         }

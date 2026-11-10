@@ -32,7 +32,7 @@ class Document extends Model
         'page_paper', 'page_orientation', 'page_margins',
         'workflow_status', 'assigned_to', 'submitted_at', 'reviewed_at',
         'reviewed_by', 'review_decision_note',
-        'tags', 'last_opened_at', 'view_count',
+        'tags', 'last_opened_at', 'view_count', 'access_level',
     ];
 
     protected function casts(): array

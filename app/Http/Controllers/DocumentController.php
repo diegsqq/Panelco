@@ -62,16 +62,12 @@ class DocumentController extends Controller
         $user = $request->user();
         $query = Document::with(['category', 'department', 'uploader'])->latest();
 
-        if ($user->role === \App\Models\User::ROLE_EMPLOYEE) {
-            $query->where('uploaded_by', $user->id);
-        } elseif (! $user->isAdmin()) {
-            $allowedDeptIds = $user->departments()->pluck('departments.id')
-                ->push($user->department_id)->filter()->unique()->values();
-            $query->where(function ($q) use ($user, $allowedDeptIds) {
+        if (! $user->isAdmin()) {
+            // Only administrators see every document; any other role sees only
+            // their own uploads plus documents shared with all employees.
+            $query->where(function ($q) use ($user) {
                 $q->where('uploaded_by', $user->id)
-                    ->orWhereIn('department_id', $allowedDeptIds)
-                    ->orWhereNull('department_id')
-                    ->orWhereIn('id', $user->authorizedDocuments()->pluck('documents.id'));
+                    ->orWhere('access_level', 'all_employees');
             });
         }
 
@@ -100,13 +96,30 @@ class DocumentController extends Controller
             ->whereNotNull('uploaded_by')->distinct()->pluck('uploaded_by');
         $categories = DocumentCategory::whereIn('id', $categoryIds)->orderBy('name')->get();
         $departments = Department::whereIn('id', $departmentIds)->orderBy('name')->get();
+
+        // Accurate document count per department across ALL visible documents
+        // (not just the current paginated page).
+        $deptDocCounts = Document::query()
+            ->whereIn('id', $visibleIds)
+            ->selectRaw('COALESCE(department_id, suggested_department_id) as dept_id, COUNT(*) as cnt')
+            ->groupBy('dept_id')
+            ->pluck('cnt', 'dept_id');
+
+        // Accurate document count per category across ALL visible documents.
+        $catDocCounts = Document::query()
+            ->whereIn('id', $visibleIds)
+            ->selectRaw('COALESCE(category_id, suggested_category_id) as cat_id, COUNT(*) as cnt')
+            ->groupBy('cat_id')
+            ->pluck('cnt', 'cat_id');
+
         $uploaders = \App\Models\User::whereIn('id', $uploaderIds)->orderBy('name')->get();
 
         $sort = $validated['sort'] ?? 'newest';
         $documents = $query->paginate(15)->withQueryString();
 
         return view('documents.index', compact(
-            'documents', 'search', 'categories', 'departments', 'uploaders', 'validated', 'sort'
+            'documents', 'search', 'categories', 'departments', 'uploaders', 'validated', 'sort',
+            'deptDocCounts', 'catDocCounts'
         ));
     }
 
@@ -732,6 +745,7 @@ class DocumentController extends Controller
                 'document_date' => $documentDate
                     ?? ($single ? app(UploadSuggester::class)->creationDate($file, $fileLastModified) : null),
                 'processing_status' => 'pending',
+                'access_level' => $request->input('access_level', 'private'),
             ]);
 
             ProcessDocument::dispatch($document->id, $document->version_number);
@@ -1161,7 +1175,7 @@ class DocumentController extends Controller
 
     public function approvals(Request $request): View
     {
-        abort_unless($request->user()->isManager(), 403);
+        abort_unless($request->user()->isAdmin(), 403);
 
         $documents = $this->visibleToUser($request)
             ->where('processing_status', 'completed')
