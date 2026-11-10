@@ -299,11 +299,12 @@
         }
     </style>
 </head>
-<body class="{{ '' }}">
+<body class="{{ trim(\Illuminate\Support\Facades\View::yieldContent('body-class')) ?: '' }}">
 <div class="container-fluid">
     <div class="row g-0" style="min-height:100vh;align-items:stretch;">
         @auth
         <a class="p3-skip-link" href="#main-content">Skip to main content</a>
+        @unless(View::hasSection('full-screen'))
         <aside class="col-md-3 col-lg-2 d-none d-md-flex p3-sidebar p-3 flex-column" id="p3Sidebar" aria-label="Primary navigation">
             <div class="d-flex align-items-center gap-2 mb-1 px-1">
                 <img src="{{ asset('images/logo.png') }}" alt="PANELCO III" style="width:58px;height:58px;object-fit:contain">
@@ -327,6 +328,7 @@
                 <button type="button" class="btn w-100 p3-logout justify-content-center" data-bs-toggle="modal" data-bs-target="#logoutModal" title="Logout"><i class="bi bi-power me-2"></i>{{ __('nav.logout') }}</button>
             </div>
         </aside>
+        @endunless
         <div class="modal fade" id="logoutModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
             <div class="modal-dialog modal-dialog-centered" style="max-width:380px;width:calc(100% - 2rem)">
                 <div class="modal-content p3-modal">
@@ -342,7 +344,10 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-9 col-lg-10 p-0 d-flex flex-column" style="height:100vh;overflow-y:auto;overflow-x:hidden;">
+        <div class="col-md-9 col-lg-10 p-0 d-flex flex-column @yield('full-screen-col')" style="height:100vh;overflow-y:auto;overflow-x:hidden;">
+            @hasSection('full-screen')
+            @yield('content')
+            @else
             <div class="p3-topbar px-3 px-md-4 py-2 d-flex justify-content-between align-items-center sticky-top">
                 <div class="d-flex align-items-center gap-2">
                     <button type="button" class="btn btn-sm d-md-none" id="sidebarToggle" aria-label="Open menu" aria-controls="p3Sidebar" aria-expanded="false" style="border:1px solid #d5e8db"><i class="bi bi-list" aria-hidden="true"></i></button>
@@ -407,6 +412,7 @@
                 @if ($errors->any())<div class="alert alert-danger alert-dismissible fade show" role="alert"><ul class="mb-0">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>@endif
                 @yield('content')
             </main>
+        @endif
         </div>
         @else
         <main class="col-12 p-0">
