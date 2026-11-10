@@ -4,7 +4,7 @@ return array (
   'dashboard' => 'Dashboard',
   'upload' => 'Mag-upload ng Dokumen',
   'library' => 'Aklatan ng Dokumen',
-  'lightning' => 'Lightning',
+  'lightning' => 'Lightning AI',
   'settings' => 'Mga Setting',
   'general' => 'Pangkalahatan',
   'security' => 'Seguridad',

@@ -519,6 +519,16 @@ class DocumentController extends Controller
     /**
      * Export the edited document content to a printable PDF.
      */
+    public function printPage(Document $document): \Illuminate\Contracts\View\View
+    {
+        $this->authorize('download', $document);
+        $document->load(['category', 'department', 'uploader', 'versions.uploader']);
+        return view('documents.print', compact('document'));
+    }
+
+    /**
+     * Export the edited document content to a printable PDF.
+     */
     public function exportContentPdf(
         Document $document,
         DocumentPdfRenderer $renderer

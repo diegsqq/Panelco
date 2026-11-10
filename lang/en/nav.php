@@ -4,7 +4,7 @@ return array (
   'dashboard' => 'Dashboard',
   'upload' => 'Upload Documents',
   'library' => 'Document Library',
-  'lightning' => 'Lightning',
+  'lightning' => 'Lightning AI',
   'settings' => 'Settings',
   'general' => 'General',
   'security' => 'Security',

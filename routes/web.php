@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
 Route::get('/library/{document}/content/docx', [App\Http\Controllers\DocumentController::class, 'exportContentDocx'])->name('documents.content-docx');
 Route::get('/library/{document}/content/pdf', [App\Http\Controllers\DocumentController::class, 'exportContentPdf'])->name('documents.content-pdf');
 Route::post('/library/{document}/content/pdf/selection', [App\Http\Controllers\DocumentController::class, 'exportContentSelectionPdf'])->name('documents.content-pdf-selection');
+Route::get('/library/{document}/print', [App\Http\Controllers\DocumentController::class, 'printPage'])->name('documents.print');
     Route::put('/library/{document}', [App\Http\Controllers\DocumentController::class, 'update'])->name('documents.update');
     Route::get('/library/{document}/versions/{version}/download', [App\Http\Controllers\DocumentController::class, 'downloadVersion'])->name('documents.versions.download');
 Route::post('/library/{document}/versions/{version}/restore', [App\Http\Controllers\DocumentController::class, 'restoreVersion'])->name('documents.versions.restore');
