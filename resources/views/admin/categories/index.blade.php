@@ -18,3 +18,6 @@
 </div>
 <div class="mt-3">{{ $categories->links() }}</div>
 @endsection
+
+
+

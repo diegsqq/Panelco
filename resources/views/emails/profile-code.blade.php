@@ -20,3 +20,6 @@ This code expires in {{ $minutes }} minutes. If you did not request this change,
 </table>
 </body>
 </html>
+
+
+

@@ -39,3 +39,6 @@
 </div>
 <div class="mt-3">{{ $logs->links() }}</div>
 @endsection
+
+
+

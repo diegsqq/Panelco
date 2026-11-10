@@ -75,13 +75,13 @@
         .status-processing { background: #cce5ff; color: #004085; }
         .status-completed { background: #d4edda; color: #155724; }
         .status-failed { background: #f8d7da; color: #721c24; }
-        /* Full page scroll locked on Lightning + Document Library routes — only inner areas scroll. */
+        /* Full page scroll locked on Lightning AI + Document Library routes — only inner areas scroll. */
         body.p3-no-scroll { overflow: hidden; height: 100vh; }
         /* No visible scrollbars (vertical or horizontal) on full-screen pages —
            wheel/touch scrolling still works inside the list card. */
         .p3-chat-page, .p3-conv-wrap, .p3-conv-card, .p3-chat-msgs { overflow-x: hidden; -ms-overflow-style: none; scrollbar-width: none; }
         .p3-chat-page::-webkit-scrollbar, .p3-conv-wrap::-webkit-scrollbar, .p3-conv-card::-webkit-scrollbar, .p3-chat-msgs::-webkit-scrollbar { width: 0; height: 0; display: none; }
-        /* Shared full-page fit layout (Lightning + Document Library) */
+        /* Shared full-page fit layout (Lightning AI + Document Library) */
         .p3-chat-page { display: flex; flex-direction: column; min-height: 0; }
         .p3-conv-wrap { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
         .p3-conv-card { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; }
@@ -846,3 +846,6 @@
 </script>
 </body>
 </html>
+
+
+

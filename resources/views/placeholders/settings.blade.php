@@ -7,3 +7,6 @@
 <a href="{{ route('dashboard') }}" class="btn btn-outline-success">Back to Dashboard</a>
 </div>
 @endsection
+
+
+
