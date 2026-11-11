@@ -89,7 +89,7 @@ class HomeController extends Controller
         $recent = (clone $documentQuery)->with(['category', 'suggestedCategory', 'department'])
             ->latest()->limit(9)->get();
         $recentFiles = (clone $documentQuery)->with(['category', 'uploader:id,name'])
-            ->latest()->limit(3)->get();
+            ->latest()->limit(5)->get();
         $allFiles = (clone $documentQuery)->with(['category', 'uploader:id,name'])
             ->latest()->limit(10)->get();
         $expiringDocuments = (clone $documentQuery)

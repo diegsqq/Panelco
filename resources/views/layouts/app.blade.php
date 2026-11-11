@@ -58,9 +58,6 @@
         .p3-sidebar .nav-link.active { background: #fff; color: #171717; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-weight: 600; }
         .p3-sidebar .nav-link.active .nav-ico { color: #00A868; }
         .p3-sidebar nav { position: relative; }
-        .p3-sidebar .nav-indicator { position: absolute; left: 2px; top: 0; width: 4px; height: 24px; border-radius: 4px; background: #00A868; box-shadow: 0 0 8px rgba(0,168,104,.3); opacity: 0; transition: top 1.6s cubic-bezier(.65,0,.35,1), height 1.6s ease, opacity .3s ease; pointer-events: none; }
-        .p3-sidebar .nav-link.arrived .nav-ico { animation: p3-ding .55s ease; }
-        @keyframes p3-ding { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,.7); } 40% { transform: scale(1.18); box-shadow: 0 0 0 8px rgba(255,255,255,0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
         .p3-sidebar .nav-ico { width: 22px; height: 22px; flex: 0 0 22px; border-radius: 10px; background: transparent; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; color: inherit; transition: background .15s ease; }
         .p3-brand-mark { width: 42px; height: 42px; border-radius: 12px; background: #fff; display: flex; align-items: center; justify-content: center; color: var(--p3-navy); font-size: 1.4rem; box-shadow: 0 4px 12px rgba(0,0,0,.25); }
         .p3-topbar { background: #f5f5f5; border: 0; }
@@ -199,7 +196,6 @@
         [data-theme="dark"] .p3-sidebar .nav-link { color: #c3d0c8; }
         [data-theme="dark"] .p3-sidebar .nav-link:hover, [data-theme="dark"] .p3-sidebar .nav-link.active { background: #1d2b24; color: #fff; }
         [data-theme="dark"] .p3-sidebar .nav-link.active .nav-ico { color: #7fe0ac; }
-        [data-theme="dark"] .p3-sidebar .nav-indicator { background: #7fe0ac; box-shadow: 0 0 8px rgba(127,224,172,.3); }
         [data-theme="dark"] .p3-logout { background: transparent; border-color: #3a4c43; color: #c3d0c8; }
         [data-theme="dark"] .p3-logout:hover, [data-theme="dark"] .p3-logout:focus { background: #1d2b24; border-color: #3a4c43; color: #f1a8a8; }
         /* Settings — avatar, tiles, QR, notifications */
@@ -317,7 +313,6 @@
                 </div>
             </div>
             <nav class="nav flex-column gap-1 flex-grow-1" id="p3Nav">
-                <span class="nav-indicator" id="navIndicator"></span>
                 <a class="nav-link {{ request()->routeIs('dashboard','home') ? 'active' : '' }}" aria-current="{{ request()->routeIs('dashboard','home') ? 'page' : 'false' }}" href="{{ route('dashboard') }}"><span class="nav-ico"><i class="bi bi-grid-1x2-fill"></i></span>{{ __('nav.dashboard') }}</a>
                 <a class="nav-link {{ request()->routeIs('documents.upload') ? 'active' : '' }}" aria-current="{{ request()->routeIs('documents.upload') ? 'page' : 'false' }}" href="{{ route('documents.upload') }}"><span class="nav-ico"><i class="bi bi-cloud-arrow-up-fill"></i></span>{{ __('nav.upload') }}</a>
                 <a class="nav-link {{ request()->routeIs('documents.library') ? 'active' : '' }}" aria-current="{{ request()->routeIs('documents.library') ? 'page' : 'false' }}" href="{{ route('documents.library') }}"><span class="nav-ico"><i class="bi bi-folder-fill"></i></span>{{ __('nav.library') }}</a>
@@ -734,45 +729,6 @@
 @endauth
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-(function () {
-    var nav = document.getElementById('p3Nav');
-    var bar = document.getElementById('navIndicator');
-    if (!nav || !bar) return;
-    var links = Array.prototype.slice.call(nav.querySelectorAll('.nav-link'));
-    function speed(fast) {
-        bar.style.transition = fast
-            ? 'top .18s ease-out, height .18s ease, opacity .2s ease'
-            : 'top 1.6s cubic-bezier(.65,0,.35,1), height 1.6s ease, opacity .3s ease';
-    }
-    function moveTo(el, fast) {
-        if (!el) { bar.style.opacity = '0'; return; }
-        speed(!!fast);
-        bar.style.top = (el.offsetTop + 10) + 'px';
-        bar.style.height = Math.max(el.offsetHeight - 20, 16) + 'px';
-        bar.style.opacity = '1';
-    }
-    function activeLink() { return nav.querySelector('.nav-link.active'); }
-    // Elevator ride: after a short delay the car travels slowly from the
-    // top floor down to your selected item, then dings on arrival.
-    speed(false);
-    setTimeout(function () {
-        var el = activeLink();
-        moveTo(el);
-        setTimeout(function () {
-            if (!el) return;
-            el.classList.remove('arrived');
-            void el.offsetWidth;
-            el.classList.add('arrived');
-            setTimeout(function () { el.classList.remove('arrived'); }, 600);
-        }, 1700);
-    }, 450);
-    // Hover = express ride; leaving returns the car to your floor.
-    links.forEach(function (a) {
-        a.addEventListener('mouseenter', function () { moveTo(a, true); });
-        a.addEventListener('click', function () { moveTo(a, true); });
-    });
-    nav.addEventListener('mouseleave', function () { moveTo(activeLink(), true); });
-})();
 (function () {
     var ok = document.getElementById('flashOk');
     if (ok) setTimeout(function () {

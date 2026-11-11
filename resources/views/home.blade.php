@@ -38,26 +38,33 @@
     .wd-section-head { display: flex; align-items: center; justify-content: space-between; gap: .6rem; flex-wrap: wrap; }
     .wd-section-head .wd-tools { border: 0; padding: 0; }
     .wd-section-title { font-size: 1.02rem; font-weight: 800; color: #1a1a2e; margin: 0; }
+    .wd-section { position: relative; }
+    /* Swipe hint icon on folders strip */
+    .wd-swipe-hint { position: absolute; right: .4rem; bottom: .9rem; width: 30px; height: 30px; border-radius: 50%; background: #fff; border: 1px solid #d5e8db; box-shadow: 0 2px 8px rgba(10,31,92,.14); color: #00A868; display: none; align-items: center; justify-content: center; font-size: .95rem; pointer-events: none; z-index: 4; animation: wd-swipe 1.2s ease-in-out infinite; }
+    .wd-swipe-hint.on { display: flex; }
+    @keyframes wd-swipe { 0%, 100% { transform: translateX(0); opacity: .8; } 50% { transform: translateX(6px); opacity: 1; } }
+    [data-theme="dark"] .wd-swipe-hint { background: #1d2b24; border-color: #2f6b4f; color: #7fe0ac; box-shadow: none; }
 
-    /* ── Folder cards ── */
-    .wd-folders { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: .8rem; }
-    .wd-folder { display: flex; align-items: center; gap: .7rem; background: #fff; border: 1px solid #ebebeb; border-radius: .85rem; padding: .8rem .9rem; text-decoration: none; transition: all .15s ease; }
+    /* ── Folder cards (2-row horizontal swipe strip) ── */
+    .wd-folders { display: grid; grid-template-rows: repeat(2, auto); grid-auto-flow: column; grid-auto-columns: minmax(180px, 1fr); gap: .8rem; overflow-x: auto; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; padding: .2rem .2rem .6rem; margin: -.2rem -.2rem 0; scrollbar-width: none; }
+    .wd-folders::-webkit-scrollbar, .wd-recents::-webkit-scrollbar { display: none; }
+    .wd-folder { scroll-snap-align: start; display: flex; align-items: center; gap: .7rem; background: #fff; border: 1px solid #ebebeb; border-radius: .85rem; padding: .8rem .9rem; text-decoration: none; transition: all .15s ease; }
     .wd-folder:hover { border-color: #b7e0c8; background: #fbfefc; box-shadow: 0 4px 14px rgba(10,31,92,.06); }
     .wd-folder-ico { width: 38px; height: 38px; flex: 0 0 38px; border-radius: .6rem; background: #e6f3ea; color: #00A868; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
-    .wd-folder-name { font-weight: 700; font-size: .85rem; color: #1a1a2e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .wd-folder-name { font-weight: 700; font-size: .85rem; color: #1a1a2e; white-space: normal; overflow-wrap: anywhere; line-height: 1.35; }
     .wd-folder-meta { font-size: .7rem; color: #9a9ab0; }
     .wd-folder-go { margin-left: auto; color: #c8c8d8; font-size: .85rem; flex: 0 0 auto; }
 
-    /* ── Recent file cards ── */
-    .wd-recents { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .8rem; }
-    .wd-recent { display: flex; align-items: center; gap: .75rem; background: #fff; border: 1px solid #ebebeb; border-radius: .85rem; padding: .85rem .95rem; text-decoration: none; transition: all .15s ease; }
+    /* ── Recent file cards (2-row horizontal swipe strip) ── */
+    .wd-recents { display: grid; grid-template-rows: repeat(1, auto); grid-auto-flow: column; grid-auto-columns: minmax(180px, 300px); gap: .8rem; justify-content: start; overflow-x: auto; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; padding: .2rem .2rem .6rem; margin: -.2rem -.2rem 0; scrollbar-width: none; }
+    .wd-recent { scroll-snap-align: start; display: flex; align-items: center; gap: .75rem; background: #fff; border: 1px solid #ebebeb; border-radius: .85rem; padding: .85rem .95rem; text-decoration: none; transition: all .15s ease; }
     .wd-recent:hover { border-color: #b7e0c8; background: #fbfefc; box-shadow: 0 4px 14px rgba(10,31,92,.06); }
     .wd-recent-ico { width: 40px; height: 40px; flex: 0 0 40px; border-radius: .6rem; background: #f0f9f3; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; }
-    .wd-recent-name { font-weight: 700; font-size: .84rem; color: #1a1a2e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .wd-recent-meta { font-size: .7rem; color: #9a9ab0; margin-top: .1rem; }
+    .wd-recent-name { font-weight: 700; font-size: .84rem; color: #1a1a2e; white-space: normal; overflow-wrap: anywhere; line-height: 1.35; }
+    .wd-recent-meta { font-size: .7rem; color: #9a9ab0; margin-top: .1rem; white-space: normal; overflow-wrap: anywhere; }
 
     /* ── All files ── */
-    .wd-table-wrap { overflow: hidden; }
+    .wd-table-wrap { overflow: visible; }
     .wd-tools { display: flex; align-items: center; gap: .6rem; padding: .5rem .7rem; border-bottom: 1px solid #f0f0f0; flex-wrap: wrap; }
     .wd-filter { display: inline-flex; align-items: center; gap: .4rem; background: #fff; border: 1px solid #e2e2e2; border-radius: .65rem; padding: .35rem .65rem; font-size: .74rem; font-weight: 600; color: #444; text-decoration: none; transition: all .15s ease; }
     .wd-filter:hover { border-color: #00A868; color: #00743F; background: #f0f9f3; }
@@ -74,18 +81,22 @@
     .wd-table tbody tr + tr td { border-top: 1px solid #f2f2f2; }
     .wd-name-cell { display: flex; align-items: center; gap: .65rem; min-width: 0; }
     .wd-name-ico { width: 30px; height: 30px; flex: 0 0 30px; border-radius: .5rem; background: #f0f9f3; display: flex; align-items: center; justify-content: center; font-size: .9rem; }
-    .wd-name-text { min-width: 0; }
-    .wd-name-link { display: block; font-weight: 700; color: #1a1a2e; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
+    .wd-name-text { display: flex; align-items: center; gap: .6rem; min-width: 0; overflow: hidden; }
+    .wd-name-link { display: block; font-weight: 700; color: #1a1a2e; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; max-width: 260px; }
     .wd-name-link:hover { color: #00743F; text-decoration: underline; }
     .wd-name-meta { display: flex; align-items: center; gap: .4rem; margin-top: .2rem; font-size: .7rem; flex-wrap: wrap; }
     .wd-dot { color: #c8c8d8; }
-    .wd-shared { display: flex; align-items: center; gap: 1.1rem; min-width: 0; }
-    .wd-avatar { width: 34px; height: 34px; flex: 0 0 34px; border-radius: 50%; background: #e6f3ea; color: #00743F; font-size: .7rem; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
-    .wd-shared-name { font-weight: 600; color: #333; font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .wd-shared { display: flex; align-items: center; gap: .5rem; min-width: 0; }
+    .wd-avatar { width: 28px; height: 28px; flex: 0 0 28px; border-radius: 50%; background: #e6f3ea; color: #00743F; font-size: .66rem; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+    .wd-shared-name { font-weight: 600; color: #333; font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 auto; min-width: 0; }
     .wd-modified { color: #5a9e7a; font-size: .95rem; white-space: nowrap; }
+    .wd-cat { display: inline-flex; align-items: center; gap: .35rem; font-size: .78rem; font-weight: 600; color: #00743F; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .wd-cat i { color: #00A868; font-size: .8rem; }
+    .wd-size-cell { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; }
+    .wd-dots { display: inline-flex; align-items: center; justify-content: center; width: 1.2em; height: 1.2em; color: #9a9ab0; font-size: 1rem; line-height: 1; text-decoration: none; transition: color .15s ease; }
+    .wd-dots:hover, .wd-dots:focus { color: #00A868; }
     .wd-empty { text-align: center; padding: 2.2rem 1rem; color: #9a9ab0; }
     .wd-empty i { font-size: 1.8rem; display: block; margin-bottom: .45rem; opacity: .5; }
-    .wd-check { width: 15px; height: 15px; accent-color: #00A868; cursor: pointer; }
 
     /* ── Dark mode ── */
     [data-theme="dark"] .wd-search { background: #131d18; border-color: #2c3d34; }
@@ -126,6 +137,9 @@
     [data-theme="dark"] .wd-avatar { background: #1d2b24; color: #7fe0ac; }
     [data-theme="dark"] .wd-shared-name { color: #c3d0c8; }
     [data-theme="dark"] .wd-modified { color: #8fa59a; }
+    [data-theme="dark"] .wd-cat { color: #7fe0ac; }
+    [data-theme="dark"] .wd-dots { color: #8fa59a; }
+    [data-theme="dark"] .wd-dots:hover, [data-theme="dark"] .wd-dots:focus { color: #7fe0ac; }
     [data-theme="dark"] .wd-empty { color: #8fa59a; }
 </style>
 
@@ -162,7 +176,7 @@
             <h2 class="wd-section-title" id="wdFoldersTitle">Folders</h2>
         </div>
         @if($categories->isEmpty())
-            <div class="wd-card wd-empty"><i class="bi bi-folder2-open"></i>No folders yet — categories appear here once documents are uploaded.</div>
+            <div class="wd-card wd-empty"><i class="bi bi-folder2-open"></i>No folders yet — categories appear here as soon as they are added.</div>
         @else
             <div class="wd-folders">
                 @php
@@ -171,7 +185,7 @@
                         $folderCounts[$cd->category_id] = (int) $cd->total;
                     }
                 @endphp
-                @foreach($categories->take(8) as $folder)
+                @foreach($categories as $folder)
                     <?php $catCount = $folderCounts[$folder->id] ?? 0; ?>
                     <a class="wd-folder" href="{{ route('documents.library', ['category_id' => $folder->id]) }}">
                         <span class="wd-folder-ico"><i class="bi bi-folder-fill"></i></span>
@@ -184,6 +198,7 @@
                 @endforeach
             </div>
         @endif
+        <span class="wd-swipe-hint" id="foldersSwipeHint" aria-hidden="true"><i class="bi bi-chevron-double-right"></i></span>
     </section>
 
     {{-- ── Recent files ── --}}
@@ -232,10 +247,11 @@
                         <caption class="visually-hidden">All files</caption>
                         <thead>
                             <tr>
-                                <th scope="col" style="width:36px"><input type="checkbox" class="wd-check" aria-label="Select all files"></th>
                                 <th scope="col">File name <i class="bi bi-arrow-up" style="font-size:.55rem"></i></th>
-                                <th scope="col" style="width:240px">Shared by</th>
-                                <th scope="col" style="width:190px">Last modified</th>
+                                <th scope="col" style="width:180px">Categories</th>
+                                <th scope="col" style="width:230px">Shared by</th>
+                                <th scope="col" style="width:160px">Last modified</th>
+                                <th scope="col" style="width:125px">Size</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -251,16 +267,15 @@
                                     $rowInitials = $file->uploader?->initials() ?? '?';
                                 @endphp
                                 <tr>
-                                    <td><input type="checkbox" class="wd-check" aria-label="Select {{ $file->title ?? $file->original_filename }}"></td>
                                     <td>
                                         <div class="wd-name-cell">
                                             <span class="wd-name-ico"><i class="bi {{ $rowIcon[0] }}" style="color:{{ $rowIcon[1] }}"></i></span>
                                             <span class="wd-name-text">
                                                 <a class="wd-name-link" href="{{ route('documents.show', $file) }}" title="{{ $file->title ?? $file->original_filename }}">{{ $file->title ?? $file->original_filename }}</a>
-                                                <span class="wd-name-sub">{{ $rowSize }} · {{ $file->category?->name ?? 'Uncategorized' }}</span>
                                             </span>
                                         </div>
                                     </td>
+                                    <td><span class="wd-cat"><i class="bi bi-folder-fill"></i> {{ $file->category?->name ?? 'Uncategorized' }}</span></td>
                                     <td>
                                         <div class="wd-shared">
                                             <span class="wd-avatar">{{ $rowInitials }}</span>
@@ -268,6 +283,19 @@
                                         </div>
                                     </td>
                                     <td class="wd-modified text-nowrap">{{ $file->updated_at?->format('d F Y') ?? '—' }}</td>
+                                    <td class="wd-modified text-nowrap">
+                                        <span class="wd-size-cell">
+                                            {{ $rowSize }}
+                                            <span class="dropdown d-inline-block">
+                                                <button class="btn btn-link p-0 wd-dots" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions for {{ $file->title ?? $file->original_filename }}"><i class="bi bi-three-dots-vertical"></i></button>
+                                                <ul class="dropdown-menu dropdown-menu-end" style="border-radius:.75rem;border-color:#d5e8db">
+                                                    <li><a class="dropdown-item" href="{{ route('documents.show', $file) }}"><i class="bi bi-eye me-2"></i>View</a></li>
+                                                    <li><a class="dropdown-item" href="{{ route('documents.edit', $file) }}"><i class="bi bi-pencil me-2"></i>Edit</a></li>
+                                                    <li><button type="button" class="dropdown-item text-danger" data-delete-url="{{ route('documents.destroy', $file) }}" onclick="if(confirm('Delete this document?')){var f=document.getElementById('wdDelForm');f.action=this.getAttribute('data-delete-url');f.submit();}"><i class="bi bi-trash me-2"></i>Delete</button></li>
+                                                </ul>
+                                            </span>
+                                        </span>
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -278,4 +306,20 @@
     </section>
 
 </div>
+<script>
+(function () {
+    var strip = document.querySelector('.wd-folders');
+    var hint = document.getElementById('foldersSwipeHint');
+    if (!strip || !hint) return;
+    function update() {
+        var overflow = strip.scrollWidth - strip.clientWidth > 1;
+        var atEnd = strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 4;
+        hint.classList.toggle('on', overflow && !atEnd);
+    }
+    strip.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+})();
+</script>
+<form id="wdDelForm" method="POST" style="display:none">@csrf @method('DELETE')</form>
 @endsection
