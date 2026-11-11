@@ -304,6 +304,71 @@
         </div>
     </div>
 
+        {{-- ── Layout tab: Page Setup / Paragraph / Arrange ────────────────────── --}}
+        <div class="p3-word-ribbon-content d-none" id="ribbonLayout" role="tabpanel">
+
+            {{-- Page Setup --}}
+            <div class="p3-word-ribbon-group">
+                <div class="p3-word-ribbon-group-title">Page Setup</div>
+                <div class="p3-word-ribbon-controls p3-word-page-setup">
+                    <button type="button" class="p3-word-ribbon-btn p3-word-page-setup-btn" id="marginsBtn" title="Margins" aria-label="Margins"><i class="bi bi-border-all me-1"></i><span class="p3-ribbon-label">Margins</span><i class="bi bi-chevron-down ms-2"></i></button>
+                    <button type="button" class="p3-word-ribbon-btn p3-word-page-setup-btn" id="orientationBtn" title="Orientation" aria-label="Orientation"><i class="bi bi-layout-sidebar me-1"></i><span class="p3-ribbon-label">Orientation</span><i class="bi bi-chevron-down ms-2"></i></button>
+                    <button type="button" class="p3-word-ribbon-btn p3-word-page-setup-btn" id="sizeBtn" title="Size" aria-label="Size"><i class="bi bi-layout-text-window me-1"></i><span class="p3-ribbon-label">Size</span><i class="bi bi-chevron-down ms-2"></i></button>
+                    <button type="button" class="p3-word-ribbon-btn p3-word-page-setup-btn" id="columnsBtn" title="Columns" aria-label="Columns"><i class="bi bi-layout-columns me-1"></i><span class="p3-ribbon-label">Columns</span><i class="bi bi-chevron-down ms-2"></i></button>
+                    <div class="p3-word-ribbon-sep"></div>
+                    <button type="button" class="p3-word-ribbon-btn" id="breaksBtn" title="Breaks" aria-label="Breaks"><i class="bi bi-layout-text-window-reverse me-1"></i><span class="p3-ribbon-label">Breaks</span><i class="bi bi-chevron-down ms-2"></i></button>
+                    <button type="button" class="p3-word-ribbon-btn" id="lineNumbersBtn" title="Line Numbers" aria-label="Line Numbers"><i class="bi bi-list-ol me-1"></i><span class="p3-ribbon-label small">Line Numbers</span><i class="bi bi-chevron-down ms-1"></i></button>
+                    <button type="button" class="p3-word-ribbon-btn" id="hyphenationBtn" title="Hyphenation" aria-label="Hyphenation"><i class="bi bi-dash me-1"></i><span class="p3-ribbon-label small">Hyphenation</span><i class="bi bi-chevron-down ms-1"></i></button>
+                </div>
+            </div>
+
+            {{-- Paragraph --}}
+            <div class="p3-word-ribbon-group">
+                <div class="p3-word-ribbon-group-title">Paragraph</div>
+                <div class="p3-word-ribbon-controls p3-word-paragraph-controls">
+                    <div class="p3-word-indent-group">
+                        <label class="p3-indent-label">Left:</label>
+                        <input type="text" class="p3-indent-input" id="indentLeft" value="0">
+                        <span class="p3-indent-unit">"</span>
+                    </div>
+                    <div class="p3-word-indent-group">
+                        <label class="p3-indent-label">Right:</label>
+                        <input type="text" class="p3-indent-input" id="indentRight" value="0">
+                        <span class="p3-indent-unit">"</span>
+                    </div>
+                    <div class="p3-word-indent-sep"></div>
+                    <label class="p3-indent-label">Before:</label>
+                    <input type="text" class="p3-indent-input" id="spacingBefore" value="0">
+                    <span class="p3-indent-unit">pt</span>
+                    <label class="p3-indent-label">After:</label>
+                    <input type="text" class="p3-indent-input" id="spacingAfter" value="8">
+                    <span class="p3-indent-unit">pt</span>
+                </div>
+            </div>
+
+            {{-- Arrange --}}
+            <div class="p3-word-ribbon-group">
+                <div class="p3-word-ribbon-group-title">Arrange</div>
+                <div class="p3-word-ribbon-controls p3-word-arrange-controls">
+                    <div class="p3-word-arrange-subgroup">
+                        <button type="button" class="p3-word-arrange-btn" id="positionBtn" title="Position" aria-label="Position"><i class="bi bi-arrows-move me-1"></i><span class="p3-ribbon-label small">Position</span><i class="bi bi-chevron-down ms-1"></i></button>
+                        <button type="button" class="p3-word-arrange-btn" id="wrapTextBtn" title="Wrap Text" aria-label="Wrap Text"><i class="bi bi-text-wrap me-1"></i><span class="p3-ribbon-label small">Wrap Text</span><i class="bi bi-chevron-down ms-1"></i></button>
+                        <button type="button" class="p3-word-arrange-btn" id="bringForwardBtn" title="Bring Forward" aria-label="Bring Forward"><i class="bi bi-stack me-1"></i><span class="p3-ribbon-label small">Bring Forward</span><i class="bi bi-chevron-down ms-1"></i></button>
+                        <button type="button" class="p3-word-arrange-btn" id="sendBackwardBtn" title="Send Backward" aria-label="Send Backward"><i class="bi bi-stack me-1"></i><span class="p3-ribbon-label small">Send Backward</span><i class="bi bi-chevron-down ms-1"></i></button>
+                    </div>
+                    <div class="p3-word-arrange-sep"></div>
+                    <button type="button" class="p3-word-arrange-btn" id="selectionPaneBtn" title="Selection Pane" aria-label="Selection Pane"><i class="bi bi-layout-text-window me-1"></i><span class="p3-ribbon-label small">Selection Pane</span></button>
+                    <div class="p3-word-arrange-subgroup">
+                        <button type="button" class="p3-word-arrange-btn" id="alignBtn" title="Align" aria-label="Align"><i class="bi bi-text-center me-1"></i><span class="p3-ribbon-label small">Align</span><i class="bi bi-chevron-down ms-1"></i></button>
+                        <button type="button" class="p3-word-arrange-btn" id="groupBtn" title="Group" aria-label="Group"><i class="bi bi-collection me-1"></i><span class="p3-ribbon-label small">Group</span><i class="bi bi-chevron-down ms-1"></i></button>
+                        <button type="button" class="p3-word-arrange-btn" id="rotateBtn" title="Rotate" aria-label="Rotate"><i class="bi bi-arrow-repeat me-1"></i><span class="p3-ribbon-label small">Rotate</span><i class="bi bi-chevron-down ms-1"></i></button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
     {{-- ── Editing area ────────────────────────────────────────── --}}
     <div class="p3-word-editor">
         {{-- Left gutter (grey) --}}
@@ -705,6 +770,59 @@
 [data-theme="dark"] .p3-theme-link:hover { background: #3f3f3f; }
 [data-theme="dark"] .p3-color-chip { border-color: #5a5a5a; }
 
+/* ── Layout tab: Page Setup ──────────────────────────────────────────── */
+.p3-word-page-setup {
+    display: flex; flex-wrap: wrap; gap: 4px; padding: 0 4px;
+    align-items: center;
+}
+.p3-word-page-setup-btn {
+    background: transparent; border: 1px solid transparent; border-radius: 2px;
+    color: #333; font-size: .78rem; padding: 2px 6px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+}
+.p3-word-page-setup-btn:hover { background: #f2f2f2; border-color: #a6a6a6; }
+.p3-word-page-setup-btn i { font-size: 1rem; }
+
+.p3-word-paragraph-controls {
+    display: flex; flex-wrap: wrap; gap: 8px; padding: 0 4px; align-items: center;
+}
+.p3-word-indent-group {
+    display: flex; align-items: center; gap: 3px;
+}
+.p3-indent-label { font-size: .78rem; color: #333; white-space: nowrap; }
+.p3-indent-input {
+    width: 38px; font-size: .78rem; padding: 1px 4px; border: 1px solid #a6a6a6;
+    border-radius: 2px; background: #fff; text-align: right;
+}
+.p3-indent-input:focus { border-color: #2b579a; outline: none; box-shadow: 0 0 0 1px #2b579a; }
+.p3-indent-unit { font-size: .78rem; color: #666; }
+.p3-word-indent-sep { width: 1px; height: 14px; background: #c4c4c4; margin: 1px 0; align-self: center; }
+
+.p3-word-arrange-controls {
+    display: flex; flex-wrap: wrap; gap: 6px; padding: 0 4px; align-items: center;
+}
+.p3-word-arrange-subgroup {
+    display: flex; gap: 4px;
+}
+.p3-word-arrange-sep { width: 1px; height: 16px; background: #c4c4c4; margin: 0 4px; align-self: center; }
+.p3-word-arrange-btn {
+    background: transparent; border: 1px solid transparent; border-radius: 2px;
+    color: #333; font-size: .78rem; padding: 2px 6px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+}
+.p3-word-arrange-btn:hover { background: #f2f2f2; border-color: #a6a6a6; }
+.p3-word-arrange-btn i { font-size: .9rem; }
+
+/* ── Dark mode Layout tab ────────────────────────────────────────────── */
+[data-theme="dark"] .p3-word-page-setup-btn { color: #ccc; }
+[data-theme="dark"] .p3-word-page-setup-btn:hover { background: #3f3f3f; border-color: #5a5a5a; color: #fff; }
+[data-theme="dark"] .p3-indent-label { color: #ccc; }
+[data-theme="dark"] .p3-indent-input { background: #3f3f3f; color: #fff; border-color: #5a5a5a; }
+[data-theme="dark"] .p3-indent-unit { color: #888; }
+[data-theme="dark"] .p3-word-indent-sep { background: #3f3f3f; }
+[data-theme="dark"] .p3-word-arrange-btn { color: #ccc; }
+[data-theme="dark"] .p3-word-arrange-btn:hover { background: #3f3f3f; border-color: #5a5a5a; color: #fff; }
+
 /* ── Print ──────────────────────────────────────────────────────── */
 @media print {
     .p3-word-titlebar, .p3-word-ribbon, .p3-word-statusbar, .p3-word-gutter { display: none !important; }
@@ -1092,6 +1210,71 @@
     });
     document.getElementById('pageBordersBtn').addEventListener('click', function () {
         alert('Page Borders — set page art/borders (coming soon).');
+    });
+
+    /* ── Layout: Page Setup ────────────────────────────────────────── */
+    document.getElementById('marginsBtn').addEventListener('click', function () {
+        alert('Margins — set page margins (Normal, Narrow, Moderate, Wide) (coming soon).');
+    });
+    document.getElementById('orientationBtn').addEventListener('click', function () {
+        alert('Orientation — Portrait / Landscape (coming soon).');
+    });
+    document.getElementById('sizeBtn').addEventListener('click', function () {
+        alert('Size — choose paper size (Letter, A4, Legal, etc.) (coming soon).');
+    });
+    document.getElementById('columnsBtn').addEventListener('click', function () {
+        alert('Columns — one, two, three columns or more (coming soon).');
+    });
+    document.getElementById('breaksBtn').addEventListener('click', function () {
+        alert('Breaks — page, column, section breaks (coming soon).');
+    });
+    document.getElementById('lineNumbersBtn').addEventListener('click', function () {
+        alert('Line Numbers — add line numbers (coming soon).');
+    });
+    document.getElementById('hyphenationBtn').addEventListener('click', function () {
+        alert('Hyphenation — automatic hyphenation options (coming soon).');
+    });
+
+    /* ── Layout: Paragraph (indent/spacing) ────────────────────────── */
+    document.getElementById('indentLeft').addEventListener('change', function () {
+        var v = this.value || '0';
+        try { document.execCommand('formatBlock', false, '<div style="margin-left:' + v + 'in">'); } catch (e) {}
+        markDirty();
+    });
+    document.getElementById('indentRight').addEventListener('change', function () {
+        alert('Right indent set to ' + this.value + '"');
+    });
+    document.getElementById('spacingBefore').addEventListener('change', function () {
+        alert('Spacing before set to ' + this.value + ' pt');
+    });
+    document.getElementById('spacingAfter').addEventListener('change', function () {
+        alert('Spacing after set to ' + this.value + ' pt');
+    });
+
+    /* ── Layout: Arrange ───────────────────────────────────────────── */
+    document.getElementById('positionBtn').addEventListener('click', function () {
+        alert('Position — set object position on page (coming soon).');
+    });
+    document.getElementById('wrapTextBtn').addEventListener('click', function () {
+        alert('Wrap Text — square, tight, through, top/bottom (coming soon).');
+    });
+    document.getElementById('bringForwardBtn').addEventListener('click', function () {
+        alert('Bring Forward — move object forward one layer (coming soon).');
+    });
+    document.getElementById('sendBackwardBtn').addEventListener('click', function () {
+        alert('Send Backward — move object back one layer (coming soon).');
+    });
+    document.getElementById('selectionPaneBtn').addEventListener('click', function () {
+        alert('Selection Pane — list and select all objects (coming soon).');
+    });
+    document.getElementById('alignBtn').addEventListener('click', function () {
+        alert('Align — align objects left/center/right/top/middle/bottom (coming soon).');
+    });
+    document.getElementById('groupBtn').addEventListener('click', function () {
+        alert('Group / Ungroup — group selected objects (coming soon).');
+    });
+    document.getElementById('rotateBtn').addEventListener('click', function () {
+        alert('Rotate — rotate object 90° or flip (coming soon).');
     });
 
     /* ── Find & replace modal ─────────────────────────────────── */
