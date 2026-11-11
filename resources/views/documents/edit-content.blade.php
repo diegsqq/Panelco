@@ -862,10 +862,6 @@
     document.getElementById('wordZoomSlider').addEventListener('input', function () {
         zoom = parseInt(this.value, 10); applyZoom();
     });
-    document.querySelector('.p3-status-view-btns .p3-word-btn-sm:last-child').addEventListener('click', function () {
-        zoom = Math.min(zoom + 10, 150); applyZoom();
-    });
-    /* last-buttons selector hack — better: grab +/- buttons directly */
     var zoomBtns = document.querySelectorAll('.p3-status-right .p3-word-text-btn');
     zoomBtns[0].addEventListener('click', function () { zoom = Math.min(zoom + 10, 150); applyZoom(); });
     zoomBtns[1].addEventListener('click', function () { zoom = Math.max(zoom - 10, 60); applyZoom(); });
