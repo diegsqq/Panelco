@@ -598,17 +598,16 @@
 }
 .p3-word-pages-wrap { width: 100%; max-width: 940px; }
 .p3-word-page {
-    background: #fff;
+    background: transparent;
     width: 210mm;            /* A4 width */
     min-height: 297mm;       /* A4 height */
-    box-shadow: 0 0 10px rgba(0,0,0,.15);
     margin: 0 auto 10px;
     position: relative;
     overflow: hidden;
     display: flex;
     flex-direction: column;
 }
-[data-theme="dark"] .p3-word-page { background: #1e1e1e; box-shadow: none; }
+[data-theme="dark"] .p3-word-page { background: transparent; box-shadow: none; }
 
 .p3-word-page-band {
     background: #f8f8f8;
