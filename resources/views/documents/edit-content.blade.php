@@ -229,6 +229,79 @@
             </div>
 
         </div>
+
+        {{-- ── Design tab: Document Formatting / Themes ────────────────────── --}}
+        <div class="p3-word-ribbon-content d-none" id="ribbonDesign" role="tabpanel">
+
+            {{-- Document Themes --}}
+            <div class="p3-word-ribbon-group">
+                <div class="p3-word-ribbon-group-title">Document Formatting</div>
+                <div class="p3-word-ribbon-controls p3-word-theme-controls">
+                    <button type="button" class="p3-word-theme-btn p3-theme-dropdown" id="themesBtn" title="Themes" aria-label="Document themes">
+                        <span class="p3-theme-preview"></span><span class="p3-ribbon-label">Themes</span><i class="bi bi-chevron-down ms-2"></i>
+                    </button>
+                    <div class="p3-theme-menu d-none" id="themesMenu">
+                        <div class="p3-theme-header">Office</div>
+                        <div class="p3-theme-grid" id="themeGrid">
+                            {{-- Theme thumbnails --}}
+                            <button class="p3-theme-tile p3-theme-selected" title="Office" data-theme="office"><div class="p3-theme-swatch"></div><span class="p3-theme-name">Office</span></button>
+                            <button class="p3-theme-tile" title="Facet" data-theme="facet"><div class="p3-theme-swatch p3-swatch-facet"></div><span class="p3-theme-name">Facet</span></button>
+                            <button class="p3-theme-tile" title="Gallery" data-theme="gallery"><div class="p3-theme-swatch p3-swatch-gallery"></div><span class="p3-theme-name">Gallery</span></button>
+                            <button class="p3-theme-tile" title="Integral" data-theme="integral"><div class="p3-theme-swatch p3-swatch-integral"></div><span class="p3-theme-name">Integral</span></button>
+                            <button class="p3-theme-tile" title="Ion" data-theme="ion"><div class="p3-theme-swatch p3-swatch-ion"></div><span class="p3-theme-name">Ion</span></button>
+                            <button class="p3-theme-tile" title="Ion Boardroom" data-theme="ion-boardroom"><div class="p3-theme-swatch p3-swatch-ionb"></div><span class="p3-theme-name">Ion Boardroom</span></button>
+                            <button class="p3-theme-tile" title="Organic" data-theme="organic"><div class="p3-theme-swatch p3-swatch-organic"></div><span class="p3-theme-name">Organic</span></button>
+                            <button class="p3-theme-tile" title="Retrospect" data-theme="retrospect"><div class="p3-theme-swatch p3-swatch-retro"></div><span class="p3-theme-name">Retrospect</span></button>
+                            <button class="p3-theme-tile" title="Slice" data-theme="slice"><div class="p3-theme-swatch p3-swatch-slice"></div><span class="p3-theme-name">Slice</span></button>
+                            <button class="p3-theme-tile" title="Wisp" data-theme="wisp"><div class="p3-theme-swatch p3-swatch-wisp"></div><span class="p3-theme-name">Wisp</span></button>
+                            <button class="p3-theme-tile" title="Banded" data-theme="banded"><div class="p3-theme-swatch p3-swatch-banded"></div><span class="p3-theme-name">Banded</span></button>
+                            <button class="p3-theme-tile" title="Basis" data-theme="basis"><div class="p3-theme-swatch p3-swatch-basis"></div><span class="p3-theme-name">Basis</span></button>
+                            <button class="p3-theme-tile" title="Berlin" data-theme="berlin"><div class="p3-theme-swatch p3-swatch-berlin"></div><span class="p3-theme-name">Berlin</span></button>
+                            <button class="p3-theme-tile" title="Circuit" data-theme="circuit"><div class="p3-theme-swatch p3-swatch-circuit"></div><span class="p3-theme-name">Circuit</span></button>
+                            <button class="p3-theme-tile" title="Damask" data-theme="damask"><div class="p3-theme-swatch p3-swatch-damask"></div><span class="p3-theme-name">Damask</span></button>
+                            <button class="p3-theme-tile" title="Dividend" data-theme="dividend"><div class="p3-theme-swatch p3-swatch-dividend"></div><span class="p3-theme-name">Dividend</span></button>
+                            <button class="p3-theme-tile" title="Droplet" data-theme="droplet"><div class="p3-theme-swatch p3-swatch-droplet"></div><span class="p3-theme-name">Droplet</span></button>
+                            <button class="p3-theme-tile" title="Frame" data-theme="frame"><div class="p3-theme-swatch p3-swatch-frame"></div><span class="p3-theme-name">Frame</span></button>
+                            <button class="p3-theme-tile" title="Gallery" data-theme="gallery2"><div class="p3-theme-swatch p3-swatch-gallery2"></div><span class="p3-theme-name">Gallery</span></button>
+                            <button class="p3-theme-tile" title="Main Event" data-theme="main-event"><div class="p3-theme-swatch p3-swatch-main"></div><span class="p3-theme-name">Main Event</span></button>
+                        </div>
+                        <div class="p3-theme-footer">
+                            <a class="p3-theme-link">Reset to Theme from Template</a>
+                            <a class="p3-theme-link">Browse for Themes…</a>
+                            <a class="p3-theme-link">Save Current Theme…</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Colors / Fonts / Effects --}}
+            <div class="p3-word-ribbon-group">
+                <div class="p3-word-ribbon-group-title">Theme Options</div>
+                <div class="p3-word-ribbon-controls">
+                    <div class="p3-word-color-group">
+                        <button type="button" class="p3-word-ribbon-btn p3-word-ribbon-btn-color" id="colorsBtn" title="Colors" aria-label="Theme colors">
+                            <span class="p3-color-chip" style="background:#2b579a"></span><span class="p3-ribbon-label small">Colors</span><i class="bi bi-chevron-down ms-1"></i>
+                        </button>
+                        <button type="button" class="p3-word-ribbon-btn p3-word-ribbon-btn-font" id="fontsBtn" title="Fonts" aria-label="Theme fonts">
+                            <span class="p3-ribbon-label small">Fonts</span><i class="bi bi-chevron-down ms-1"></i>
+                        </button>
+                        <button type="button" class="p3-word-ribbon-btn" id="effectsBtn" title="Effects" aria-label="Theme effects"><span class="p3-ribbon-label small">Effects</span><i class="bi bi-chevron-down ms-1"></i></button>
+                        <button type="button" class="p3-word-ribbon-btn" id="paraSpacingBtn" title="Paragraph Spacing" aria-label="Paragraph spacing"><span class="p3-ribbon-label small">Paragraph Spacing</span><i class="bi bi-chevron-down ms-1"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Page Background --}}
+            <div class="p3-word-ribbon-group">
+                <div class="p3-word-ribbon-group-title">Page Background</div>
+                <div class="p3-word-ribbon-controls">
+                    <button type="button" class="p3-word-ribbon-btn" id="watermarkBtn" title="Watermark" aria-label="Watermark"><i class="bi bi-cloud-fog me-1"></i><span class="p3-ribbon-label">Watermark</span></button>
+                    <button type="button" class="p3-word-ribbon-btn" id="pageColorBtn" title="Page Color" aria-label="Page color"><i class="bi bi-paint-bucket me-1"></i><span class="p3-ribbon-label">Page Color</span></button>
+                    <button type="button" class="p3-word-ribbon-btn" id="pageBordersBtn" title="Page Borders" aria-label="Page borders"><i class="bi bi-layout-border me-1"></i><span class="p3-ribbon-label">Page Borders</span></button>
+                </div>
+            </div>
+
+        </div>
     </div>
 
     {{-- ── Editing area ────────────────────────────────────────── --}}
@@ -566,6 +639,72 @@
 [data-theme="dark"] .p3-status-view-btn.is-active { background: #004488; border-color: #3794ff; color: #fff; }
 [data-theme="dark"] .p3-doc-region.is-empty::before { color: #666; }
 
+/* ── Design tab: Document Themes ─────────────────────────────────────── */
+.p3-word-theme-controls { display: flex; align-items: center; gap: 4px; padding: 0 4px; }
+.p3-theme-preview { width: 34px; height: 22px; background: #fff; border: 1px solid #a6a6a6; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,.15); }
+.p3-theme-dropdown {
+    background: transparent; border: 1px solid transparent; border-radius: 2px;
+    color: #333; font-size: .78rem; padding: 2px 6px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+}
+.p3-theme-dropdown:hover { background: #f2f2f2; border-color: #a6a6a6; }
+.p3-theme-dropdown.is-active { background: #cce8ff; border-color: #2b579a; color: #000; }
+.p3-theme-menu {
+    position: absolute; top: 100%; left: 0; z-index: 1050;
+    background: #fff; border: 1px solid #a6a6a6; border-radius: 3px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.2); padding: 8px; min-width: 340px;
+}
+.p3-theme-header { font-size: .72rem; font-weight: 700; color: #555; margin-bottom: 6px; padding: 0 2px; text-transform: uppercase; letter-spacing: .04em; }
+.p3-theme-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 2px 0; max-height: 260px; overflow-y: auto; }
+.p3-theme-tile {
+    background: transparent; border: 1px solid transparent; border-radius: 3px;
+    padding: 4px 2px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    font-size: .68rem; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.p3-theme-tile:hover { background: #e7e6e6; border-color: #a6a6a6; color: #000; }
+.p3-theme-tile.p3-theme-selected { border-color: #2b579a; background: #cce8ff; color: #000; font-weight: 600; }
+.p3-theme-swatch { width: 44px; height: 28px; border-radius: 2px; border: 1px solid #c4c4c4; margin-bottom: 2px; }
+.p3-theme-name { line-height: 1.1; }
+.p3-theme-footer { border-top: 1px solid #e0e0e0; margin-top: 6px; padding-top: 6px; }
+.p3-theme-link { display: block; font-size: .72rem; color: #2b579a; text-decoration: none; padding: 2px 2px; }
+.p3-theme-link:hover { text-decoration: underline; background: #f2f2f2; }
+
+.p3-swatch-facet { background: linear-gradient(135deg, #2b579a 0%, #e0e0e0 100%); }
+.p3-swatch-gallery { background: linear-gradient(135deg, #c45a2e 0%, #f4f4f4 100%); }
+.p3-swatch-integral { background: linear-gradient(135deg, #4472c4 0%, #ed7d31 100%); }
+.p3-swatch-ion { background: linear-gradient(135deg, #7030a0 0%, #ffc000 100%); }
+.p3-swatch-ionb { background: linear-gradient(135deg, #4472c4 0%, #2b579a 100%); }
+.p3-swatch-organic { background: linear-gradient(135deg, #548235 0%, #bf9000 100%); }
+.p3-swatch-retro { background: linear-gradient(135deg, #c00000 0%, #bfbfbf 100%); }
+.p3-swatch-slice { background: linear-gradient(135deg, #2e75b6 0%, #70ad47 100%); }
+.p3-swatch-wisp { background: linear-gradient(135deg, #4472c4 0%, #70ad47 100%); }
+.p3-swatch-banded { background: linear-gradient(135deg, #4472c4 0%, #ffc000 100%); }
+.p3-swatch-basis { background: linear-gradient(135deg, #2e75b6 0%, #a5a5a5 100%); }
+.p3-swatch-berlin { background: linear-gradient(135deg, #c00000 0%, #f4b183 100%); }
+.p3-swatch-circuit { background: linear-gradient(135deg, #2e75b6 0%, #bfbfbf 100%); }
+.p3-swatch-damask { background: linear-gradient(135deg, #c00000 0%, #bfbfbf 100%); }
+.p3-swatch-dividend { background: linear-gradient(135deg, #2e75b6 0%, #bf9000 100%); }
+.p3-swatch-droplet { background: linear-gradient(135deg, #548235 0%, #bfbfbf 100%); }
+.p3-swatch-frame { background: linear-gradient(135deg, #4472c4 0%, #bfbfbf 100%); }
+.p3-swatch-gallery2 { background: linear-gradient(135deg, #c45a2e 0%, #bf9000 100%); }
+.p3-swatch-main { background: linear-gradient(135deg, #c00000 0%, #ffc000 100%); }
+
+.p3-word-color-group { display: flex; align-items: center; gap: 4px; }
+.p3-word-ribbon-btn-color, .p3-word-ribbon-btn-font { position: relative; }
+.p3-color-chip { width: 20px; height: 16px; border: 1px solid #a6a6a6; border-radius: 2px; display: inline-block; }
+
+/* ── Dark mode Design tab ────────────────────────────────────────────── */
+[data-theme="dark"] .p3-theme-menu { background: #2d2d2d; border-color: #3f3f3f; color: #ccc; }
+[data-theme="dark"] .p3-theme-header { color: #aaa; }
+[data-theme="dark"] .p3-theme-tile { color: #ccc; }
+[data-theme="dark"] .p3-theme-tile:hover { background: #3f3f3f; color: #fff; border-color: #5a5a5a; }
+[data-theme="dark"] .p3-theme-tile.p3-theme-selected { background: #004488; border-color: #3794ff; color: #fff; }
+[data-theme="dark"] .p3-theme-swatch { border-color: #3f3f3f; }
+[data-theme="dark"] .p3-theme-footer { border-top-color: #3f3f3f; }
+[data-theme="dark"] .p3-theme-link { color: #3794ff; }
+[data-theme="dark"] .p3-theme-link:hover { background: #3f3f3f; }
+[data-theme="dark"] .p3-color-chip { border-color: #5a5a5a; }
+
 /* ── Print ──────────────────────────────────────────────────────── */
 @media print {
     .p3-word-titlebar, .p3-word-ribbon, .p3-word-statusbar, .p3-word-gutter { display: none !important; }
@@ -895,6 +1034,64 @@
             var target = document.getElementById('ribbon' + this.textContent.trim());
             if (target) { target.classList.remove('d-none'); target.setAttribute('aria-hidden', 'false'); }
         });
+    });
+
+    /* ── Design: Themes dropdown ─────────────────────────────────────── */
+    var themesBtn   = document.getElementById('themesBtn');
+    var themesMenu  = document.getElementById('themesMenu');
+    var themePrev   = document.querySelector('.p3-theme-preview');
+    var themeTiles  = document.querySelectorAll('.p3-theme-tile');
+
+    themesBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var open = !themesMenu.classList.contains('d-none');
+        document.querySelectorAll('.p3-theme-menu').forEach(function (m) { m.classList.add('d-none'); });
+        themesBtn.classList.toggle('is-active', !open);
+        if (!open) themesMenu.classList.remove('d-none');
+    });
+
+    themeTiles.forEach(function (tile) {
+        tile.addEventListener('click', function () {
+            themeTiles.forEach(function (t) { t.classList.remove('p3-theme-selected'); });
+            tile.classList.add('p3-theme-selected');
+            var name = tile.getAttribute('title');
+            themePrev.style.background = tile.querySelector('.p3-theme-swatch').style.background || '#fff';
+            themesMenu.classList.add('d-none');
+            themesBtn.classList.remove('is-active');
+            markDirty();
+        });
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!themesBtn.contains(e.target) && !themesMenu.contains(e.target)) {
+            themesMenu.classList.add('d-none');
+            themesBtn.classList.remove('is-active');
+        }
+    });
+
+    /* ── Design: Colors / Fonts / Effects / Paragraph Spacing ────────── */
+    document.getElementById('colorsBtn').addEventListener('click', function () {
+        alert('Colors — pick a theme color scheme (coming soon).');
+    });
+    document.getElementById('fontsBtn').addEventListener('click', function () {
+        alert('Fonts — pick a theme font pair (coming soon).');
+    });
+    document.getElementById('effectsBtn').addEventListener('click', function () {
+        alert('Effects — pick theme line/fill effects (coming soon).');
+    });
+    document.getElementById('paraSpacingBtn').addEventListener('click', function () {
+        alert('Paragraph Spacing — set theme paragraph spacing (coming soon).');
+    });
+
+    /* ── Design: Page Background ─────────────────────────────────────── */
+    document.getElementById('watermarkBtn').addEventListener('click', function () {
+        alert('Watermark — add a text or picture watermark (coming soon).');
+    });
+    document.getElementById('pageColorBtn').addEventListener('click', function () {
+        alert('Page Color — choose page background color (coming soon).');
+    });
+    document.getElementById('pageBordersBtn').addEventListener('click', function () {
+        alert('Page Borders — set page art/borders (coming soon).');
     });
 
     /* ── Find & replace modal ─────────────────────────────────── */
