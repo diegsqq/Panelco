@@ -196,7 +196,7 @@
                             <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
                             <label class="form-check-label small text-secondary" for="remember">Remember me</label>
                         </div>
-                        @if (Route::has('password.request'))<a class="small text-nowrap" href="{{ route('password.request') }}">Forgot password?</a>@endif
+                        <a class="small text-nowrap text-decoration-none" href="mailto:admin@panelco3.local?subject=Password%20Reset%20Request&body=Hello%20Admin%2C%0A%0AI%20am%20unable%20to%20sign%20in%20to%20my%20SmartDocs%20account.%20Please%20reset%20my%20password%20or%20send%20me%20a%20temporary%20one.%0A%0AEmail%3A%20{{ old('email') }}%0A">Contact admin for password reset <i class="bi bi-envelope me-1"></i></a>
                     </div>
                     <button type="submit" class="btn login-submit w-100">Sign in <i class="bi bi-arrow-right ms-1"></i></button>
                 </form>
