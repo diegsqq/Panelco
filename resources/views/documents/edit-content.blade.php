@@ -44,31 +44,29 @@
 
             {{-- Clipboard --}}
             <div class="p3-word-ribbon-group">
-                <div class="p3-word-ribbon-group-title">Clipboard</div>
+                <div class="p3-word-ribbon-group-title">CLIPBOARD</div>
                 <div class="p3-word-ribbon-controls">
-                    <button type="button" class="p3-word-ribbon-btn p3-word-ribbon-btn-large" title="Paste (Ctrl+V)" aria-label="Paste">
-                        <i class="bi bi-clipboard"></i><span class="p3-ribbon-label">Paste</span>
-                    </button>
+                    <div class="p3-word-ribbon-btn-group">
+                        <button type="button" class="p3-word-ribbon-btn p3-word-ribbon-btn-split" title="Paste (Ctrl+V)" aria-label="Paste">
+                            <i class="bi bi-clipboard"></i><span class="p3-ribbon-label">Paste</span>
+                        </button>
+                        <button type="button" class="p3-word-ribbon-btn p3-word-ribbon-btn-split-arrow" title="Paste options" aria-label="Paste options"><i class="bi bi-chevron-down"></i></button>
+                    </div>
                     <div class="p3-word-ribbon-sep"></div>
-                    <button type="button" class="p3-word-ribbon-btn" title="Cut (Ctrl+X)" aria-label="Cut">
-                        <i class="bi bi-scissors"></i><span class="p3-ribbon-label">Cut</span>
-                    </button>
-                    <button type="button" class="p3-word-ribbon-btn" title="Copy (Ctrl+C)" aria-label="Copy">
-                        <i class="bi bi-clipboard-copy"></i><span class="p3-ribbon-label">Copy</span>
-                    </button>
-                    <button type="button" class="p3-word-ribbon-btn" title="Format Painter" aria-label="Format Painter">
-                        <i class="bi bi-palette"></i><span class="p3-ribbon-label">Format Painter</span>
-                    </button>
+                    <button type="button" class="p3-word-ribbon-btn" title="Cut (Ctrl+X)" aria-label="Cut"><i class="bi bi-scissors"></i><span class="p3-ribbon-label">Cut</span></button>
+                    <button type="button" class="p3-word-ribbon-btn" title="Copy (Ctrl+C)" aria-label="Copy"><i class="bi bi-clipboard-copy"></i><span class="p3-ribbon-label">Copy</span></button>
+                    <div class="p3-word-ribbon-sep"></div>
+                    <button type="button" class="p3-word-ribbon-btn" title="Format Painter" aria-label="Format Painter"><i class="bi bi-palette"></i><span class="p3-ribbon-label small">Format Painter</span></button>
                 </div>
             </div>
             <div class="p3-word-ribbon-group-sep"></div>
 
             {{-- Font --}}
             <div class="p3-word-ribbon-group">
-                <div class="p3-word-ribbon-group-title">Font</div>
+                <div class="p3-word-ribbon-group-title">FONT</div>
                 <div class="p3-word-ribbon-controls">
                     <select id="fontFamily" class="p3-word-font-select" title="Font family" aria-label="Font family">
-                        <option value="+body">Calibri (Body)</option>
+                        <option value="+body" selected>Calibri (Body)</option>
                         <option value="">Inter</option>
                         <option value="Times New Roman">Times New Roman</option>
                         <option value="Arial">Arial</option>
@@ -78,10 +76,10 @@
                     <select id="fontSize" class="p3-word-font-select" title="Font size" aria-label="Font size">
                         <option value="12" selected>12</option>
                         <option value="8">8</option><option value="9">9</option><option value="10">10</option>
-                        <option value="11">11</option><option value="12">12</option><option value="14">14</option>
-                        <option value="16">16</option><option value="18">18</option><option value="20">20</option>
-                        <option value="24">24</option><option value="26">26</option><option value="28">28</option>
-                        <option value="36">36</option><option value="48">48</option><option value="72">72</option>
+                        <option value="11">11</option><option value="14">14</option><option value="16">16</option>
+                        <option value="18">18</option><option value="20">20</option><option value="24">24</option>
+                        <option value="26">26</option><option value="28">28</option><option value="36">36</option>
+                        <option value="48">48</option><option value="72">72</option>
                     </select>
                     <div class="p3-word-ribbon-sep"></div>
                     <button type="button" class="p3-word-ribbon-btn" data-cmd="bold" title="Bold (Ctrl+B)" aria-label="Bold"><strong>B</strong></button>
@@ -91,22 +89,22 @@
                     <button type="button" class="p3-word-ribbon-btn" title="Subscript" aria-label="Subscript"><sub>x₂</sub></button>
                     <button type="button" class="p3-word-ribbon-btn" title="Superscript" aria-label="Superscript"><sup>x²</sup></button>
                     <div class="p3-word-ribbon-sep"></div>
-                    <label class="p3-word-ribbon-btn p3-word-color-picker" title="Font Color" aria-label="Font Color" style="cursor:pointer">
-                        <i class="bi bi-font"></i><span style="color:#dc3545">A</span>
+                    <button type="button" class="p3-word-ribbon-btn p3-word-color-picker" title="Font Color" aria-label="Font Color" style="cursor:pointer;position:relative">
+                        <span style="color:#dc3545">A</span><i class="bi bi-caret-down-fill ms-1" style="font-size:.55rem"></i>
                         <input type="color" id="textColor" value="#000000" class="d-none" aria-label="Font color">
-                    </label>
-                    <label class="p3-word-ribbon-btn p3-word-highlight-picker" title="Text Highlight Color" aria-label="Text Highlight" style="cursor:pointer">
-                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button type="button" class="p3-word-ribbon-btn p3-word-highlight-picker" title="Text Highlight Color" aria-label="Text Highlight" style="cursor:pointer;position:relative">
+                        <i class="bi bi-pencil-square"></i><i class="bi bi-caret-down-fill ms-1" style="font-size:.55rem"></i>
                         <input type="color" id="hlColor" value="#ffff00" class="d-none" aria-label="Highlight color">
-                    </label>
-                    <button type="button" class="p3-word-ribbon-btn" data-cmd="removeFormat" title="Clear All Formatting" aria-label="Clear formatting"><span style="text-decoration:line-through">A</span><span class="p3-ribbon-label small">Clear All</span></button>
+                    </button>
+                    <button type="button" class="p3-word-ribbon-btn" data-cmd="removeFormat" title="Clear All Formatting" aria-label="Clear All Formatting"><span class="p3-ribbon-label small">Clear All</span></button>
                 </div>
             </div>
             <div class="p3-word-ribbon-group-sep"></div>
 
             {{-- Paragraph --}}
             <div class="p3-word-ribbon-group">
-                <div class="p3-word-ribbon-group-title">Paragraph</div>
+                <div class="p3-word-ribbon-group-title">PARAGRAPH</div>
                 <div class="p3-word-ribbon-controls">
                     <div class="p3-word-align-group">
                         <button type="button" class="p3-word-ribbon-btn p3-word-align-btn is-active" data-cmd="justifyLeft" title="Align Left (Ctrl+L)" aria-label="Align Left"><i class="bi bi-text-left"></i></button>
@@ -128,7 +126,7 @@
 
             {{-- Styles --}}
             <div class="p3-word-ribbon-group">
-                <div class="p3-word-ribbon-group-title">Styles</div>
+                <div class="p3-word-ribbon-group-title">STYLES</div>
                 <div class="p3-word-ribbon-controls p3-word-styles">
                     <button type="button" class="p3-word-style-btn is-active" data-style="p" title="Normal">Normal</button>
                     <button type="button" class="p3-word-style-btn" data-style="p" title="No Spacing">No Spacing</button>
@@ -146,7 +144,7 @@
 
             {{-- Editing --}}
             <div class="p3-word-ribbon-group">
-                <div class="p3-word-ribbon-group-title">Editing</div>
+                <div class="p3-word-ribbon-group-title">EDITING</div>
                 <div class="p3-word-ribbon-controls">
                     <button type="button" class="p3-word-ribbon-btn" id="findBtn" title="Find (Ctrl+F)" aria-label="Find"><i class="bi bi-search me-1"></i><span class="p3-ribbon-label">Find</span></button>
                     <button type="button" class="p3-word-ribbon-btn" id="replaceBtnRibbon" title="Replace (Ctrl+H)" aria-label="Replace"><span class="p3-ribbon-label">Replace</span></button>
@@ -497,6 +495,21 @@
 .p3-word-font-select { font-size: .78rem; padding: 1px 4px; border: 1px solid #a6a6a6; border-radius: 2px; background: #fff; }
 .p3-word-font-select:focus { border-color: #2b579a; outline: none; box-shadow: 0 0 0 1px #2b579a; }
 
+/* ── Split button (Paste with dropdown) ── */
+.p3-word-ribbon-btn-group { display: inline-flex; gap: 0; }
+.p3-word-ribbon-btn-split { border-top-right-radius: 0; border-bottom-right-radius: 0; padding-right: 6px; }
+.p3-word-ribbon-btn-split-arrow { border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 2px 5px; font-size: .7rem; color: #333; }
+.p3-word-ribbon-btn-split-arrow:hover { background: #f2f2f2; border-color: #a6a6a6; color: #000; }
+
+/* ── Font color / highlight picker dropdown arrow ── */
+.p3-word-color-picker .bi-caret-down-fill,
+.p3-word-highlight-picker .bi-caret-down-fill { color: #333; }
+.p3-word-color-picker:hover .bi-caret-down-fill,
+.p3-word-highlight-picker:hover .bi-caret-down-fill { color: #000; }
+
+/* ── Clear All (text only, no icon) ── */
+.p3-word-ribbon-btn[data-cmd="removeFormat"] { padding: 2px 6px; }
+
 .p3-word-align-group { display: flex; gap: 1px; }
 .p3-word-align-btn {
     min-width: 26px; justify-content: center; padding: 2px 4px; font-size: .8rem;
@@ -631,6 +644,12 @@
 [data-theme="dark"] .p3-word-ribbon-btn { color: #ccc; }
 [data-theme="dark"] .p3-word-ribbon-btn:hover { background: #3f3f3f; border-color: #5a5a5a; color: #fff; }
 [data-theme="dark"] .p3-word-ribbon-btn.is-active { background: #004488; border-color: #3794ff; color: #fff; }
+[data-theme="dark"] .p3-word-ribbon-btn-split-arrow { color: #ccc; }
+[data-theme="dark"] .p3-word-ribbon-btn-split-arrow:hover { background: #3f3f3f; border-color: #5a5a5a; color: #fff; }
+[data-theme="dark"] .p3-word-color-picker .bi-caret-down-fill,
+[data-theme="dark"] .p3-word-highlight-picker .bi-caret-down-fill { color: #ccc; }
+[data-theme="dark"] .p3-word-color-picker:hover .bi-caret-down-fill,
+[data-theme="dark"] .p3-word-highlight-picker:hover .bi-caret-down-fill { color: #fff; }
 [data-theme="dark"] .p3-word-ribbon-group-title { color: #888; }
 [data-theme="dark"] .p3-word-ribbon-sep { background: #3f3f3f; }
 [data-theme="dark"] .p3-word-ribbon-group-sep { background: #3f3f3f; }
