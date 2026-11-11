@@ -154,13 +154,80 @@
 
         {{-- Other ribbon tabs (hidden content) --}}
         <div class="p3-word-ribbon-content d-none" id="ribbonInsert" role="tabpanel">
+
+            {{-- Tables --}}
             <div class="p3-word-ribbon-group">
-                <div class="p3-word-ribbon-group-title">Insert</div>
+                <div class="p3-word-ribbon-group-title">Tables</div>
                 <div class="p3-word-ribbon-controls">
-                    <button type="button" class="p3-word-ribbon-btn" id="tableBtnWord" title="Table" aria-label="Insert table"><i class="bi bi-table me-1"></i><span class="p3-ribbon-label">Table</span></button>
-                    <button type="button" class="p3-word-ribbon-btn" id="imageBtnWord" title="Pictures" aria-label="Insert picture"><i class="bi bi-image me-1"></i><span class="p3-ribbon-label">Pictures</span></button>
+                    <button type="button" class="p3-word-ribbon-btn p3-word-ribbon-btn-large" id="tableBtnWord" title="Insert Table" aria-label="Insert table">
+                        <i class="bi bi-grid-fill"></i><span class="p3-ribbon-label">Table</span>
+                    </button>
                 </div>
             </div>
+
+            {{-- Illustrations --}}
+            <div class="p3-word-ribbon-group">
+                <div class="p3-word-ribbon-group-title">Illustrations</div>
+                <div class="p3-word-ribbon-controls">
+                    <button type="button" class="p3-word-ribbon-btn" id="imageBtnWord" title="Pictures" aria-label="Insert picture"><i class="bi bi-image me-1"></i><span class="p3-ribbon-label">Pictures</span></button>
+                    <button type="button" class="p3-word-ribbon-btn" id="shapesBtnWord" title="Shapes" aria-label="Insert shapes"><i class="bi bi-patch-plus me-1"></i><span class="p3-ribbon-label">Shapes</span></button>
+                    <button type="button" class="p3-word-ribbon-btn" id="iconsBtnWord" title="Icons" aria-label="Insert icons"><i class="bi bi-emoji-smile me-1"></i><span class="p3-ribbon-label">Icons</span></button>
+                    <button type="button" class="p3-word-ribbon-btn" id="smartartBtnWord" title="SmartArt" aria-label="Insert SmartArt"><i class="bi bi-diagram-3 me-1"></i><span class="p3-ribbon-label">SmartArt</span></button>
+                    <button type="button" class="p3-word-ribbon-btn" id="chartBtnWord" title="Chart" aria-label="Insert chart"><i class="bi bi-bar-chart me-1"></i><span class="p3-ribbon-label">Chart</span></button>
+                    <button type="button" class="p3-word-ribbon-btn" id="screenshotBtnWord" title="Screenshot" aria-label="Insert screenshot"><i class="bi bi-camera-fill me-1"></i><span class="p3-ribbon-label">Screenshot</span></button>
+                </div>
+            </div>
+
+            {{-- Links --}}
+            <div class="p3-word-ribbon-group">
+                <div class="p3-word-ribbon-group-title">Links</div>
+                <div class="p3-word-ribbon-controls">
+                    <button type="button" class="p3-word-ribbon-btn" id="linkBtnWord" title="Link (Ctrl+K)" aria-label="Insert link"><i class="bi bi-link-45deg me-1"></i><span class="p3-ribbon-label">Link</span></button>
+                    <button type="button" class="p3-word-ribbon-btn" id="bookmarkBtnWord" title="Bookmark" aria-label="Insert bookmark"><i class="bi bi-bookmark me-1"></i><span class="p3-ribbon-label">Bookmark</span></button>
+                    <button type="button" class="p3-word-ribbon-btn" id="crossrefBtnWord" title="Cross-reference" aria-label="Insert cross-reference"><i class="bi bi-arrow-repeat me-1"></i><span class="p3-ribbon-label">Cross-reference</span></button>
+                </div>
+            </div>
+
+            {{-- Comments --}}
+            <div class="p3-word-ribbon-group">
+                <div class="p3-word-ribbon-group-title">Comments</div>
+                <div class="p3-word-ribbon-controls">
+                    <button type="button" class="p3-word-ribbon-btn" id="commentBtnWord" title="New Comment" aria-label="New comment"><i class="bi bi-chat-square-text me-1"></i><span class="p3-ribbon-label">Comment</span></button>
+                </div>
+            </div>
+
+            {{-- Header & Footer --}}
+            <div class="p3-word-ribbon-group">
+                <div class="p3-word-ribbon-group-title">Header & Footer</div>
+                <div class="p3-word-ribbon-controls">
+                    <button type="button" class="p3-word-ribbon-btn" id="headerBtnWord" title="Header" aria-label="Insert header"><i class="bi bi-layout-header me-1"></i><span class="p3-ribbon-label">Header</span></button>
+                    <button type="button" class="p3-word-ribbon-btn" id="footerBtnWord" title="Footer" aria-label="Insert footer"><i class="bi bi-layout-footer me-1"></i><span class="p3-ribbon-label">Footer</span></button>
+                    <button type="button" class="p3-word-ribbon-btn" id="pageNumBtnWord" title="Page Number" aria-label="Insert page number"><i class="bi bi-hashtag me-1"></i><span class="p3-ribbon-label">Page Number</span></button>
+                </div>
+            </div>
+
+            {{-- Text --}}
+            <div class="p3-word-ribbon-group">
+                <div class="p3-word-ribbon-group-title">Text</div>
+                <div class="p3-word-ribbon-controls">
+                    <button type="button" class="p3-word-ribbon-btn" id="textBoxBtnWord" title="Text Box" aria-label="Insert text box"><i class="bi bi-textarea me-1"></i><span class="p3-ribbon-label">Text Box</span></button>
+                    <button type="button" class="p3-word-ribbon-btn" id="quickPartsBtnWord" title="Quick Parts" aria-label="Insert quick parts"><i class="bi bi-patch-check me-1"></i><span class="p3-ribbon-label">Quick Parts</span></button>
+                    <button type="button" class="p3-word-ribbon-btn" id="wordArtBtnWord" title="WordArt" aria-label="Insert wordart"><i class="bi bi-fonts me-1"></i><span class="p3-ribbon-label">WordArt</span></button>
+                    <button type="button" class="p3-word-ribbon-btn" id="dropCapBtnWord" title="Drop Cap" aria-label="Insert drop cap"><span class="p3-ribbon-label">Drop Cap</span></button>
+                    <button type="button" class="p3-word-ribbon-btn" id="dateTimeBtnWord" title="Date & Time" aria-label="Insert date and time"><i class="bi bi-calendar-event me-1"></i><span class="p3-ribbon-label">Date & Time</span></button>
+                    <button type="button" class="p3-word-ribbon-btn" id="objectBtnWord" title="Object" aria-label="Insert object"><i class="bi bi-file-earmark me-1"></i><span class="p3-ribbon-label">Object</span></button>
+                </div>
+            </div>
+
+            {{-- Symbols --}}
+            <div class="p3-word-ribbon-group">
+                <div class="p3-word-ribbon-group-title">Symbols</div>
+                <div class="p3-word-ribbon-controls">
+                    <button type="button" class="p3-word-ribbon-btn" id="equationBtnWord" title="Equation" aria-label="Insert equation"><span class="p3-ribbon-label">π</span><span class="p3-ribbon-label small">Equation</span></button>
+                    <button type="button" class="p3-word-ribbon-btn" id="symbolBtnWord" title="Symbol" aria-label="Insert symbol"><span class="p3-ribbon-label">Ω</span><span class="p3-ribbon-label small">Symbol</span></button>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -686,6 +753,91 @@
               exec('insertHTML', '<img src="' + data.url + '" alt="' + alt + '" style="max-width:100%">');
           })
           .catch(function (err) { alert('Image upload failed: ' + err.message); });
+    });
+
+    /* ── Insert: Shapes / Icons / SmartArt / Chart / Screenshot ── */
+    document.getElementById('shapesBtnWord').addEventListener('click', function () {
+        alert('Shapes — draw a shape on the page (coming soon).');
+    });
+    document.getElementById('iconsBtnWord').addEventListener('click', function () {
+        alert('Icons — insert an icon from the library (coming soon).');
+    });
+    document.getElementById('smartartBtnWord').addEventListener('click', function () {
+        alert('SmartArt — insert a graphic (coming soon).');
+    });
+    document.getElementById('chartBtnWord').addEventListener('click', function () {
+        alert('Chart — insert a chart (coming soon).');
+    });
+    document.getElementById('screenshotBtnWord').addEventListener('click', function () {
+        alert('Screenshot — capture part of your screen (coming soon).');
+    });
+
+    /* ── Insert: Links ── */
+    document.getElementById('linkBtnWord').addEventListener('click', function () {
+        var url = prompt('Enter the link URL:', 'https://');
+        if (!url) return;
+        var text = window.getSelection().toString() || url;
+        exec('insertHTML', '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + text + '</a>');
+    });
+    document.getElementById('bookmarkBtnWord').addEventListener('click', function () {
+        var name = prompt('Bookmark name:', '');
+        if (!name) return;
+        exec('insertHTML', '<span style="border-bottom:1px dashed #00743F;" title="Bookmark: ' + name + '">' + name + '</span>');
+    });
+    document.getElementById('crossrefBtnWord').addEventListener('click', function () {
+        alert('Cross-reference — link to a heading, figure or page (coming soon).');
+    });
+
+    /* ── Insert: Comments ── */
+    document.getElementById('commentBtnWord').addEventListener('click', function () {
+        alert('New Comment — add a comment to the selection (coming soon).');
+    });
+
+    /* ── Insert: Header & Footer ── */
+    document.getElementById('headerBtnWord').addEventListener('click', function () {
+        var h = document.getElementById('wordHeader');
+        h.focus();
+        h.setAttribute('data-placeholder', 'Type the header text here…');
+        document.getElementById('wordHeaderBand').classList.remove('p3-band-hidden');
+    });
+    document.getElementById('footerBtnWord').addEventListener('click', function () {
+        var f = document.getElementById('wordFooter');
+        f.focus();
+        f.setAttribute('data-placeholder', 'Type the footer text here…');
+        document.getElementById('wordFooterBand').classList.remove('p3-band-hidden');
+    });
+    document.getElementById('pageNumBtnWord').addEventListener('click', function () {
+        active.focus();
+        exec('insertHTML', '<span class="p3-page-num">Page <span class="p3-page-field">1</span> of 1</span>');
+    });
+
+    /* ── Insert: Text ── */
+    document.getElementById('textBoxBtnWord').addEventListener('click', function () {
+        exec('insertHTML', '<div style="border:1px solid #00743F;padding:8px;max-width:200px">Type here</div>');
+    });
+    document.getElementById('quickPartsBtnWord').addEventListener('click', function () {
+        alert('Quick Parts — insert reusable content blocks (coming soon).');
+    });
+    document.getElementById('wordArtBtnWord').addEventListener('click', function () {
+        exec('insertHTML', '<span style="font-size:24px;color:#2b579a;font-weight:700">WordArt</span>');
+    });
+    document.getElementById('dropCapBtnWord').addEventListener('click', function () {
+        alert('Drop Cap — enlarge first letter of a paragraph (coming soon).');
+    });
+    document.getElementById('dateTimeBtnWord').addEventListener('click', function () {
+        var now = new Date();
+        exec('insertHTML', now.toLocaleString());
+    });
+    document.getElementById('objectBtnWord').addEventListener('click', function () {
+        alert('Object — insert an embedded object (coming soon).');
+    });
+
+    /* ── Insert: Symbols ── */
+    document.getElementById('equationBtnWord').addEventListener('click', function () {
+        exec('insertHTML', '<span style="font-family:Cambria Math">E=mc²</span>');
+    });
+    document.getElementById('symbolBtnWord').addEventListener('click', function () {
+        exec('insertHTML', '<span style="font-family:Segoe UI Symbol">Ω</span>');
     });
 
     /* ── PDF export ───────────────────────────────────────────── */
