@@ -7,7 +7,7 @@
     body:has(#libPage) main { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
 
     /* ── Page shell ── */
-    .lib-page { display: flex; flex-direction: column; gap: 1.25rem; flex: 1 1 auto; min-height: 0; }
+    .lib-page { display: flex; flex-direction: column; gap: .75rem; flex: 1 1 auto; min-height: 0; }
     .lib-page > *:not(#libContentRow) { flex: 0 0 auto; }
 
     /* ── Header ── */
