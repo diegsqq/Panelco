@@ -48,10 +48,10 @@
     /* ── Folder cards (2-row horizontal swipe strip) ── */
     .wd-folders { display: grid; grid-template-rows: repeat(2, auto); grid-auto-flow: column; grid-auto-columns: minmax(180px, 1fr); gap: .8rem; overflow-x: auto; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; padding: .2rem .2rem .6rem; margin: -.2rem -.2rem 0; scrollbar-width: none; }
     .wd-folders::-webkit-scrollbar, .wd-recents::-webkit-scrollbar { display: none; }
-    .wd-folder { scroll-snap-align: start; display: flex; align-items: center; gap: .7rem; background: #fff; border: 1px solid #ebebeb; border-radius: .85rem; padding: .8rem .9rem; text-decoration: none; transition: all .15s ease; }
+    .wd-folder { scroll-snap-align: start; display: flex; align-items: center; gap: .7rem; background: #fff; border: 1px solid #ebebeb; border-radius: .85rem; padding: .8rem .9rem; text-decoration: none; transition: all .15s ease; min-width: 0; }
     .wd-folder:hover { border-color: #b7e0c8; background: #fbfefc; box-shadow: 0 4px 14px rgba(10,31,92,.06); }
     .wd-folder-ico { width: 38px; height: 38px; flex: 0 0 38px; border-radius: .6rem; background: #e6f3ea; color: #00A868; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
-    .wd-folder-name { font-weight: 700; font-size: .85rem; color: #1a1a2e; white-space: normal; overflow-wrap: anywhere; line-height: 1.35; }
+    .wd-folder-name { font-weight: 700; font-size: .85rem; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; line-height: 1.35; }
     .wd-folder-meta { font-size: .7rem; color: #9a9ab0; }
     .wd-folder-go { margin-left: auto; color: #c8c8d8; font-size: .85rem; flex: 0 0 auto; }
 
