@@ -483,7 +483,7 @@
     display: flex; flex-wrap: wrap; gap: 2px; padding: 0 4px;
 }
 .p3-word-ribbon-sep { width: 1px; height: 14px; background: #c4c4c4; margin: 1px 0; align-self: center; }
-.p3-word-ribbon-group-sep { width: 1px; height: 22px; background: #c4c4c4; margin: 0 4px; align-self: center; flex-shrink: 0; }
+.p3-word-ribbon-group-sep { width: 1px; height: 30px; background: #c4c4c4; margin: 0 4px; align-self: center; flex-shrink: 0; }
 .p3-word-ribbon-btn {
     background: transparent; border: 1px solid transparent; border-radius: 2px;
     color: #333; font-size: .78rem; padding: 2px 6px; cursor: pointer;
