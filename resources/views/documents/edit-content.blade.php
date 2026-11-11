@@ -29,7 +29,7 @@
             <button type="button" class="p3-word-ribbon-tab" role="tab" aria-selected="false">Acrobat</button>
         </div>
         <div class="p3-word-tellme flex-grow-1 min-w-0">
-            <span class="p3-tellme-label small text-muted">Tell me what you want to do</span>
+            <span class="p3-tellme-label small text-muted"><i class="bi bi-lightbulb me-1"></i>Tell me what you want to do</span>
             <input type="text" id="tellMeInput" class="p3-tellme-input form-control form-control-sm" placeholder="Search commands…">
         </div>
         <div class="p3-word-actions d-flex align-items-center gap-1">
