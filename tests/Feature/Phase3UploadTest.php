@@ -109,6 +109,55 @@ class Phase3UploadTest extends TestCase
         $this->assertSame(1, Document::count());
     }
 
+    public function test_duplicate_hidden_from_user_does_not_block_upload(): void
+    {
+        $this->seed();
+        Storage::fake('private');
+        Queue::fake();
+        $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $contents = "Private record only the admin can see.\n";
+
+        $this->actingAs($admin)->post(route('documents.store'), [
+            'file' => UploadedFile::fake()->createWithContent('Daily Time Record.txt', $contents),
+            'access_level' => 'private',
+        ])->assertRedirect(route('documents.library'));
+
+        $this->assertSame(1, Document::count());
+
+        // Employee cannot see the admin's private copy, so it must not block them.
+        $this->actingAs($employee)->post(route('documents.store'), [
+            'file' => UploadedFile::fake()->createWithContent('Daily Time Record.txt', $contents),
+        ])->assertRedirect(route('documents.library'))
+            ->assertSessionHas('status', 'Document uploaded and queued for processing.')
+            ->assertSessionMissing('warning');
+
+        $this->assertSame(2, Document::count());
+        Queue::assertPushed(ProcessDocument::class, 2);
+    }
+
+    public function test_duplicate_visible_to_user_is_still_skipped(): void
+    {
+        $this->seed();
+        Storage::fake('private');
+        Queue::fake();
+        $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $contents = "Shared record everyone can see.\n";
+
+        $this->actingAs($admin)->post(route('documents.store'), [
+            'file' => UploadedFile::fake()->createWithContent('Daily Time Record.txt', $contents),
+            'access_level' => 'all_employees',
+        ])->assertRedirect(route('documents.library'));
+
+        $this->actingAs($employee)->post(route('documents.store'), [
+            'file' => UploadedFile::fake()->createWithContent('Daily Time Record.txt', $contents),
+        ])->assertRedirect(route('documents.library'))
+            ->assertSessionHas('warning', 'No new documents were uploaded. Skipped identical file(s): Daily Time Record.txt.');
+
+        $this->assertSame(1, Document::count());
+    }
+
     public function test_unsupported_file_rejected(): void
     {
         $this->seed();

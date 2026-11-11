@@ -323,7 +323,7 @@ class DocumentController extends Controller
             $fileHash = $duplicateDetector->hash($file);
             $isCurrentFile = $document->file_hash !== null && hash_equals($document->file_hash, $fileHash);
 
-            if (! $isCurrentFile && $duplicateDetector->exists($fileHash, $file->getSize())) {
+            if (! $isCurrentFile && $duplicateDetector->exists($fileHash, $file->getSize(), $request->user())) {
                 $currentDocument = $document->fresh();
                 $isCurrentFile = $currentDocument?->file_hash !== null
                     && hash_equals($currentDocument->file_hash, $fileHash);
@@ -721,7 +721,7 @@ class DocumentController extends Controller
         $duplicateDetector = app(DuplicateDocumentDetector::class);
         foreach ($files as $file) {
             $fileHash = $duplicateDetector->hash($file);
-            if ($duplicateDetector->exists($fileHash, $file->getSize())) {
+            if ($duplicateDetector->exists($fileHash, $file->getSize(), $request->user())) {
                 $duplicates[] = $file->getClientOriginalName();
 
                 continue;

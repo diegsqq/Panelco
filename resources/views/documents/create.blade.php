@@ -104,6 +104,9 @@
 
 <div class="up-page">
 
+    <form id="uploadForm" method="POST" action="{{ route('documents.store') }}" enctype="multipart/form-data">
+    @csrf
+
     {{-- ── Header + upload button on the right ── --}}
     <div class="up-head">
         <div class="up-head-info">
@@ -219,6 +222,8 @@
         </div>
     </div>
 
+    </form>
+
 </div>
 
 <script>
@@ -291,6 +296,7 @@
         zone.classList.add('filled');
         clearBadges();
         suggestNote.textContent = '';
+        submitBtn.disabled = false;
     }
 
     function resetZone() {
@@ -305,6 +311,7 @@
         suggestNote.textContent = '';
         detailsHint.textContent = 'Pick a file first and SmartDocs will fill these in for you.';
         setBadges(false);
+        submitBtn.disabled = true;
     }
 
     function applySuggestions(data) {
@@ -401,8 +408,8 @@
     });
 
     var form = document.getElementById('uploadForm');
-    form.addEventListener('submit', function () {
-        if (!input.files.length) return;
+    if (form) form.addEventListener('submit', function (e) {
+        if (!input.files.length) { e.preventDefault(); return; }
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Uploading…';
     });

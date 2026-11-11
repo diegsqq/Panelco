@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Document;
 use App\Models\DocumentVersion;
+use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
@@ -20,18 +21,28 @@ class DuplicateDocumentDetector
         return $hash;
     }
 
-    public function exists(string $hash, int $fileSize): bool
+    /**
+     * True when an identical file already exists in a document this user can
+     * see. Copies hidden from the user never block their upload.
+     */
+    public function exists(string $hash, int $fileSize, ?User $user = null): bool
     {
-        if (Document::query()->where('file_hash', $hash)->exists()
-            || DocumentVersion::query()->whereHas('document')->where('file_hash', $hash)->exists()) {
-            return true;
+        $matches = Document::query()
+            ->where('file_hash', $hash)
+            ->orWhereHas('versions', fn ($q) => $q->where('file_hash', $hash))
+            ->get();
+
+        foreach ($matches as $match) {
+            if ($this->visibleTo($match, $user)) {
+                return true;
+            }
         }
 
         $disk = Storage::disk('private');
         $candidates = Document::query()
             ->whereNull('file_hash')
             ->where('file_size', $fileSize)
-            ->get(['id', 'storage_path']);
+            ->get();
 
         foreach ($candidates as $candidate) {
             if (! $disk->exists($candidate->storage_path)) {
@@ -44,11 +55,21 @@ class DuplicateDocumentDetector
             }
 
             $candidate->update(['file_hash' => $candidateHash]);
-            if (hash_equals($candidateHash, $hash)) {
+
+            if (hash_equals($candidateHash, $hash) && $this->visibleTo($candidate, $user)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    private function visibleTo(Document $document, ?User $user): bool
+    {
+        if ($user === null) {
+            return true;
+        }
+
+        return $user->can('view', $document);
     }
 }
