@@ -590,6 +590,8 @@
 .p3-doc-region { outline: none; line-height: 1.6; font-size: 11pt; min-height: 1.2em; position: relative; }
 .p3-doc-region.is-empty::before { content: attr(data-placeholder); color: #aaaaaa; pointer-events: none; }
 .p3-doc-body { min-height: 600px; font-size: 11pt; }
+.p3-doc-region.p3-show-marks { position: relative; }
+.p3-doc-region.p3-show-marks::after { content: ' ¶'; color: #999; font-size: .75rem; vertical-align: baseline; }
 
 /* ── Status bar ─────────────────────────────────────────────────── */
 .p3-word-statusbar {
@@ -663,6 +665,7 @@
 [data-theme="dark"] .p3-status-view-btn { background: transparent; border-color: #5a5a5a; color: #ccc; }
 [data-theme="dark"] .p3-status-view-btn.is-active { background: #004488; border-color: #3794ff; color: #fff; }
 [data-theme="dark"] .p3-doc-region.is-empty::before { color: #666; }
+[data-theme="dark"] .p3-doc-region.p3-show-marks::after { color: #666; }
 
 /* ── Design tab: Document Themes ─────────────────────────────────────── */
 .p3-word-theme-controls { display: flex; align-items: center; gap: 4px; padding: 0 4px; }
@@ -1175,6 +1178,68 @@
             var m = new bootstrap.Modal(document.getElementById('findReplaceModalWord'));
             m.show();
         }
+    });
+
+    /* ── Title bar: File / Sign in ────────────────────────────────── */
+    document.querySelector('.p3-word-file-btn').addEventListener('click', function () {
+        alert('File — Save, Open, Print, Export (coming soon).');
+    });
+    document.querySelector('.p3-word-actions .p3-word-text-btn:not(#shareBtn)').addEventListener('click', function () {
+        alert('Sign in — enter your PANELCO III account (coming soon).');
+    });
+
+    /* ── Home: Clipboard ──────────────────────────────────────────── */
+    var home = document.getElementById('ribbonHome');
+    home.querySelector('.p3-word-ribbon-btn-split').addEventListener('click', function () {
+        navigator.clipboard.readText().then(function (text) {
+            if (text) {
+                active.focus();
+                if (savedRange) { var s = window.getSelection(); s.removeAllRanges(); s.addRange(savedRange); }
+                document.execCommand('insertText', false, text);
+                markDirty();
+            }
+        }).catch(function () { alert('Paste — clipboard access blocked.'); });
+    });
+    home.querySelector('.p3-word-ribbon-btn-split-arrow').addEventListener('click', function (e) {
+        e.stopPropagation();
+        alert('Paste options — Keep Source Formatting / Merge Formatting / Keep Text Only (coming soon).');
+    });
+    home.querySelector('button[title="Cut (Ctrl+X)"]').addEventListener('click', function () { exec('cut'); });
+    home.querySelector('button[title="Copy (Ctrl+C)"]').addEventListener('click', function () { exec('copy'); });
+    home.querySelector('button[title="Format Painter"]').addEventListener('click', function () {
+        alert('Format Painter — copy formatting from one selection to another (coming soon).');
+    });
+
+    /* ── Home: Font — Subscript / Superscript ─────────────────────── */
+    home.querySelector('button[title="Subscript"]').addEventListener('click', function () { exec('subscript'); });
+    home.querySelector('button[title="Superscript"]').addEventListener('click', function () { exec('superscript'); });
+
+    /* ── Home: Paragraph — Show/Hide ¶ ────────────────────────────── */
+    var showPara = false;
+    var paraBtn = home.querySelector('button[title="Show/Hide ¶"]');
+    paraBtn.addEventListener('click', function () {
+        showPara = !showPara;
+        document.querySelectorAll('.p3-doc-region').forEach(function (el) {
+            el.classList.toggle('p3-show-marks', showPara);
+        });
+        paraBtn.classList.toggle('is-active', showPara);
+    });
+
+    /* ── Home: Paragraph — Sort ───────────────────────────────────── */
+    home.querySelector('button[title="Sort"]').addEventListener('click', function (e) {
+        e.preventDefault();
+        alert('Sort — sort selected text / list items (coming soon).');
+    });
+
+    /* ── Home: Editing — Select ───────────────────────────────────── */
+    document.getElementById('selectBtn').addEventListener('click', function () {
+        active.focus();
+        var sel = window.getSelection();
+        var range = document.createRange();
+        range.selectNodeContents(active);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        markDirty();
     });
 
     /* ── Warn on unload ───────────────────────────────────────── */
