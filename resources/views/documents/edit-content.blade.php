@@ -450,6 +450,9 @@
 .p3-tellme-label { font-size: .75rem; color: #888; }
 .p3-tellme-input { width: 120px; font-size: .75rem; padding: 1px 6px; border: 1px solid #a6a6a6; border-radius: 2px; background: #fff; }
 .p3-tellme-input:focus { border-color: #2b579a; outline: none; box-shadow: 0 0 0 1px #2b579a; }
+.p3-tellme-row:hover { background: #e7e6e6; color: #000; }
+[data-theme="dark"] .p3-tellme-input { background: #3f3f3f; color: #fff; border-color: #5a5a5a; }
+[data-theme="dark"] .p3-tellme-row:hover { background: #3f3f3f; color: #fff; }
 
 .p3-word-actions { padding: 1px 0; }
 .p3-word-btn-sm {
@@ -1186,6 +1189,81 @@
     });
     document.querySelector('.p3-word-actions .p3-word-text-btn:not(#shareBtn)').addEventListener('click', function () {
         alert('Sign in — enter your PANELCO III account (coming soon).');
+    });
+
+    /* ── Tell me searchbar ────────────────────────────────────────── */
+    var tellMe = document.getElementById('tellMeInput');
+    var tellMeBox = document.createElement('div');
+    tellMeBox.className = 'p3-tellme-box d-none';
+    tellMeBox.style.cssText = 'position:absolute;top:100%;left:0;right:0;z-index:1060;background:#fff;border:1px solid #a6a6a6;border-top:none;border-radius:0 0 3px 3px;box-shadow:0 4px 12px rgba(0,0,0,.15);max-height:260px;overflow-y:auto;font-size:.78rem;color:#333;';
+    tellMe.parentNode.appendChild(tellMeBox);
+
+    var tellCommands = [
+        { label: 'Bold (Ctrl+B)', cmd: 'bold' },
+        { label: 'Italic (Ctrl+I)', cmd: 'italic' },
+        { label: 'Underline (Ctrl+U)', cmd: 'underline' },
+        { label: 'Strikethrough', cmd: 'strikeThrough' },
+        { label: 'Align Left (Ctrl+L)', cmd: 'justifyLeft' },
+        { label: 'Center (Ctrl+E)', cmd: 'justifyCenter' },
+        { label: 'Align Right (Ctrl+R)', cmd: 'justifyRight' },
+        { label: 'Justify (Ctrl+J)', cmd: 'justifyFull' },
+        { label: 'Bullets', cmd: 'insertUnorderedList' },
+        { label: 'Numbering', cmd: 'insertOrderedList' },
+        { label: 'Find (Ctrl+F)', cmd: 'find' },
+        { label: 'Replace (Ctrl+H)', cmd: 'replace' },
+        { label: 'Save (Ctrl+S)', cmd: 'save' },
+        { label: 'Clear All Formatting', cmd: 'removeFormat' },
+        { label: 'Text Color', cmd: 'foreColor' },
+        { label: 'Highlight Color', cmd: 'backColor' },
+    ];
+
+    function tellRender(q) {
+        tellMeBox.innerHTML = '';
+        var shown = 0;
+        tellCommands.forEach(function (c) {
+            if (!q || c.label.toLowerCase().includes(q.toLowerCase())) {
+                var row = document.createElement('div');
+                row.className = 'p3-tellme-row';
+                row.style.cssText = 'display:flex;align-items:center;padding:4px 8px;cursor:pointer;white-space:nowrap;';
+                row.style.color = '#333';
+                row.innerHTML = '<span style="flex:1">' + c.label + '</span><span class="small text-muted" style="white-space:nowrap">' + (c.cmd ? '⌘' : '') + '</span>';
+                row.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    tellMeBox.classList.add('d-none');
+                    tellMe.value = '';
+                    active.focus();
+                    if (savedRange) { var s = window.getSelection(); s.removeAllRanges(); s.addRange(savedRange); }
+                    if (c.cmd === 'save') { save({ force: true }); return; }
+                    if (c.cmd === 'find' || c.cmd === 'replace') {
+                        var m = new bootstrap.Modal(document.getElementById('findReplaceModalWord'));
+                        m.show();
+                        return;
+                    }
+                    try { document.execCommand(c.cmd, false, null); } catch (e) {}
+                    markDirty();
+                });
+                tellMeBox.appendChild(row);
+                shown++;
+                if (shown >= 12) return false;
+            }
+        });
+        tellMeBox.classList.toggle('d-none', shown === 0);
+    }
+
+    tellMe.addEventListener('input', function () { tellRender(this.value); });
+    tellMe.addEventListener('focus', function () { tellRender(tellMe.value); });
+    document.addEventListener('click', function (e) {
+        if (!tellMe.contains(e.target) && !tellMeBox.contains(e.target)) tellMeBox.classList.add('d-none');
+    });
+    tellMe.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { tellMeBox.classList.add('d-none'); tellMe.value = ''; active.focus(); }
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            var first = tellMeBox.querySelector('.p3-tellme-row');
+            if (first) { first.click(); }
+            else { tellMeBox.classList.add('d-none'); }
+        }
     });
 
     /* ── Home: Clipboard ──────────────────────────────────────────── */
