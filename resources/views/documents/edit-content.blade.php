@@ -61,6 +61,7 @@
                     </button>
                 </div>
             </div>
+            <div class="p3-word-ribbon-group-sep"></div>
 
             {{-- Font --}}
             <div class="p3-word-ribbon-group">
@@ -101,6 +102,7 @@
                     <button type="button" class="p3-word-ribbon-btn" data-cmd="removeFormat" title="Clear All Formatting" aria-label="Clear formatting"><span style="text-decoration:line-through">A</span><span class="p3-ribbon-label small">Clear All</span></button>
                 </div>
             </div>
+            <div class="p3-word-ribbon-group-sep"></div>
 
             {{-- Paragraph --}}
             <div class="p3-word-ribbon-group">
@@ -122,6 +124,7 @@
                     <button type="button" class="p3-word-ribbon-btn" title="Show/Hide ¶" aria-label="Show paragraph marks">¶</button>
                 </div>
             </div>
+            <div class="p3-word-ribbon-group-sep"></div>
 
             {{-- Styles --}}
             <div class="p3-word-ribbon-group">
@@ -139,6 +142,7 @@
                     <button type="button" class="p3-word-style-btn" data-style="blockquote" title="Quote">Quote</button>
                 </div>
             </div>
+            <div class="p3-word-ribbon-group-sep"></div>
 
             {{-- Editing --}}
             <div class="p3-word-ribbon-group">
@@ -479,6 +483,7 @@
     display: flex; flex-wrap: wrap; gap: 2px; padding: 0 4px;
 }
 .p3-word-ribbon-sep { width: 1px; height: 14px; background: #c4c4c4; margin: 1px 0; align-self: center; }
+.p3-word-ribbon-group-sep { width: 1px; height: 22px; background: #c4c4c4; margin: 0 4px; align-self: center; flex-shrink: 0; }
 .p3-word-ribbon-btn {
     background: transparent; border: 1px solid transparent; border-radius: 2px;
     color: #333; font-size: .78rem; padding: 2px 6px; cursor: pointer;
@@ -628,6 +633,7 @@
 [data-theme="dark"] .p3-word-ribbon-btn.is-active { background: #004488; border-color: #3794ff; color: #fff; }
 [data-theme="dark"] .p3-word-ribbon-group-title { color: #888; }
 [data-theme="dark"] .p3-word-ribbon-sep { background: #3f3f3f; }
+[data-theme="dark"] .p3-word-ribbon-group-sep { background: #3f3f3f; }
 [data-theme="dark"] .p3-word-font-select { background: #3f3f3f; color: #fff; border-color: #5a5a5a; }
 [data-theme="dark"] .p3-word-gutter { background: #333; }
 [data-theme="dark"] .p3-word-canvas { background: #333; }
