@@ -61,6 +61,7 @@ Route::post('/library/{document}/workflow/reject', [App\Http\Controllers\Documen
 Route::post('/library/{document}/workflow/archive', [App\Http\Controllers\DocumentController::class, 'archiveDocument'])->name('documents.workflow-archive');
 Route::post('/library/{document}/workflow/assign', [App\Http\Controllers\DocumentController::class, 'assignDocument'])->name('documents.workflow-assign');
 Route::post('/library/{document}/workflow/comments', [App\Http\Controllers\DocumentController::class, 'addDocumentComment'])->name('documents.workflow-comment');
+    Route::get('/library/{document}/clone', [App\Http\Controllers\DocumentController::class, 'clone'])->name('documents.clone');
     Route::delete('/library/{document}', [App\Http\Controllers\DocumentController::class, 'destroy'])->name('documents.destroy');
     Route::get('/trash', [App\Http\Controllers\DocumentController::class, 'trash'])->name('documents.trash');
     Route::post('/trash/{document}/restore', [App\Http\Controllers\DocumentController::class, 'restore'])->withTrashed()->name('documents.restore');

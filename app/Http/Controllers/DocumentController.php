@@ -1089,6 +1089,41 @@ class DocumentController extends Controller
         return back()->with('status', 'Classification suggestions rejected.');
     }
 
+    public function clone(Document $document): RedirectResponse
+    {
+        $this->authorize('view', $document);
+
+        $disk = Storage::disk('private');
+        if (! $disk->exists($document->storage_path)) {
+            return redirect()->route('documents.show', $document)
+                ->withErrors(['file' => 'Source file is missing; cannot copy.']);
+        }
+
+        $newPath = 'documents/' . now()->format('Y/m') . '/copy-' . uniqid() . '-' . $document->original_filename;
+        $disk->copy($document->storage_path, $newPath);
+
+        $clone = $document->replicate();
+        $clone->uploaded_by = auth()->id();
+        $clone->current_version_uploaded_by = auth()->id();
+        $clone->storage_path = $newPath;
+        $clone->title = ($document->title ?: $document->original_filename) . ' (copy)';
+        $clone->version_number = 1;
+        $clone->created_at = now();
+        $clone->updated_at = now();
+        $clone->save();
+
+        AuditLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'document.cloned',
+            'entity_type' => Document::class,
+            'entity_id' => $clone->id,
+            'metadata' => ['source_id' => $document->id],
+        ]);
+
+        return redirect()->route('documents.edit-content', $clone)
+            ->with('status', 'Document copied. You are editing the copy.');
+    }
+
     public function destroy(Document $document): RedirectResponse
     {
         $this->authorize('delete', $document);

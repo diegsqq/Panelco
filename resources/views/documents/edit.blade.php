@@ -1,21 +1,23 @@
 @extends('layouts.app')
+@section('full-screen', true)
+@section('full-screen-col', 'col-12')
 @section('content')
 <div class="row justify-content-center">
-<div class="col-lg-7">
-
-    <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
-        <div class="d-flex align-items-center gap-3">
-            <span class="stat-icon" style="background:#e6f3ea;color:#00A868;width:52px;height:52px;font-size:1.4rem"><i class="bi bi-pencil-square"></i></span>
-            <div>
-                <h4 class="fw-bold mb-0">Edit document</h4>
-                <small class="text-muted text-truncate d-inline-block" style="max-width:22rem" title="{{ $document->original_filename }}">{{ $document->original_filename }}</small>
+<div class="col-12">
+    <div class="container-fluid px-4">
+        <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+            <div class="d-flex align-items-center gap-3">
+                <span class="stat-icon" style="background:#e6f3ea;color:#00A868;width:52px;height:52px;font-size:1.4rem"><i class="bi bi-pencil-square"></i></span>
+                <div>
+                    <h4 class="fw-bold mb-0">Edit document</h4>
+                    <small class="text-muted text-truncate d-inline-block" style="max-width:22rem" title="{{ $document->original_filename }}">{{ $document->original_filename }}</small>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ route('documents.edit-content', $document) }}" class="btn btn-sm btn-outline-success text-nowrap"><i class="bi bi-file-earmark-text me-1"></i>Edit content</a>
+                <a href="{{ route('documents.show', $document) }}" class="btn btn-sm btn-outline-secondary text-nowrap"><i class="bi bi-arrow-left me-1"></i>Back</a>
             </div>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('documents.edit-content', $document) }}" class="btn btn-sm btn-outline-success text-nowrap"><i class="bi bi-file-earmark-text me-1"></i>Edit content</a>
-            <a href="{{ route('documents.show', $document) }}" class="btn btn-sm btn-outline-secondary text-nowrap"><i class="bi bi-arrow-left me-1"></i>Back</a>
-        </div>
-    </div>
 
     <div class="card card-p3 p-4">
         <form method="POST" action="{{ route('documents.update', $document) }}" enctype="multipart/form-data">
@@ -105,6 +107,7 @@
             <dt class="col-sm-4 text-muted">Status</dt><dd class="col-sm-8">{{ ucfirst($document->processing_status ?? 'pending') }}</dd>
         </dl>
         <div class="form-text mt-2">Previous files remain available from the document's version history.</div>
+    </div>
     </div>
 
 </div>

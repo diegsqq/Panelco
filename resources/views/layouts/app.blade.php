@@ -342,7 +342,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-9 col-lg-10 p-0 d-flex flex-column @yield('full-screen-col')" style="height:100vh;overflow-y:auto;overflow-x:hidden;">
+        <div class="p-0 d-flex flex-column @hasSection('full-screen') @yield('full-screen-col') @else col-md-9 col-lg-10 @endif" style="height:100vh;overflow-y:auto;overflow-x:hidden;">
             @hasSection('full-screen')
             @yield('content')
             @else

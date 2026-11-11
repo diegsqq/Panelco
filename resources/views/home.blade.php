@@ -290,7 +290,8 @@
                                                 <button class="btn btn-link p-0 wd-dots" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions for {{ $file->title ?? $file->original_filename }}"><i class="bi bi-three-dots-vertical"></i></button>
                                                 <ul class="dropdown-menu dropdown-menu-end" style="border-radius:.75rem;border-color:#d5e8db">
                                                     <li><a class="dropdown-item" href="{{ route('documents.show', $file) }}"><i class="bi bi-eye me-2"></i>View</a></li>
-                                                    <li><a class="dropdown-item" href="{{ route('documents.edit', $file) }}"><i class="bi bi-pencil me-2"></i>Edit</a></li>
+                                                    <li><a class="dropdown-item" href="{{ route('documents.show', $file) }}"><i class="bi bi-eye me-2"></i>View</a></li>
+                                                <li><a class="dropdown-item" href="{{ route('documents.clone', $file) }}"><i class="bi bi-pencil me-2"></i>Edit</a></li>
                                                     <li><button type="button" class="dropdown-item text-danger" data-delete-url="{{ route('documents.destroy', $file) }}" onclick="if(confirm('Delete this document?')){var f=document.getElementById('wdDelForm');f.action=this.getAttribute('data-delete-url');f.submit();}"><i class="bi bi-trash me-2"></i>Delete</button></li>
                                                 </ul>
                                             </span>
