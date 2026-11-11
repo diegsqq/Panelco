@@ -480,7 +480,7 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-    background: #f2f2f2;
+    background: transparent;
     overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
@@ -683,7 +683,7 @@
 .p3-editor-btn:hover { background: #f0f9f3; border-color: var(--p3-card-border); }
 
 /* ── Dark mode ──────────────────────────────────────────────────── */
-[data-theme="dark"] .p3-word-shell { background: #1e1e1e; color: #ccc; }
+[data-theme="dark"] .p3-word-shell { background: transparent; color: #ccc; }
 [data-theme="dark"] .p3-word-titlebar { background: #2d2d2d; border-color: #3f3f3f; color: #ccc; }
 [data-theme="dark"] .p3-word-ribbon { background: #2d2d2d; border-color: #3f3f3f; }
 [data-theme="dark"] .p3-word-ribbon-tab { color: #ccc; }
