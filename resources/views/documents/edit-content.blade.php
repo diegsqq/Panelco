@@ -115,10 +115,10 @@
                     <div class="p3-word-ribbon-sep"></div>
                     <button type="button" class="p3-word-ribbon-btn" data-cmd="insertUnorderedList" title="Bullets" aria-label="Bullets"><i class="bi bi-list-ul"></i></button>
                     <button type="button" class="p3-word-ribbon-btn" data-cmd="insertOrderedList" title="Numbering" aria-label="Numbering"><i class="bi bi-list-ol"></i></button>
-                    <button type="button" class="p3-word-ribbon-btn" title="Decrease Indent" aria-label="Decrease Indent"><i class="bi bi-text-indent-left"></i></button>
-                    <button type="button" class="p3-word-ribbon-btn" title="Increase Indent" aria-label="Increase Indent"><i class="bi bi-text-indent-right"></i></button>
+                    <button type="button" class="p3-word-ribbon-btn" title="Decrease Indent" aria-label="Decrease Indent" data-cmd="outdent"><i class="bi bi-text-indent-left"></i></button>
+                    <button type="button" class="p3-word-ribbon-btn" title="Increase Indent" aria-label="Increase Indent" data-cmd="indent"><i class="bi bi-text-indent-right"></i></button>
                     <div class="p3-word-ribbon-sep"></div>
-                    <button type="button" class="p3-word-ribbon-btn" title="Sort" aria-label="Sort"><i class="bi bi-arrow-down-up"></i></button>
+                    <button type="button" class="p3-word-ribbon-btn" title="Sort" aria-label="Sort" data-cmd="insertOrderedList"><i class="bi bi-arrow-down-up"></i></button>
                     <button type="button" class="p3-word-ribbon-btn" title="Show/Hide ¶" aria-label="Show paragraph marks">¶</button>
                 </div>
             </div>
@@ -719,7 +719,24 @@
     zoomBtns[1].addEventListener('click', function () { zoom = Math.max(zoom - 10, 60); applyZoom(); });
     applyZoom();
 
-    /* ── Ribbon tab switching ─────────────────────────────────── */
+    /* ── Ribbon command buttons (Bold/Italic/Align/List/etc.) ───────── */
+    document.getElementById('wordRibbon').addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-cmd]');
+        if (!btn) return;
+        e.preventDefault();
+        exec(btn.getAttribute('data-cmd'));
+    });
+
+    /* ── Ribbon style buttons (Normal / Heading 1-3 / Title / Quote) ─ */
+    document.getElementById('wordRibbon').addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-style]');
+        if (!btn) return;
+        e.preventDefault();
+        var map = { p: '<p>', h1: '<h1>', h2: '<h2>', h3: '<h3>', title: '<h1>', subtitle: '<h2>', strong: '<strong>', em: '<em>', blockquote: '<blockquote>' };
+        exec('formatBlock', map[btn.getAttribute('data-style')] || '<p>');
+    });
+
+    /* ── Ribbon ribbon tab switching ─────────────────────────────────── */
     document.querySelectorAll('.p3-word-ribbon-tab').forEach(function (tab) {
         tab.addEventListener('click', function () {
             document.querySelectorAll('.p3-word-ribbon-tab').forEach(function (t) {
