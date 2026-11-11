@@ -55,6 +55,30 @@ class LoginController extends Controller
         return $this->authenticated($request, $user) ?: redirect()->intended($this->redirectPath());
     }
 
+    /**
+     * Provide specific failed-login messages so the user knows whether the
+     * email is unknown or the password is wrong.
+     */
+    protected function sendFailedLoginResponse($request)
+    {
+        $email = $request->input($this->username());
+        $user  = \App\Models\User::where($this->username(), $email)->first();
+
+        if (! $user) {
+            // Email not found → tell them on the email field.
+            return back()->withInput($request->only($this->username(), 'remember'))
+                ->withErrors([
+                    $this->username() => 'No account found with this email address.',
+                ]);
+        }
+
+        // Email exists but password wrong → tell them on the password field.
+        return back()->withInput($request->only($this->username(), 'remember'))
+            ->withErrors([
+                'password' => 'Wrong password. Please try again.',
+            ]);
+    }
+
     /** Best-effort login alert; mail problems never block signing in. */
     private function sendLoginAlert($user): void
     {

@@ -117,6 +117,10 @@
     .login-submit { min-height: 49px; margin-top: .35rem; color: #fff; background: #087a4b; border: 0; border-radius: .7rem; font-weight: 650; transition: background .18s ease, transform .18s ease, box-shadow .18s ease; }
     .login-submit:hover { color: #fff; background: #06623d; box-shadow: 0 8px 18px rgba(8,122,75,.2); transform: translateY(-1px); }
     .login-help { margin-top: 1.5rem; padding-top: 1.1rem; color: #87948c; border-top: 1px solid #edf1ee; font-size: .76rem; line-height: 1.6; }
+    .login-form-content .alert-danger {
+        background: #fdecea; border: 1px solid #f5c6c7; color: #842029; border-radius: .7rem; padding: .75rem 1rem;
+    }
+    .login-form-content .alert-danger i { color: #dc3545; }
     @media (max-width: 767.98px) {
         .login-page { display: block; padding: 1rem; }
         .login-frame { min-height: calc(100vh - 2rem); grid-template-columns: 1fr; border-radius: 1.2rem; }
@@ -163,12 +167,21 @@
                 <div class="login-eyebrow" style="color:#087a4b">Welcome back</div>
                 <h2>Employee login</h2>
                 <p class="login-subtitle">Sign in with your PANELCO III account to continue.</p>
+                @if ($errors->any())
+                    <div class="alert alert-danger mb-3" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Sign-in failed.</strong>
+                        @foreach($errors->all() as $msg)
+                            <span class="d-block mt-1 small">{{ $msg }}</span>
+                        @endforeach
+                    </div>
+                @endif
                 <form method="POST" action="{{ route('login') }}">
                     @csrf
                     <div class="mb-3">
                         <label for="email" class="form-label">Email address</label>
                         <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus placeholder="you@panelco3.local">
-                        @error('email')<span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>@enderror
+                        @error('email')<span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>@enderror
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
