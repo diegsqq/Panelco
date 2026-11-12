@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Foundation\Auth\ResetsPasswords;
+use Illuminate\Http\Request;
 
 class ResetPasswordController extends Controller
 {
@@ -26,4 +28,15 @@ class ResetPasswordController extends Controller
      * @var string
      */
     protected $redirectTo = '/home';
+
+    protected function sendResetResponse(Request $request, $response)
+    {
+        $email = $request->input('email');
+        $user = User::where('email', $email)->first();
+        if ($user) {
+            User::notifyAdminsOfPasswordChange($user, 'password_reset');
+        }
+
+        return parent::sendResetResponse($request, $response);
+    }
 }

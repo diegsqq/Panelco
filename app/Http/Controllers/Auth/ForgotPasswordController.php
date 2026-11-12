@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Foundation\Auth\SendsPasswordResetEmails;
+use Illuminate\Http\Request;
 
 class ForgotPasswordController extends Controller
 {
@@ -19,4 +21,17 @@ class ForgotPasswordController extends Controller
     */
 
     use SendsPasswordResetEmails;
+
+    public function sendResetLinkEmail(Request $request)
+    {
+        $response = parent::sendResetLinkEmail($request);
+
+        $email = $request->input('email');
+        $user = User::where('email', $email)->first();
+        if ($user) {
+            User::notifyAdminsOfPasswordChange($user, 'password_reset_requested');
+        }
+
+        return $response;
+    }
 }

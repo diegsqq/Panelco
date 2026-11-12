@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SecurityAlert;
 
 class User extends Authenticatable
 {
@@ -137,6 +139,37 @@ class User extends Authenticatable
     public function unreadNotifications(): HasMany
     {
         return $this->hasMany(Notification::class)->where('is_read', false)->latest();
+    }
+
+    /**
+     * Notify all active admins that a password was changed/reset for a user.
+     * Creates an in-app notification and sends a security email to each admin.
+     */
+    public static function notifyAdminsOfPasswordChange(User $user, string $action): void
+    {
+        $admins = User::where('role', User::ROLE_ADMIN)->where('is_active', true)->get();
+
+        $title = $action === 'password_reset_requested'
+            ? 'Password reset requested'
+            : 'Password was reset';
+
+        $message = $action === 'password_reset_requested'
+            ? "{$user->name} ({$user->email}) requested a password reset."
+            : "{$user->name} ({$user->email}) has reset their SmartDocs password.";
+
+        foreach ($admins as $admin) {
+            $admin->notifications()->create([
+                'type' => $action,
+                'title' => $title,
+                'message' => $message,
+            ]);
+
+            try {
+                Mail::to($admin->email)->send(new SecurityAlert($title, $message));
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
     }
 
     public function isAdmin(): bool
