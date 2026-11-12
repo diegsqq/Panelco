@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use App\Models\Notification;
 
 class NotificationController extends Controller
@@ -19,6 +20,23 @@ class NotificationController extends Controller
             ->take(50)
             ->get()
             ->map(function (Notification $n) {
+                $type = $n->type;
+                $category = 'info';
+                $icon = 'bi-info';
+
+                if (Str::startsWith($type, 'auth.login')) {
+                    $category = 'warning';
+                    $icon = 'bi-shield-lock';
+                } elseif (Str::startsWith($type, 'user.')) {
+                    $category = 'secondary';
+                    $icon = 'bi-person';
+                } elseif (Str::startsWith($type, 'document.')) {
+                    $category = 'primary';
+                    $icon = 'bi-folder';
+                } elseif (Str::startsWith($type, 'password')) {
+                    $category = 'danger';
+                    $icon = 'bi-lock';
+
                 return [
                     'id' => $n->id,
                     'type' => $n->type,
@@ -26,6 +44,9 @@ class NotificationController extends Controller
                     'message' => $n->message,
                     'is_read' => (bool) $n->is_read,
                     'created_at' => $n->created_at?->toISOString(),
+                    'readable_created_at' => $n->created_at?->diffForHumans(),
+                    'category' => $category,
+                    'icon' => $icon,
                 ];
             });
 
