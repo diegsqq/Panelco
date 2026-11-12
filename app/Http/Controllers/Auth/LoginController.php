@@ -22,6 +22,11 @@ class LoginController extends Controller
 
     use AuthenticatesUsers;
 
+    public function username(): string
+    {
+        return 'employee_id';
+    }
+
     protected function credentials($request)
     {
         return array_merge(
@@ -61,18 +66,18 @@ class LoginController extends Controller
      */
     protected function sendFailedLoginResponse($request)
     {
-        $email = $request->input($this->username());
-        $user  = \App\Models\User::where($this->username(), $email)->first();
+        $employeeId = $request->input($this->username());
+        $user  = \App\Models\User::where($this->username(), $employeeId)->first();
 
         if (! $user) {
-            // Email not found → tell them on the email field.
+            // Employee ID not found → tell them on the employee ID field.
             return back()->withInput($request->only($this->username(), 'remember'))
                 ->withErrors([
-                    $this->username() => 'No account found with this email address.',
+                    $this->username() => 'No account found with this employee ID.',
                 ]);
         }
 
-        // Email exists but password wrong → tell them on the password field.
+        // Employee ID exists but password wrong → tell them on the password field.
         return back()->withInput($request->only($this->username(), 'remember'))
             ->withErrors([
                 'password' => 'Wrong password. Please try again.',
