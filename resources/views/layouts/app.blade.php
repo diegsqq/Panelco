@@ -390,6 +390,19 @@
                             </li>
                             @forelse($notifications as $n)
                             <li>
+                                @if($n->type === 'password_reset_request' && isset($n->metadata['password_reset_request_id']))
+                                <a href="{{ route('admin.password-reset-requests.show', ['passwordResetRequest' => $n->metadata['password_reset_request_id']]) }}" class="dropdown-item py-2 d-flex align-items-start gap-2 notification-item{{ !$n->is_read ? ' fw-bold bg-light' : ' text-muted' }}" data-notification-id="{{ $n->id }}" data-notification-read="{{ $n->is_read ? '1' : '0' }}">
+                                    <div style="flex:0 0 26px;width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:<?php echo !$n->is_read ? '#00A868' : '#dce6df'; ?>;color:white;">
+                                        <i class="bi bi-key-fill" style="font-size:.85rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <div class="fw-semibold" style="font-size:.82rem;">{{ $n->title }}</div>
+                                        <div class="text-muted small" style="white-space:normal;overflow-wrap:anywhere;">{{ $n->message }}</div>
+                                        <div class="text-muted" style="font-size:.68rem;">{{ $n->created_at?->diffForHumans() }}</div>
+                                        <div class="text-primary small mt-1" style="font-size:.7rem;"><i class="bi bi-arrow-right me-1"></i>Click to review</div>
+                                    </div>
+                                </a>
+                                @else
                                 <a href="#" class="dropdown-item py-2 d-flex align-items-start gap-2 notification-item{{ !$n->is_read ? ' fw-bold bg-light' : ' text-muted' }}" data-notification-id="{{ $n->id }}" data-notification-read="{{ $n->is_read ? '1' : '0' }}">
                                     <div style="flex:0 0 26px;width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:<?php echo !$n->is_read ? '#00A868' : '#dce6df'; ?>;color:white;">
                                         <i class="bi bi-bell" style="font-size:.85rem;"></i>
@@ -400,6 +413,7 @@
                                         <div class="text-muted" style="font-size:.68rem;">{{ $n->created_at?->diffForHumans() }}</div>
                                     </div>
                                 </a>
+                                @endif
                             </li>
                             @empty
                             <li><div class="dropdown-item py-2 text-muted small text-center">No notifications</div></li>

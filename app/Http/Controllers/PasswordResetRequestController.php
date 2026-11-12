@@ -54,6 +54,7 @@ class PasswordResetRequestController extends Controller
                 'type' => 'password_reset_request',
                 'title' => 'Password reset requested',
                 'message' => "{$user->name} (ID: {$user->employee_id}) requested a password reset. Reason: {$data['reason']}",
+                'metadata' => ['password_reset_request_id' => $resetRequest->id],
             ]);
 
             try {
