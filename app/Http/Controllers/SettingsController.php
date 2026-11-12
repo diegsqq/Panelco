@@ -51,7 +51,7 @@ class SettingsController extends Controller
                 $query->where(function ($ownedEvents) use ($user) {
                     $ownedEvents->where('entity_type', User::class)
                         ->where('entity_id', $user->id);
-                })->orWhere('metadata->identifier', $user->email);
+                })->orWhereIn('metadata->identifier', [$user->email, $user->employee_id]);
             })
             ->latest()
             ->limit(20)

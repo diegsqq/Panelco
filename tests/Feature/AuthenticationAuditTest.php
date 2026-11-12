@@ -18,17 +18,18 @@ class AuthenticationAuditTest extends TestCase
     {
         $user = User::factory()->create([
             'email' => 'employee@example.test',
+            'employee_id' => '0001',
             'password' => Hash::make('Password123!'),
         ]);
 
         $this->post(route('login'), [
-            'email' => $user->email,
+            'employee_id' => $user->employee_id,
             'password' => 'wrong-secret',
-        ])->assertSessionHasErrors('email');
+        ])->assertSessionHasErrors('password');
 
         $log = AuditLog::where('action', 'auth.login_failed')->firstOrFail();
         $this->assertSame($user->id, $log->entity_id);
-        $this->assertSame($user->email, $log->metadata['identifier']);
+        $this->assertSame($user->employee_id, $log->metadata['identifier']);
         $this->assertArrayNotHasKey('password', $log->metadata);
         $this->assertArrayHasKey('ip', $log->metadata);
         $this->assertArrayHasKey('user_agent', $log->metadata);
@@ -36,7 +37,7 @@ class AuthenticationAuditTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
         $this->actingAs($admin)->get(route('admin.audit-logs.index'))
             ->assertOk()
-            ->assertSee($user->email)
+            ->assertSee($user->employee_id)
             ->assertSee($log->metadata['ip']);
     }
 
@@ -44,7 +45,7 @@ class AuthenticationAuditTest extends TestCase
     {
         for ($attempt = 0; $attempt < 6; $attempt++) {
             $this->post(route('login'), [
-                'email' => 'unknown@example.test',
+                'employee_id' => '9999',
                 'password' => 'wrong-secret',
             ]);
         }
@@ -58,11 +59,12 @@ class AuthenticationAuditTest extends TestCase
     {
         $user = User::factory()->create([
             'email' => 'employee@example.test',
+            'employee_id' => '0001',
             'password' => Hash::make('Password123!'),
         ]);
 
         $this->post(route('login'), [
-            'email' => $user->email,
+            'employee_id' => $user->employee_id,
             'password' => 'Password123!',
         ])->assertRedirect();
 
@@ -81,8 +83,8 @@ class AuthenticationAuditTest extends TestCase
 
     public function test_security_page_shows_only_the_current_users_authentication_history(): void
     {
-        $user = User::factory()->create(['email' => 'history@example.test']);
-        $otherUser = User::factory()->create(['email' => 'other@example.test']);
+        $user = User::factory()->create(['email' => 'history@example.test', 'employee_id' => '0001']);
+        $otherUser = User::factory()->create(['email' => 'other@example.test', 'employee_id' => '0002']);
 
         $ownSuccess = AuditLog::create([
             'user_id' => $user->id,
@@ -95,11 +97,11 @@ class AuthenticationAuditTest extends TestCase
             'action' => 'auth.login_failed',
             'entity_type' => User::class,
             'entity_id' => $user->id,
-            'metadata' => ['identifier' => $user->email, 'ip' => '192.0.2.11'],
+            'metadata' => ['identifier' => $user->employee_id, 'ip' => '192.0.2.11'],
         ]);
         AuditLog::create([
             'action' => 'auth.login_locked_out',
-            'metadata' => ['identifier' => $user->email, 'ip' => '192.0.2.12'],
+            'metadata' => ['identifier' => $user->employee_id, 'ip' => '192.0.2.12'],
         ]);
         AuditLog::create([
             'user_id' => $otherUser->id,

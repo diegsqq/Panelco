@@ -68,6 +68,7 @@ class DatabaseSeeder extends Seeder
         $adminUser = User::firstOrCreate(
             ['email' => 'admin@panelco3.local'],
             [
+                'employee_id' => '0001',
                 'name' => 'System Administrator',
                 'password' => Hash::make('Password123!'),
                 'role' => User::ROLE_ADMIN,
@@ -79,6 +80,7 @@ class DatabaseSeeder extends Seeder
         $manager = User::firstOrCreate(
             ['email' => 'manager@panelco3.local'],
             [
+                'employee_id' => '0002',
                 'name' => 'Document Manager',
                 'password' => Hash::make('Password123!'),
                 'role' => User::ROLE_MANAGER,
@@ -90,6 +92,7 @@ class DatabaseSeeder extends Seeder
         User::firstOrCreate(
             ['email' => 'employee@panelco3.local'],
             [
+                'employee_id' => '0003',
                 'name' => 'Employee',
                 'password' => Hash::make('Password123!'),
                 'role' => User::ROLE_EMPLOYEE,

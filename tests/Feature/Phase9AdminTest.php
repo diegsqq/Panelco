@@ -846,9 +846,9 @@ class Phase9AdminTest extends TestCase
         ]);
 
         $this->post(route('login'), [
-            'email' => $user->email,
+            'employee_id' => $user->employee_id,
             'password' => 'password',
-        ])->assertSessionHasErrors('email');
+        ])->assertSessionHasErrors('password');
         $this->assertGuest();
 
         $this->actingAs($user)->get(route('home'))

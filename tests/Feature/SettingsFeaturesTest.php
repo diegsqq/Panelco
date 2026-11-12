@@ -227,7 +227,7 @@ class SettingsFeaturesTest extends TestCase
         // actingAs() pinned the guard — drop it so this is a real fresh login.
         $this->app['auth']->forgetGuards();
         $response = $this->post(route('login'), [
-            'email' => $user->email,
+            'employee_id' => $user->employee_id,
             'password' => 'password',
         ]);
         $response->assertRedirect(route('two-factor.show'));

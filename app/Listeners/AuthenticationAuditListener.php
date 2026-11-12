@@ -73,7 +73,7 @@ class AuthenticationAuditListener
 
     private function loginIdentifier(array $credentials): ?string
     {
-        $identifier = $credentials['email'] ?? $credentials['username'] ?? null;
+        $identifier = $credentials['email'] ?? $credentials['username'] ?? $credentials['employee_id'] ?? null;
 
         return is_string($identifier) ? mb_substr(trim($identifier), 0, 255) : null;
     }
