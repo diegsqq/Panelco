@@ -37,6 +37,6 @@ class ResetPasswordController extends Controller
             User::notifyAdminsOfPasswordChange($user, 'password_reset');
         }
 
-        return parent::sendResetResponse($request, $response);
+        return $this->sendResetResponse($request, $response);
     }
 }
