@@ -403,14 +403,16 @@
                                     </div>
                                 </a>
                                 @else
-                                <a href="#" class="dropdown-item py-2 d-flex align-items-start gap-2 notification-item{{ !$n->is_read ? ' fw-bold bg-light' : ' text-muted' }}" data-notification-id="{{ $n->id }}" data-notification-read="{{ $n->is_read ? '1' : '0' }}">
-                                    <div style="flex:0 0 26px;width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:<?php echo !$n->is_read ? '#00A868' : '#dce6df'; ?>;color:white;">
+                                <a href="#" class="dropdown-item py-2 d-flex align-items-start gap-2 notification-item text-muted" data-notification-id="{{ $n->id }}" data-notification-read="1">
+                                    <div style="flex:0 0 26px;width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#e9ecef;color:#6c757d;">
                                         <i class="bi bi-bell" style="font-size:.85rem;"></i>
                                     </div>
                                     <div class="flex-grow-1 min-w-0">
                                         <div class="fw-semibold" style="font-size:.82rem;">{{ $n->title }}</div>
                                         <div class="text-muted small" style="white-space:normal;overflow-wrap:anywhere;">{{ $n->message }}</div>
-                                        <div class="text-muted" style="font-size:.68rem;">{{ $n->created_at?->diffForHumans() }}</div>
+                                        <div class="text-muted" style="font-size:.68rem;">
+                                            {{ Str::limit($n->created_at->diffForHumans(), 35) }}
+                                        </div>
                                     </div>
                                 </a>
                                 @endif
@@ -661,27 +663,56 @@
                         <div class="s-group">
                             <form method="POST" action="{{ route('settings.notifications') }}">
                                 @csrf
+                                {{-- Summary line --}}
+                                <div class="s-row py-2 small text-muted">
+                                    <div class="fw-semibold">{{ __('settings.notifications') }}</div>
+                                </div>
+
                                 <div class="s-row">
                                     <div class="s-row-ico green"><i class="bi bi-check2-circle"></i></div>
-                                    <div class="s-row-body"><div class="s-row-label">Document processed</div><div class="s-row-sub">Email when text extraction finishes</div></div>
-                                    <div class="form-check form-switch mb-0"><input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_doc_done" value="1" {{ auth()->user()->notify_doc_done ? 'checked' : '' }}></div>
+                                    <div class="s-row-body">
+                                        <div class="s-row-label">Document processed</div>
+                                        <div class="s-row-sub">Email when text extraction finishes</div>
+                                    </div>
+                                    <div class="form-check form-switch mb-0">
+                                        <input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_doc_done" value="1" {{ auth()->user()->notify_doc_done ? 'checked' : '' }}>
+                                    </div>
                                 </div>
+
                                 <div class="s-row">
                                     <div class="s-row-ico green"><i class="bi bi-x-octagon"></i></div>
-                                    <div class="s-row-body"><div class="s-row-label">Processing failed</div><div class="s-row-sub">Get notified when processing fails</div></div>
-                                    <div class="form-check form-switch mb-0"><input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_doc_failed" value="1" {{ auth()->user()->notify_doc_failed ? 'checked' : '' }}></div>
+                                    <div class="s-row-body">
+                                        <div class="s-row-label">Processing failed</div>
+                                        <div class="s-row-sub">Get notified when processing fails</div>
+                                    </div>
+                                    <div class="form-check form-switch mb-0">
+                                        <input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_doc_failed" value="1" {{ auth()->user()->notify_doc_failed ? 'checked' : '' }}>
+                                    </div>
                                 </div>
+
                                 <div class="s-row">
                                     <div class="s-row-ico green"><i class="bi bi-clipboard-check"></i></div>
-                                    <div class="s-row-body"><div class="s-row-label">Approval decisions</div><div class="s-row-sub">Email when your document is approved or rejected</div></div>
-                                    <div class="form-check form-switch mb-0"><input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_doc_approval" value="1" {{ auth()->user()->notify_doc_approval ? 'checked' : '' }}></div>
+                                    <div class="s-row-body">
+                                        <div class="s-row-label">Approval decisions</div>
+                                        <div class="s-row-sub">Email when your document is approved or rejected</div>
+                                    </div>
+                                    <div class="form-check form-switch mb-0">
+                                        <input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_doc_approval" value="1" {{ auth()->user()->notify_doc_approval ? 'checked' : '' }}>
+                                    </div>
                                 </div>
-                                <div class="s-row" style="border-bottom:0">
+
+                                <div class="s-row">
                                     <div class="s-row-ico green"><i class="bi bi-fingerprint"></i></div>
-                                    <div class="s-row-body"><div class="s-row-label">Sign-in alerts</div><div class="s-row-sub">Security alert for every new sign-in</div></div>
-                                    <div class="form-check form-switch mb-0"><input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_login_alert" value="1" {{ auth()->user()->notify_login_alert ? 'checked' : '' }}></div>
+                                    <div class="s-row-body">
+                                        <div class="s-row-label">Sign-in alerts</div>
+                                        <div class="s-row-sub">Security alert for every new sign-in</div>
+                                    </div>
+                                    <div class="form-check form-switch mb-0">
+                                        <input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_login_alert" value="1" {{ auth()->user()->notify_login_alert ? 'checked' : '' }}>
+                                    </div>
                                 </div>
-                                <div class="px-3 py-2" style="border-top:1px solid #f0f0f0">
+
+                                <div class="px-3 py-2" style="border-top:0">
                                     <button type="submit" class="btn btn-sm" style="background:#00A868;color:#fff;border-radius:.6rem;font-size:.8rem;font-weight:600;border:none">
                                         <i class="bi bi-check-lg me-1"></i>Save notification preferences
                                     </button>
