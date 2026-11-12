@@ -46,21 +46,22 @@
 <div class="input-group"><span class="input-group-text"><i class="bi bi-person"></i></span><input id="newUserName" name="name" class="form-control" value="{{ old('name') }}" placeholder="Juan Dela Cruz" required></div>
 </div>
 <div class="col-md-6">
-<label for="newUserEmail" class="form-label">Email</label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-envelope"></i></span><input id="newUserEmail" name="email" type="email" class="form-control" value="{{ old('email') }}" placeholder="juan@panelco.gov.ph" autocomplete="off" autocapitalize="off" spellcheck="false" required></div>
+<label for="newUserIdNumber" class="form-label">ID Number</label>
+<div class="input-group"><span class="input-group-text"><i class="bi bi-hash"></i></span><input id="newUserIdNumber" name="employee_id" type="text" class="form-control" value="{{ old('employee_id') }}" required maxlength="4" pattern="[0-9]{4}" inputmode="numeric" autocomplete="off" placeholder="0000"></div>
+<small class="text-muted">4 digits as shown on the employee record.</small>
 </div>
 <div class="col-md-6">
 <label for="newUserPw" class="form-label">Password</label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-lock"></i></span><input id="newUserPw" name="password" type="password" class="form-control" minlength="12" autocomplete="new-password" required></div>
-<small class="text-muted">12+ characters, uppercase and lowercase, number, and symbol.</small>
+<div class="input-group"><span class="input-group-text"><i class="bi bi-lock"></i></span><input id="newUserPw" name="password" type="password" class="form-control" minlength="8" autocomplete="new-password" required><button type="button" class="btn btn-outline-secondary pw-toggle" data-pw-target="newUserPw" aria-label="Show password" title="Show password"><i class="bi bi-eye"></i></button></div>
+<small class="text-muted">8+ characters, uppercase and lowercase, number, and symbol.</small>
 </div>
 <div class="col-md-6">
 <label for="newUserPwConfirm" class="form-label">Confirm Password</label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-lock-fill"></i></span><input id="newUserPwConfirm" name="password_confirmation" type="password" class="form-control" minlength="12" autocomplete="new-password" required></div>
+<div class="input-group"><span class="input-group-text"><i class="bi bi-lock-fill"></i></span><input id="newUserPwConfirm" name="password_confirmation" type="password" class="form-control" minlength="8" autocomplete="new-password" required><button type="button" class="btn btn-outline-secondary pw-toggle" data-pw-target="newUserPwConfirm" aria-label="Show password" title="Show password"><i class="bi bi-eye"></i></button></div>
 </div>
 <div class="col-md-4">
 <label for="newUserRole" class="form-label">Role</label>
-<select id="newUserRole" name="role" class="form-select" required>@foreach ([\App\Models\User::ROLE_EMPLOYEE, \App\Models\User::ROLE_MANAGER, \App\Models\User::ROLE_ADMIN] as $r)<option value="{{ $r }}" {{ old('role', \App\Models\User::ROLE_EMPLOYEE) === $r ? 'selected' : '' }}>{{ \App\Models\User::roleLabel($r) }}</option>@endforeach</select>
+<select id="newUserRole" name="role" class="form-select" required>@foreach ([\App\Models\User::ROLE_EMPLOYEE, \App\Models\User::ROLE_ADMIN] as $r)<option value="{{ $r }}" {{ old('role', \App\Models\User::ROLE_EMPLOYEE) === $r ? 'selected' : '' }}>{{ \App\Models\User::roleLabel($r) }}</option>@endforeach</select>
 </div>
 <div class="col-md-4">
 <label for="newUserDepartment" class="form-label">Primary Department</label>
@@ -102,27 +103,54 @@
     var form = document.getElementById('userCreateFormEl');
     if (!modalEl || !form) return;
 
+    // Show/hide a password field and keep its eye icon and label in sync.
+    function setPwVisible(input, visible) {
+        input.type = visible ? 'text' : 'password';
+        var btn = form.querySelector('[data-pw-target="' + input.id + '"]');
+        if (btn) {
+            btn.querySelector('i').className = visible ? 'bi bi-eye-slash' : 'bi bi-eye';
+            btn.setAttribute('aria-label', visible ? 'Hide password' : 'Show password');
+            btn.setAttribute('title', visible ? 'Hide password' : 'Show password');
+        }
+    }
+
+    form.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-pw-target]');
+        if (!btn) return;
+        var input = document.getElementById(btn.getAttribute('data-pw-target'));
+        if (input) setPwVisible(input, input.type === 'password');
+    });
+
     // Empty the create form whenever the modal closes, and right after a
     // successful save, so no previous user's details linger for the next one.
     function clearForm() {
         form.reset();
         ['newUserPw', 'newUserPwConfirm'].forEach(function (id) {
             var f = document.getElementById(id);
-            if (f) { f.value = ''; f.type = 'password'; }
+            if (f) { f.value = ''; setPwVisible(f, false); }
         });
     }
 
     modalEl.addEventListener('hidden.bs.modal', clearForm);
 
-    // Chrome autofills after page load, so when the server sent no input to
-    // repopulate (fresh page or successful save), wipe email/password again.
-    @if (! $errors->any() && count(old()) === 0)
-    function clearAutofill() {
-        var email = form.querySelector('input[name="email"]');
-        if (email) email.value = '';
+    // Prefill the standard default password whenever the modal opens and a
+    // password field is empty (clearForm/clearAutofill wipe them first).
+    modalEl.addEventListener('show.bs.modal', function () {
         ['newUserPw', 'newUserPwConfirm'].forEach(function (id) {
             var f = document.getElementById(id);
-            if (f) { f.value = ''; f.type = 'password'; }
+            if (f && !f.value) f.value = 'P@55w0rd';
+        });
+    });
+
+    // Chrome autofills after page load, so when the server sent no input to
+    // repopulate (fresh page or successful save), wipe ID number/password again.
+    @if (! $errors->any() && count(old()) === 0)
+    function clearAutofill() {
+        var idNumber = form.querySelector('input[name="employee_id"]');
+        if (idNumber) idNumber.value = '';
+        ['newUserPw', 'newUserPwConfirm'].forEach(function (id) {
+            var f = document.getElementById(id);
+            if (f) { f.value = ''; setPwVisible(f, false); }
         });
     }
     window.addEventListener('load', clearAutofill);

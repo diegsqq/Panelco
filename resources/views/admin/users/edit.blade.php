@@ -36,7 +36,7 @@
 </div>
 <div class="col-md-4">
 <label class="form-label">Role</label>
-<select name="role" class="form-select" required>@foreach (\App\Models\User::ROLES as $r)<option value="{{ $r }}" {{ old('role', $user->role) === $r ? 'selected' : '' }}>{{ \App\Models\User::roleLabel($r) }}</option>@endforeach</select>
+<select name="role" class="form-select" required>@foreach (array_filter(\App\Models\User::ROLES, fn ($r) => $r !== \App\Models\User::ROLE_MANAGER || $user->role === \App\Models\User::ROLE_MANAGER) as $r)<option value="{{ $r }}" {{ old('role', $user->role) === $r ? 'selected' : '' }}>{{ \App\Models\User::roleLabel($r) }}</option>@endforeach</select>
 </div>
 <div class="col-md-4">
 <label class="form-label">Primary Department</label>

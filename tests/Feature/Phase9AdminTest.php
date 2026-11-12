@@ -998,14 +998,64 @@ class Phase9AdminTest extends TestCase
             $this->assertStringNotContainsString('Suggest password', $html, "suggest text still present on {$routeName}");
             $this->assertStringNotContainsString('suggestPwLink', $html);
             $this->assertStringNotContainsString('suggestStandalonePwLink', $html);
-            // The 12+ hint stays.
-            $this->assertStringContainsString('12+ characters, uppercase and lowercase, number, and symbol.', $html);
+            // Create forms accept the 8+ default password; edit keeps 12+.
+            $this->assertStringContainsString('8+ characters, uppercase and lowercase, number, and symbol.', $html);
         }
 
         $html = $this->actingAs($admin)->get(route('admin.users.edit', $admin))->getContent();
         $this->assertStringNotContainsString('Suggest password', $html);
         $this->assertStringNotContainsString('suggestEditPwLink', $html);
         $this->assertStringContainsString('12+ characters, uppercase and lowercase, number, and symbol.', $html);
+    }
+
+    public function test_create_form_prefills_default_password_and_accepts_it(): void
+    {
+        $this->seed();
+        $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
+
+        // Both create forms carry the default-password prefill.
+        foreach (['index', 'create'] as $routeName) {
+            $html = $this->actingAs($admin)->get(route('admin.users.'.$routeName))->getContent();
+            $this->assertStringContainsString("'P@55w0rd'", $html, "default password prefill missing on {$routeName}");
+        }
+
+        // The default satisfies the account-creation password rule.
+        $this->actingAs($admin)->post(route('admin.users.store'), [
+            'name' => 'Default Password Employee',
+            'employee_id' => '0006',
+            'password' => 'P@55w0rd',
+            'password_confirmation' => 'P@55w0rd',
+        ])->assertRedirect(route('admin.users.index'));
+
+        $created = User::where('employee_id', '0006')->firstOrFail();
+        $this->assertTrue(Hash::check('P@55w0rd', $created->password));
+    }
+
+    public function test_document_manager_is_hidden_from_role_dropdowns(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $employee = User::factory()->create(['role' => User::ROLE_EMPLOYEE]);
+        $manager = User::factory()->create(['role' => User::ROLE_MANAGER]);
+
+        // New-account forms offer only Employee and System Administrator.
+        foreach (['index', 'create'] as $routeName) {
+            $html = $this->actingAs($admin)->get(route('admin.users.'.$routeName))->getContent();
+            $this->assertStringNotContainsString(
+                'value="document_manager"',
+                $html,
+                "Document Manager is still offered on {$routeName}"
+            );
+        }
+
+        // Editing an employee hides it; an existing manager keeps the option
+        // so the role stays visible and can still be migrated away.
+        $this->actingAs($admin)
+            ->get(route('admin.users.edit', $employee))
+            ->assertDontSee('value="document_manager"', false);
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.edit', $manager))
+            ->assertSee('value="document_manager"', false);
     }
 
     public function test_another_administrator_can_delete_system_administrator_after_admin_handoff(): void

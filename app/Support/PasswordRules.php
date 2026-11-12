@@ -6,12 +6,12 @@ use Illuminate\Validation\Rules\Password;
 
 class PasswordRules
 {
-    public static function newPassword(bool $required = true): array
+    public static function newPassword(bool $required = true, int $minLength = 12): array
     {
         return [
             $required ? 'required' : 'nullable',
             'string',
-            Password::min(12)->mixedCase()->numbers()->symbols(),
+            Password::min($minLength)->mixedCase()->numbers()->symbols(),
         ];
     }
 }

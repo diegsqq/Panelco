@@ -73,7 +73,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'employee_id' => ['required', 'string', 'size:4', 'unique:users,employee_id'],
             'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
-            'password' => [...PasswordRules::newPassword(), 'confirmed'],
+            'password' => [...PasswordRules::newPassword(minLength: 8), 'confirmed'],
             'role' => ['sometimes', 'required', Rule::in(User::ROLES)],
             'department_id' => ['nullable', 'exists:departments,id'],
         ]);
