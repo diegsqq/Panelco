@@ -142,6 +142,11 @@ class User extends Authenticatable
         return $this->hasMany(Notification::class)->where('is_read', false)->latest();
     }
 
+    public function passwordResetRequests(): HasMany
+    {
+        return $this->hasMany(PasswordResetRequest::class);
+    }
+
     /**
      * Notify all active admins that a password was changed/reset for a user.
      * Creates an in-app notification and sends a security email to each admin.
