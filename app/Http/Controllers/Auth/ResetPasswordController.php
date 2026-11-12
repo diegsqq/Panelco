@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Foundation\Auth\ResetsPasswords;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
 
 class ResetPasswordController extends Controller
 {
@@ -29,14 +30,33 @@ class ResetPasswordController extends Controller
      */
     protected $redirectTo = '/home';
 
-    protected function sendResetResponse(Request $request, $response)
+    public function reset(Request $request)
     {
-        $email = $request->input('email');
-        $user = User::where('email', $email)->first();
-        if ($user) {
-            User::notifyAdminsOfPasswordChange($user, 'password_reset');
-        }
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|password|confirmed',
+            'password_confirmation' => 'required',
+            'token' => 'required',
+        ]);
 
-        return $this->sendResetResponse($request, $response);
+        $response = $this->broker()->reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->password = $password;
+                $user->save();
+            }
+        );
+
+        switch ($response) {
+            case Password::PASSWORD_RESET:
+                $email = $request->input('email');
+                $user = User::where('email', $email)->first();
+                if ($user) {
+                    User::notifyAdminsOfPasswordChange($user, 'password_reset');
+                }
+                return $this->sendResetResponse($request, $response);
+            default:
+                return $this->sendResetFailedResponse($request, $response);
+        }
     }
 }
