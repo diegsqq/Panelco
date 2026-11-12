@@ -13,6 +13,8 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
+use Illuminate\Auth\Events\PasswordReset;
+use App\Listeners\PasswordResetNotificationListener;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -63,6 +65,7 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Failed::class, [AuthenticationAuditListener::class, 'failed']);
         Event::listen(Lockout::class, [AuthenticationAuditListener::class, 'lockedOut']);
         Event::listen(Logout::class, [AuthenticationAuditListener::class, 'logout']);
+        Event::listen(PasswordReset::class, [PasswordResetNotificationListener::class, 'handle']);
 
         $this->app->singleton(AiProvider::class, function () {
             $provider = (string) config('smartdocs.ai.provider', 'none');

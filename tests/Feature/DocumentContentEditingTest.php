@@ -40,7 +40,14 @@ class DocumentContentEditingTest extends TestCase
             ->assertOk()
             ->assertSee('docBody')
             ->assertSee('docHeader')
-            ->assertSee('docFooter');
+            ->assertSee('docFooter')
+            ->assertSee('role="tablist"', false)
+            ->assertSee('id="ribbonHomeTab" role="tab" aria-selected="true"', false)
+            ->assertSee('id="ribbonInsert" role="tabpanel"', false)
+            ->assertSee('id="editorOutline" aria-label="Document outline" inert', false)
+            ->assertSee('id="editorDetails" aria-label="Document information" inert', false)
+            ->assertSee('min-height: 11in', false)
+            ->assertSee('background: #e6e8eb', false);
 
         // The metadata edit page links across to the content editor.
         $this->actingAs($employee)
