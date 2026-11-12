@@ -202,7 +202,7 @@
                     </div>
                     <button type="submit" class="btn login-submit w-100">Sign in <i class="bi bi-arrow-right ms-1"></i></button>
                 </form>
-                <div class="login-help"><i class="bi bi-info-circle me-1"></i> Need access? Contact your administrator. Demo accounts: admin / manager / employee @panelco3.local.</div>
+                <div class="login-help"><i class="bi bi-info-circle me-1"></i> Need access? Contact your administrator. Default password: P@55w0rd. Demo accounts: 0001 / 0002 / 0003.</div>
             </div>
         </section>
     </div>

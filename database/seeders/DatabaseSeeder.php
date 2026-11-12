@@ -70,7 +70,7 @@ class DatabaseSeeder extends Seeder
             [
                 'employee_id' => '0001',
                 'name' => 'System Administrator',
-                'password' => Hash::make('Password123!'),
+                'password' => Hash::make('P@55w0rd'),
                 'role' => User::ROLE_ADMIN,
                 'department_id' => $admin->id,
             ]
@@ -82,7 +82,7 @@ class DatabaseSeeder extends Seeder
             [
                 'employee_id' => '0002',
                 'name' => 'Document Manager',
-                'password' => Hash::make('Password123!'),
+                'password' => Hash::make('P@55w0rd'),
                 'role' => User::ROLE_MANAGER,
                 'department_id' => $it->id,
             ]
@@ -94,7 +94,7 @@ class DatabaseSeeder extends Seeder
             [
                 'employee_id' => '0003',
                 'name' => 'Employee',
-                'password' => Hash::make('Password123!'),
+                'password' => Hash::make('P@55w0rd'),
                 'role' => User::ROLE_EMPLOYEE,
                 'department_id' => $it->id,
             ]
