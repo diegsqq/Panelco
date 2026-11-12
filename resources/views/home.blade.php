@@ -308,59 +308,7 @@
 
 </div>
 
-{{-- ── Password reset approved popup ── --}}
-@php
-    $approvedResetNotification = null;
-    if (auth()->check()) {
-        $approvedResetNotification = auth()->user()->unreadNotifications()->where('type', 'password_reset_approved')->first();
-    }
-@endphp
-@if($approvedResetNotification)
-<div class="modal fade" id="passwordResetPopup" tabindex="-1" aria-labelledby="passwordResetPopupLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
-        <div class="modal-content" style="border-radius:1rem;overflow:hidden;">
-            <div class="modal-header" style="background:#087a4b;color:#fff;border:0;">
-                <h5 class="modal-title" id="passwordResetPopupLabel"><i class="bi bi-check-circle-fill me-2"></i>Password Reset Approved</h5>
-            </div>
-            <div class="modal-body text-center py-4">
-                <div class="mb-3">
-                    <i class="bi bi-key-fill" style="font-size:3rem;color:#087a4b;"></i>
-                </div>
-                <p class="fw-semibold mb-3">Your password has been reset to the default.</p>
-                <div class="card border-0 bg-light p-3 mb-3" style="border-radius:.75rem;">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-muted small">Login ID</span>
-                        <span class="fw-bold" style="font-size:1.1rem;color:#087a4b;">{{ auth()->user()->employee_id }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted small">Default Password</span>
-                        <span class="fw-bold" style="font-size:1.1rem;color:#087a4b;">P@55w0rd</span>
-                    </div>
-                </div>
-                <p class="text-muted small mb-0">Please change your password after logging in for security.</p>
-            </div>
-            <div class="modal-footer border-0 justify-content-center">
-                <button type="button" class="btn btn-success px-4" data-bs-dismiss="modal" id="passwordResetPopupClose">
-                    <i class="bi bi-check-lg me-1"></i>Got it
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-<script>
-(function () {
-    var modal = new bootstrap.Modal(document.getElementById('passwordResetPopup'));
-    modal.show();
-    document.getElementById('passwordResetPopupClose').addEventListener('click', function () {
-        fetch('/notifications/{{ $approvedResetNotification->id }}/read', {
-            method: 'POST',
-            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'), 'Accept': 'application/json' },
-            credentials: 'same-origin',
-        });
-    });
-})();
-</script>
-@endif
+
 
 <script>
 (function () {
