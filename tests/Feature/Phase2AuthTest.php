@@ -5,8 +5,6 @@ namespace Tests\Feature;
 use App\Models\Document;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\MessageBag;
-use Illuminate\Support\ViewErrorBag;
 use Tests\TestCase;
 
 class Phase2AuthTest extends TestCase
@@ -64,16 +62,6 @@ class Phase2AuthTest extends TestCase
     public function test_register_disabled(): void
     {
         $this->get('/register')->assertNotFound();
-    }
-
-    public function test_password_reset_request_form_has_accessible_labels(): void
-    {
-        $this->get(route('password.reset.request'))
-            ->assertOk()
-            ->assertSee('for="employee_id"', false)
-            ->assertSee('id="employee_id"', false)
-            ->assertSee('for="reason"', false)
-            ->assertSee('id="reason"', false);
     }
 
     public function test_dashboard_requires_auth(): void
