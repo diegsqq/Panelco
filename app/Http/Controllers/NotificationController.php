@@ -36,6 +36,7 @@ class NotificationController extends Controller
                 } elseif (Str::startsWith($type, 'password')) {
                     $category = 'danger';
                     $icon = 'bi-lock';
+                }
 
                 return [
                     'id' => $n->id,
