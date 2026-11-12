@@ -403,14 +403,14 @@
                                     </div>
                                 </a>
                                 @else
-                                <a href="#" class="dropdown-item py-2 d-flex align-items-start gap-2 notification-item text-muted" data-notification-id="{{ $n->id }}" data-notification-read="1">
-                                    <div style="flex:0 0 26px;width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#e9ecef;color:#6c757d;">
-                                        <i class="bi bi-bell" style="font-size:.85rem;"></i>
+                                <a href="#" class="dropdown-item py-2 d-flex align-items-start gap-2 notification-item text-reset" data-notification-id="{{ $n->id }}" data-notification-read="1">
+                                    <div style="flex:0 0 26px;width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f8f9fa;color:#6c757d;border:1px solid #dee2e6;">
+                                        <i class="bi bi-bell" style="font-size:.85rem;color:#6c757d;"></i>
                                     </div>
                                     <div class="flex-grow-1 min-w-0">
-                                        <div class="fw-semibold" style="font-size:.82rem;">{{ $n->title }}</div>
-                                        <div class="text-muted small" style="white-space:normal;overflow-wrap:anywhere;">{{ $n->message }}</div>
-                                        <div class="text-muted" style="font-size:.68rem;">
+                                        <div class="fw-semibold" style="font-size:.82rem;color:#6c757d;">{{ $n->title }}</div>
+                                        <div class="text-muted small" style="white-space:normal;overflow-wrap:anywhere;font-size:.8rem;color:#6c757d;">{{ $n->message }}</div>
+                                        <div class="text-muted" style="font-size:.68rem;color:#6c757d;">
                                             {{ Str::limit($n->created_at->diffForHumans(), 35) }}
                                         </div>
                                     </div>
@@ -657,63 +657,97 @@
 
                     {{-- ── Notifications panel ── --}}
                     <div class="s-panel d-none" id="sPanel-notifications">
-                        <div class="s-panel-title">Notifications</div>
-                        <div class="s-panel-sub">Choose which emails SmartDocs sends you.</div>
+                        <div class="s-panel-title bg-light border-bottom border-secondary" style="padding:1rem 1.25rem;">
+                            <h5 class="mb-0 fw-normal small text-uppercase text-secondary">Notifications</h5>
+                        </div>
+                        <div class="s-panel-sub small text-secondary" style="padding:0 1.25rem 1rem;">
+                            Choose which emails SmartDocs sends you.
+                        </div>
 
-                        <div class="s-group">
-                            <form method="POST" action="{{ route('settings.notifications') }}">
+                        <div class="p-3" style="max-height:400px;overflow-y:auto;">
+                            <form method="POST" action="{{ route('settings.notifications') }}" class="notification-form">
                                 @csrf
+
                                 {{-- Summary line --}}
-                                <div class="s-row py-2 small text-muted">
-                                    <div class="fw-semibold">{{ __('settings.notifications') }}</div>
+                                <div class="mb-3 small text-secondary">
+                                    <strong>{{ __('settings.notifications') }}</strong>
                                 </div>
 
-                                <div class="s-row">
-                                    <div class="s-row-ico green"><i class="bi bi-check2-circle"></i></div>
-                                    <div class="s-row-body">
-                                        <div class="s-row-label">Document processed</div>
-                                        <div class="s-row-sub">Email when text extraction finishes</div>
-                                    </div>
-                                    <div class="form-check form-switch mb-0">
-                                        <input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_doc_done" value="1" {{ auth()->user()->notify_doc_done ? 'checked' : '' }}>
-                                    </div>
-                                </div>
-
-                                <div class="s-row">
-                                    <div class="s-row-ico green"><i class="bi bi-x-octagon"></i></div>
-                                    <div class="s-row-body">
-                                        <div class="s-row-label">Processing failed</div>
-                                        <div class="s-row-sub">Get notified when processing fails</div>
-                                    </div>
-                                    <div class="form-check form-switch mb-0">
-                                        <input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_doc_failed" value="1" {{ auth()->user()->notify_doc_failed ? 'checked' : '' }}>
+                                {{-- Document processed --}}
+                                <div class="card border-0 mb-3" style="border-left:3px solid #e6f3ea;">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <div class="s-row-ico green w-8 h-8">
+                                                <i class="bi bi-check2-circle"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1 fw-normal small">Document processed</h6>
+                                                <p class="mb-0 text-caption text-secondary small">Email when text extraction finishes</p>
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-switch ms-auto">
+                                            <input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_doc_done" value="1" {{ auth()->user()->notify_doc_done ? 'checked' : '' }}>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="s-row">
-                                    <div class="s-row-ico green"><i class="bi bi-clipboard-check"></i></div>
-                                    <div class="s-row-body">
-                                        <div class="s-row-label">Approval decisions</div>
-                                        <div class="s-row-sub">Email when your document is approved or rejected</div>
-                                    </div>
-                                    <div class="form-check form-switch mb-0">
-                                        <input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_doc_approval" value="1" {{ auth()->user()->notify_doc_approval ? 'checked' : '' }}>
-                                    </div>
-                                </div>
-
-                                <div class="s-row">
-                                    <div class="s-row-ico green"><i class="bi bi-fingerprint"></i></div>
-                                    <div class="s-row-body">
-                                        <div class="s-row-label">Sign-in alerts</div>
-                                        <div class="s-row-sub">Security alert for every new sign-in</div>
-                                    </div>
-                                    <div class="form-check form-switch mb-0">
-                                        <input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_login_alert" value="1" {{ auth()->user()->notify_login_alert ? 'checked' : '' }}>
+                                {{-- Processing failed --}}
+                                <div class="card border-0 mb-3" style="border-left:3px solid #f8d7da;">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <div class="s-row-ico green w-8 h-8">
+                                                <i class="bi bi-x-octagon"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1 fw-normal small">Processing failed</h6>
+                                                <p class="mb-0 text-caption text-secondary small">Get notified when processing fails</p>
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-switch ms-auto">
+                                            <input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_doc_failed" value="1" {{ auth()->user()->notify_doc_failed ? 'checked' : '' }}>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="px-3 py-2" style="border-top:0">
-                                    <button type="submit" class="btn btn-sm" style="background:#00A868;color:#fff;border-radius:.6rem;font-size:.8rem;font-weight:600;border:none">
+                                {{-- Approval decisions --}}
+                                <div class="card border-0 mb-3" style="border-left:3px solid #fd7e14;">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <div class="s-row-ico green w-8 h-8">
+                                                <i class="bi bi-clipboard-check"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1 fw-normal small">Approval decisions</h6>
+                                                <p class="mb-0 text-caption text-secondary small">Email when your document is approved or rejected</p>
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-switch ms-auto">
+                                            <input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_doc_approval" value="1" {{ auth()->user()->notify_doc_approval ? 'checked' : '' }}>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Sign-in alerts --}}
+                                <div class="card border-0 mb-3" style="border-left:3px solid #6c757d;">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <div class="s-row-ico green w-8 h-8">
+                                                <i class="bi bi-fingerprint"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1 fw-normal small">Sign-in alerts</h6>
+                                                <p class="mb-0 text-caption text-secondary small">Security alert for every new sign-in</p>
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-switch ms-auto">
+                                            <input type="checkbox" class="form-check-input s-notif-toggle" role="switch" name="notify_login_alert" value="1" {{ auth()->user()->notify_login_alert ? 'checked' : '' }}>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Save button --}}
+                                <div class="pt-3 border-top border-secondary" style="padding-left:1.25rem;">
+                                    <button type="submit" class="btn btn-sm btn-primary w-100" style="background:#e6f3ea;border-color:#e6f3ea;color:#00743F;font-weight:600;">
                                         <i class="bi bi-check-lg me-1"></i>Save notification preferences
                                     </button>
                                 </div>
