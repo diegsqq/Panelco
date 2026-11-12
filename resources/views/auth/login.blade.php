@@ -196,9 +196,7 @@
                             <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
                             <label class="form-check-label small text-secondary" for="remember">Remember me</label>
                         </div>
-                        @if (Route::has('password.request'))
-                        <a class="small text-nowrap text-decoration-none" href="{{ route('password.request') }}">Forgot your password? <i class="bi bi-envelope me-1"></i></a>
-                        @endif
+                        <a class="small text-nowrap text-decoration-none" href="{{ route('password.reset.request') }}">Forgot your password? <i class="bi bi-envelope me-1"></i></a>
                     </div>
                     <button type="submit" class="btn login-submit w-100">Sign in <i class="bi bi-arrow-right ms-1"></i></button>
                 </form>
