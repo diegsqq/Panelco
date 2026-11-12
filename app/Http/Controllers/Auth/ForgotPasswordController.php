@@ -27,23 +27,16 @@ class ForgotPasswordController extends Controller
     {
         $request->validate(['email' => 'required|email']);
 
-        try {
-            $response = Password::broker()->sendResetLink($request->only('email'));
-        } catch (\Throwable $e) {
-            // SMTP/mailer may be misconfigured; still generate the reset token
-            // so the user can reset their password. Notify admins regardless.
-            $response = Password::RESET_LINK_SENT;
+        $user = User::where('email', $request->input('email'))->first();
+
+        // Only create the reset token; do NOT send email (SMTP may be misconfigured).
+        // Notify admins so they can assist the user directly.
+        if ($user) {
+            Password::broker()->createToken(['email' => $request->input('email')]);
+            User::notifyAdminsOfPasswordChange($user, 'password_reset_requested');
         }
 
-        switch ($response) {
-            case Password::RESET_LINK_SENT:
-                $user = User::where('email', $request->input('email'))->first();
-                if ($user) {
-                    User::notifyAdminsOfPasswordChange($user, 'password_reset_requested');
-                }
-                return $this->sendResetLinkResponse($request, $response);
-            default:
-                return $this->sendResetLinkFailedResponse($request, $response);
-        }
+        return redirect()->back()
+            ->with('status', 'If an account exists for that email, an administrator has been notified and will assist you with a password reset.');
     }
 }
