@@ -71,15 +71,17 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'employee_id' => ['required', 'string', 'size:4', 'unique:users,employee_id'],
+            'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
             'password' => [...PasswordRules::newPassword(), 'confirmed'],
             'role' => ['sometimes', 'required', Rule::in(User::ROLES)],
             'department_id' => ['nullable', 'exists:departments,id'],
         ]);
 
         $user = User::create([
+            'employee_id' => $data['employee_id'],
             'name' => $data['name'],
-            'email' => $data['email'],
+            'email' => $data['email'] ?? ($data['employee_id'] . '@panelco3.local'),
             'password' => Hash::make($data['password']),
             'role' => $data['role'] ?? User::ROLE_EMPLOYEE,
             'department_id' => $data['department_id'] ?? null,
@@ -90,7 +92,7 @@ class UserController extends Controller
             'action' => 'user.created',
             'entity_type' => User::class,
             'entity_id' => $user->id,
-            'metadata' => ['email' => $user->email, 'role' => $user->role],
+            'metadata' => ['employee_id' => $user->employee_id, 'role' => $user->role],
         ]);
 
         return redirect()->route('admin.users.index')->with('status', 'User created.');
@@ -149,7 +151,8 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'employee_id' => ['required', 'string', 'size:4', Rule::unique('users', 'employee_id')->ignore($user->id)],
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'password' => [...PasswordRules::newPassword(false), 'confirmed'],
             'role' => ['required', Rule::in(User::ROLES)],
             'department_id' => ['nullable', 'exists:departments,id'],
@@ -166,8 +169,9 @@ class UserController extends Controller
 
         $emailBeforeUpdate = $user->email;
         $user->fill([
+            'employee_id' => $data['employee_id'],
             'name' => $data['name'],
-            'email' => $data['email'],
+            'email' => $data['email'] ?? ($data['employee_id'] . '@panelco3.local'),
             'role' => $data['role'],
             'department_id' => $data['department_id'] ?? null,
         ]);
@@ -186,7 +190,7 @@ class UserController extends Controller
             'action' => $passwordWasReset ? 'user.password_reset' : 'user.updated',
             'entity_type' => User::class,
             'entity_id' => $user->id,
-            'metadata' => ['email' => $user->email, 'role' => $user->role],
+            'metadata' => ['employee_id' => $user->employee_id, 'role' => $user->role],
         ]);
 
         if ($passwordWasReset) {

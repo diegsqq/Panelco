@@ -78,11 +78,11 @@
 </div>
 <div class="card card-p3 p-0 overflow-hidden">
 <table class="table mb-0 align-middle">
-<thead class="table-light"><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Role</th><th scope="col">Status</th><th scope="col">2FA</th><th scope="col">Department</th><th scope="col">Last sign-in</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+<thead class="table-light"><tr><th scope="col">Name</th><th scope="col">ID Number</th><th scope="col">Role</th><th scope="col">Status</th><th scope="col">2FA</th><th scope="col">Department</th><th scope="col">Last sign-in</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
 <tbody>
 @forelse ($users as $u)
 <tr>
-<td class="fw-semibold">{{ $u->name }}</td><td class="text-break">{{ $u->email }}</td>
+<td class="fw-semibold">{{ $u->name }}</td><td class="text-break">{{ $u->employee_id ?? '—' }}</td>
 <td><span class="badge text-capitalize" style="background:#e6f3ea;color:var(--p3-navy)">{{ \App\Models\User::roleLabel($u->role) }}</span></td>
 <td><span class="badge {{ $u->is_active ? 'text-bg-success' : 'text-bg-secondary' }}">{{ $u->is_active ? 'Active' : 'Inactive' }}</span></td>
 <td><span class="badge {{ $u->two_factor_enabled ? 'text-bg-success' : 'text-bg-warning' }}">{{ $u->two_factor_enabled ? 'Enabled' : 'Not enabled' }}</span></td>

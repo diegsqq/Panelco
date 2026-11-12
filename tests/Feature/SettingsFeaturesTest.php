@@ -152,13 +152,13 @@ class SettingsFeaturesTest extends TestCase
         ])->assertSessionHasErrors('current_password');
 
         $this->actingAs($user)->put(route('settings.password'), [
-            'current_password' => 'password',
+            'current_password' => 'P@55w0rd',
             'password' => 'NewSecret123',
             'password_confirmation' => 'NewSecret123',
         ])->assertSessionHasErrors('password');
 
         $this->actingAs($user)->put(route('settings.password'), [
-            'current_password' => 'password',
+            'current_password' => 'P@55w0rd',
             'password' => 'NewSecret123!',
             'password_confirmation' => 'NewSecret123!',
         ])->assertRedirect(route('settings.security'));
@@ -228,7 +228,7 @@ class SettingsFeaturesTest extends TestCase
         $this->app['auth']->forgetGuards();
         $response = $this->post(route('login'), [
             'employee_id' => $user->employee_id,
-            'password' => 'password',
+            'password' => 'P@55w0rd',
         ]);
         $response->assertRedirect(route('two-factor.show'));
         $this->assertGuest();

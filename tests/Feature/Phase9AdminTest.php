@@ -662,7 +662,7 @@ class Phase9AdminTest extends TestCase
 
         $this->actingAs($admin)->put(route('admin.users.update', $user), [
             'name' => $user->name,
-            'email' => $user->email,
+            'employee_id' => $user->employee_id,
             'role' => User::ROLE_EMPLOYEE,
             'password' => 'New-secure-password-123!',
             'password_confirmation' => 'New-secure-password-123!',
@@ -681,7 +681,7 @@ class Phase9AdminTest extends TestCase
         $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
         $payload = [
             'name' => 'New PANELCO Employee',
-            'email' => 'new.employee@panelco3.local',
+            'employee_id' => '0004',
             'password' => 'Safe-password-123!',
             'password_confirmation' => 'Safe-password-123!',
         ];
@@ -691,7 +691,7 @@ class Phase9AdminTest extends TestCase
         $this->post(route('admin.users.store'), $payload)->assertForbidden();
         $this->actingAs($admin)->post(route('admin.users.store'), [
             ...$payload,
-            'email' => 'weak.password@panelco3.local',
+            'employee_id' => '0005',
             'password' => 'safe-password-123',
             'password_confirmation' => 'safe-password-123',
         ])->assertSessionHasErrors('password');
@@ -706,29 +706,29 @@ class Phase9AdminTest extends TestCase
 
         $this->actingAs($admin)->post(route('admin.users.store'), $payload)
             ->assertRedirect(route('admin.users.index'));
-        $created = User::where('email', $payload['email'])->firstOrFail();
+        $created = User::where('employee_id', $payload['employee_id'])->firstOrFail();
         $this->assertSame(User::ROLE_EMPLOYEE, $created->role);
         $this->assertTrue(Hash::check($payload['password'], $created->password));
 
         $this->actingAs($admin)->put(route('admin.users.update', $created), [
             'name' => 'Updated PANELCO Employee',
-            'email' => $payload['email'],
+            'employee_id' => $payload['employee_id'],
             'role' => User::ROLE_EMPLOYEE,
         ])->assertRedirect(route('admin.users.index'));
         $this->assertSame('Updated PANELCO Employee', $created->fresh()->name);
 
         $this->put(route('admin.users.update', $created), [
             'name' => 'Updated PANELCO Employee',
-            'email' => $payload['email'],
+            'employee_id' => $payload['employee_id'],
             'role' => User::ROLE_EMPLOYEE,
             'password' => 'Another-Password-123!',
             'password_confirmation' => 'Another-Password-123!',
         ])->assertRedirect(route('admin.users.index'));
         $this->assertTrue(AuditLog::where('action', 'user.password_reset')
             ->where('entity_id', $created->id)->exists());
-        Mail::assertSent(SecurityAlert::class, function (SecurityAlert $mail) use ($payload) {
+        Mail::assertSent(SecurityAlert::class, function (SecurityAlert $mail) use ($created) {
             return $mail->subjectText === 'Your SmartDocs password was reset'
-                && $mail->hasTo($payload['email'])
+                && $mail->hasTo($created->email)
                 && ! str_contains($mail->bodyText, 'Another-Password-123!');
         });
 
@@ -753,6 +753,7 @@ class Phase9AdminTest extends TestCase
             'department_id' => $primary->id,
         ];
 
+        $payload['employee_id'] = $employee->employee_id;
         $this->actingAs($admin)
             ->put(route('admin.users.update', $employee), $payload)
             ->assertRedirect(route('admin.users.index'));
@@ -794,7 +795,7 @@ class Phase9AdminTest extends TestCase
 
         $this->put(route('admin.users.update', $employee), [
             'name' => $employee->name,
-            'email' => $employee->email,
+            'employee_id' => $employee->employee_id,
             'role' => User::ROLE_EMPLOYEE,
             'manage_departments' => '1',
             'departments' => [$second->id],
@@ -811,7 +812,7 @@ class Phase9AdminTest extends TestCase
 
         $this->put(route('admin.users.update', $employee), [
             'name' => $employee->name,
-            'email' => $employee->email,
+            'employee_id' => $employee->employee_id,
             'role' => User::ROLE_EMPLOYEE,
             'manage_departments' => '1',
         ])->assertRedirect(route('admin.users.index'));
@@ -869,7 +870,7 @@ class Phase9AdminTest extends TestCase
         $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
         $this->patch(route('admin.users.update', $admin), [
             'name' => $admin->name,
-            'email' => $admin->email,
+            'employee_id' => $admin->employee_id,
             'role' => User::ROLE_EMPLOYEE,
         ])->assertSessionHasErrors('role');
         $this->assertTrue($employee->fresh()->is_active);
@@ -882,7 +883,7 @@ class Phase9AdminTest extends TestCase
         $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
         $this->actingAs($admin)->put(route('admin.users.update', $admin), [
             'name' => $admin->name,
-            'email' => $admin->email,
+            'employee_id' => $admin->employee_id,
             'role' => User::ROLE_EMPLOYEE,
         ])->assertSessionHasErrors('role');
         $this->assertSame(User::ROLE_ADMIN, $admin->fresh()->role);
@@ -911,7 +912,7 @@ class Phase9AdminTest extends TestCase
 
         $this->actingAs($admin)->post(route('admin.users.store'), [
             'name' => 'Freshly Added User',
-            'email' => 'freshly.added@panelco3.local',
+            'employee_id' => '0004',
             'password' => 'Safe-password-123!',
             'password_confirmation' => 'Safe-password-123!',
         ])->assertRedirect(route('admin.users.index'));
@@ -924,7 +925,7 @@ class Phase9AdminTest extends TestCase
         $html = $page->getContent();
 
         $this->assertStringNotContainsString('value="Freshly Added User"', $html);
-        $this->assertStringNotContainsString('value="freshly.added@panelco3.local"', $html);
+        $this->assertStringNotContainsString('value="0004"', $html);
         $this->assertStringNotContainsString('autocomplete="on"', $html);
         $this->assertStringContainsString('autocomplete="off"', $html);
         $this->assertStringContainsString('autocomplete="new-password"', $html);
@@ -953,10 +954,10 @@ class Phase9AdminTest extends TestCase
         // A failed save reopens the modal with the typed input intact.
         $this->actingAs($admin)->post(route('admin.users.store'), [
             'name' => 'Half Typed User',
-            'email' => 'not-an-email',
+            'employee_id' => 'not-an-id',
             'password' => 'short',
             'password_confirmation' => 'short',
-        ])->assertSessionHasErrors(['email', 'password']);
+        ])->assertSessionHasErrors(['employee_id', 'password']);
 
         $html = $this->actingAs($admin)->get(route('admin.users.index'))->getContent();
         $this->assertStringContainsString('value="Half Typed User"', $html);
@@ -1039,7 +1040,7 @@ class Phase9AdminTest extends TestCase
         $this->actingAs($otherAdmin)
             ->put(route('admin.users.update', $systemAdministrator), [
                 'name' => $systemAdministrator->name,
-                'email' => $systemAdministrator->email,
+                'employee_id' => $systemAdministrator->employee_id,
                 'role' => User::ROLE_ADMIN,
             ])
             ->assertRedirect(route('admin.users.index'));
