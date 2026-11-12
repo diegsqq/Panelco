@@ -66,29 +66,14 @@ class Phase2AuthTest extends TestCase
         $this->get('/register')->assertNotFound();
     }
 
-    public function test_password_reset_forms_have_accessible_labels_guidance_and_error_targets(): void
+    public function test_password_reset_request_form_has_accessible_labels(): void
     {
-        $this->get(route('password.request'))
+        $this->get(route('password.reset.request'))
             ->assertOk()
-            ->assertSee('for="email"', false)
-            ->assertSee('id="email" type="email"', false);
-
-        $this->get(route('password.reset', ['token' => 'sample-token']))
-            ->assertOk()
-            ->assertSee('for="password"', false)
-            ->assertSee('for="password-confirm"', false)
-            ->assertSee('Use at least 12 characters with uppercase and lowercase letters, a number, and a symbol.')
-            ->assertSee('aria-describedby="passwordHelp"', false);
-
-        $errors = new ViewErrorBag;
-        $errors->put('default', new MessageBag(['password' => 'The password is invalid.']));
-
-        $this->withSession(['errors' => $errors])
-            ->get(route('password.reset', ['token' => 'sample-token']))
-            ->assertOk()
-            ->assertSee('aria-describedby="passwordHelp passwordError"', false)
-            ->assertSee('aria-invalid="true"', false)
-            ->assertSee('id="passwordError"', false);
+            ->assertSee('for="employee_id"', false)
+            ->assertSee('id="employee_id"', false)
+            ->assertSee('for="reason"', false)
+            ->assertSee('id="reason"', false);
     }
 
     public function test_dashboard_requires_auth(): void
