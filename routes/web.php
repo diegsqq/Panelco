@@ -50,7 +50,7 @@ Route::get('/library/{document}/pdf', [App\Http\Controllers\DocumentController::
     Route::post('/library/{document}/ask', [App\Http\Controllers\ChatController::class, 'askDocument'])->name('documents.ask');
     Route::post('/library/{document}/approve', [App\Http\Controllers\DocumentController::class, 'approve'])->name('documents.approve');
     Route::post('/library/{document}/reject-classification', [App\Http\Controllers\DocumentController::class, 'rejectClassification'])->name('documents.reject-classification');
-    Route::get('/approvals', [App\Http\Controllers\DocumentController::class, 'approvals'])->name('documents.approvals');
+    
     Route::get('/classification-reviews', [App\Http\Controllers\DocumentController::class, 'classificationReviews'])->name('documents.classification-reviews');
     Route::post('/library/{document}/approve-document', [App\Http\Controllers\DocumentController::class, 'approveDocument'])->name('documents.approve-document');
     Route::post('/library/{document}/reject-document', [App\Http\Controllers\DocumentController::class, 'rejectDocument'])->name('documents.reject-document');

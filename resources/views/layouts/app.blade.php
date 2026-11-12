@@ -317,7 +317,7 @@
                 <a class="nav-link {{ request()->routeIs('documents.upload') ? 'active' : '' }}" aria-current="{{ request()->routeIs('documents.upload') ? 'page' : 'false' }}" href="{{ route('documents.upload') }}"><span class="nav-ico"><i class="bi bi-cloud-arrow-up-fill"></i></span>{{ __('nav.upload') }}</a>
                 <a class="nav-link {{ request()->routeIs('documents.library') ? 'active' : '' }}" aria-current="{{ request()->routeIs('documents.library') ? 'page' : 'false' }}" href="{{ route('documents.library') }}"><span class="nav-ico"><i class="bi bi-folder-fill"></i></span>{{ __('nav.library') }}</a>
                 @if(auth()->user()->isAdmin())
-                <a class="nav-link {{ request()->routeIs('documents.approvals') ? 'active' : '' }}" aria-current="{{ request()->routeIs('documents.approvals') ? 'page' : 'false' }}" href="{{ route('documents.approvals') }}"><span class="nav-ico"><i class="bi bi-clipboard-check-fill"></i></span>Document approvals</a>
+                
                 @endif
                 <a class="nav-link {{ request()->routeIs('chat.*') ? 'active' : '' }}" aria-current="{{ request()->routeIs('chat.*') ? 'page' : 'false' }}" href="{{ route('chat.index') }}"><span class="nav-ico"><i class="bi bi-lightning-charge-fill"></i></span>{{ __('nav.lightning') }}</a>
                 <a class="nav-link {{ request()->routeIs('help') ? 'active' : '' }}" aria-current="{{ request()->routeIs('help') ? 'page' : 'false' }}" href="{{ route('help') }}"><span class="nav-ico"><i class="bi bi-question-circle-fill" aria-hidden="true"></i></span>Help</a>
