@@ -372,9 +372,51 @@
                         </button>
                     </form>
                     {{-- Notifications bell --}}
-                    <button type="button" class="p3-topbar-btn" title="Notifications" aria-label="Notifications">
-                        <i class="bi bi-bell-fill"></i>
-                    </button>
+                    @php
+                        $notifications = auth()->user()->unreadNotifications()->take(10)->get();
+                        $unreadCount = (int) auth()->user()->unreadNotifications()->count();
+                    @endphp
+                    <div class="dropdown">
+                        <button type="button" class="p3-topbar-btn position-relative" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
+                            <i class="bi bi-bell-fill"></i>
+                            @if($unreadCount > 0)
+                                <span class="badge bg-danger position-absolute" style="top:2px;right:2px;font-size:.6rem;width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;">{{ $unreadCount }}</span>
+                            @endif
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end p-0" style="min-width:340px;max-height:440px;overflow-y:auto;">
+                            <li class="px-3 py-2 border-bottom">
+                                <div class="fw-semibold" style="font-size:.88rem;">Notifications</div>
+                                <div class="text-muted small">{{ $unreadCount }} unread</div>
+                            </li>
+                            @forelse($notifications as $n)
+                            <li>
+                                <a href="#" class="dropdown-item py-2 d-flex align-items-start gap-2 notification-item{{ !$n->is_read ? ' fw-bold bg-light' : ' text-muted' }}" data-notification-id="{{ $n->id }}" data-notification-read="{{ $n->is_read ? '1' : '0' }}">
+                                    <div style="flex:0 0 26px;width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:<?php echo !$n->is_read ? '#00A868' : '#dce6df'; ?>;color:white;">
+                                        <i class="bi bi-bell" style="font-size:.85rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <div class="fw-semibold" style="font-size:.82rem;">{{ $n->title }}</div>
+                                        <div class="text-muted small" style="white-space:normal;overflow-wrap:anywhere;">{{ $n->message }}</div>
+                                        <div class="text-muted" style="font-size:.68rem;">{{ $n->created_at?->diffForHumans() }}</div>
+                                    </div>
+                                </a>
+                            </li>
+                            @empty
+                            <li><div class="dropdown-item py-2 text-muted small text-center">No notifications</div></li>
+                            @endforelse
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li>
+                                <a href="#" class="dropdown-item py-2 text-center text-decoration-none text-muted small" id="markAllRead">
+                                    <i class="bi bi-check-lg me-1"></i>Mark all as read
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('notifications.index') }}" class="dropdown-item py-2 text-center text-decoration-none text-primary small">
+                                    <i class="bi bi-journal-text me-1"></i>View all notifications
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                     {{-- User avatar dropdown --}}
                     <div class="dropdown">
                         <button class="p3-topbar-btn p3-topbar-avatar-btn d-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
@@ -806,6 +848,74 @@
     }
     tick();
     setInterval(tick, 1000);
+})();
+</script>
+<script>
+(function () {
+    var bellBtn = document.querySelector('.p3-topbar-btn[data-bs-toggle="dropdown"]');
+    if (!bellBtn) return;
+    var dropdownEl = bellBtn.closest('.dropdown');
+    var menu = dropdownEl.querySelector('.dropdown-menu');
+    var countBadge = document.getElementById('notificationCount');
+    var markAllRead = document.getElementById('markAllRead');
+    var csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+    async function markRead(id) {
+        try {
+            await fetch('/notifications/' + id + '/read', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+                credentials: 'same-origin',
+            });
+        } catch (e) {}
+    }
+
+    function refreshCount() {
+        var n = document.querySelectorAll('.notification-item[data-notification-read="0"]').length;
+        if (countBadge) {
+            countBadge.textContent = n;
+            countBadge.style.display = n > 0 ? '' : 'none';
+        }
+        var ub = dropdownEl.querySelector('.s-panel-sub, .text-muted.small');
+        // update the "N unread" line if present
+        var unreadLine = dropdownEl.querySelector('li .text-muted.small');
+        if (unreadLine && /unread/.test(unreadLine.textContent)) {
+            unreadLine.textContent = n + ' unread';
+        }
+    }
+
+    menu.addEventListener('click', function (e) {
+        var item = e.target.closest('.notification-item');
+        if (!item) return;
+        e.preventDefault();
+        var id = item.getAttribute('data-notification-id');
+        if (item.getAttribute('data-notification-read') === '0') {
+            markRead(id).then(function () {
+                item.classList.remove('fw-bold', 'bg-light');
+                item.classList.add('text-muted');
+                item.setAttribute('data-notification-read', '1');
+                refreshCount();
+            });
+        }
+    });
+
+    if (markAllRead) {
+        markAllRead.addEventListener('click', function (e) {
+            e.preventDefault();
+            fetch('/notifications/read-all', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+                credentials: 'same-origin',
+            }).then(function () {
+                document.querySelectorAll('.notification-item').forEach(function (it) {
+                    it.classList.remove('fw-bold', 'bg-light');
+                    it.classList.add('text-muted');
+                    it.setAttribute('data-notification-read', '1');
+                });
+                refreshCount();
+            });
+        });
+    }
 })();
 </script>
 </body>

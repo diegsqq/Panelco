@@ -375,6 +375,12 @@ class SettingsController extends Controller
             'metadata' => [],
         ]);
 
+        $user->notifications()->create([
+            'type' => 'password_changed',
+            'title' => 'Your password was changed',
+            'message' => 'Your SmartDocs account password was changed. If you did not make this change, contact your system administrator immediately.',
+        ]);
+
         return redirect()->route('settings.security')->with('status', 'Password changed successfully.');
     }
 

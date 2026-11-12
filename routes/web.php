@@ -93,6 +93,12 @@ Route::post('/library/{document}/workflow/comments', [App\Http\Controllers\Docum
     Route::put('/settings', [App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update');
 });
 
+Route::middleware(['auth'])->prefix('notifications')->name('notifications.')->group(function () {
+    Route::get('/', [App\Http\Controllers\NotificationController::class, 'index'])->name('index');
+    Route::post('{notification}/read', [App\Http\Controllers\NotificationController::class, 'read'])->name('read');
+    Route::post('read-all', [App\Http\Controllers\NotificationController::class, 'readAll'])->name('read-all');
+});
+
 // Second login step when 2FA is enabled (guest; password already checked).
 Route::get('/two-factor', [App\Http\Controllers\TwoFactorController::class, 'show'])->name('two-factor.show');
 Route::post('/two-factor', [App\Http\Controllers\TwoFactorController::class, 'verify'])->middleware('throttle:5,1')->name('two-factor.verify');

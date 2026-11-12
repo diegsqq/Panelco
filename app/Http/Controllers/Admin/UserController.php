@@ -190,6 +190,14 @@ class UserController extends Controller
         ]);
 
         if ($passwordWasReset) {
+            $user->notifications()->create([
+                'type' => 'password_reset',
+                'title' => 'Your password was reset',
+                'message' => 'An administrator reset your SmartDocs account password. If you did not expect this change, contact your system administrator immediately.',
+            ]);
+        }
+
+        if ($passwordWasReset) {
             try {
                 Mail::to($emailBeforeUpdate)->send(new SecurityAlert(
                     'Your SmartDocs password was reset',
