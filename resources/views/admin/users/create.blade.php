@@ -7,7 +7,7 @@
 @if(isset($user)) @method('PUT') @endif
 <div class="row g-3">
 <div class="col-md-6"><label for="userName" class="form-label">Name</label><input id="userName" name="name" class="form-control" value="{{ old('name', $user->name ?? '') }}" required></div>
-<div class="col-md-6"><label for="userEmail" class="form-label">Email</label><input id="userEmail" name="email" type="email" class="form-control" value="{{ old('email', $user->email ?? '') }}" autocomplete="off" autocapitalize="off" spellcheck="false" required></div>
+<div class="col-md-6"><label class="form-label">Employee ID</label><input id="userEmployeeId" name="employee_id" type="text" class="form-control" value="{{ old('employee_id', $user->employee_id ?? '') }}" required maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="0000"></div>
 <div class="col-md-6"><label for="standalonePw" class="form-label">Password {{ isset($user) ? '(leave blank to keep)' : '' }}</label><div class="input-group"><input id="standalonePw" name="password" type="password" class="form-control" minlength="12" autocomplete="new-password" {{ isset($user) ? '' : 'required' }}></div><small class="text-muted">12+ characters, uppercase and lowercase, number, and symbol.</small><input name="password_confirmation" id="standalonePwConfirm" type="password" class="form-control mt-2" minlength="12" autocomplete="new-password" placeholder="Confirm password"></div>
 <div class="col-md-3"><label for="userRole" class="form-label">Role</label><select id="userRole" name="role" class="form-select" required>@foreach ([\App\Models\User::ROLE_EMPLOYEE, \App\Models\User::ROLE_MANAGER, \App\Models\User::ROLE_ADMIN] as $r)<option value="{{ $r }}" {{ old('role', $user->role ?? \App\Models\User::ROLE_EMPLOYEE) === $r ? 'selected' : '' }}>{{ \App\Models\User::roleLabel($r) }}</option>@endforeach</select></div>
 <div class="col-md-3"><label for="userDepartment" class="form-label">Primary Department</label><select id="userDepartment" name="department_id" class="form-select"><option value="">— None —</option>@foreach ($departments as $d)<option value="{{ $d->id }}" {{ (string) old('department_id', $user->department_id ?? '') === (string) $d->id ? 'selected' : '' }}>{{ $d->name }}</option>@endforeach</select></div>
@@ -29,7 +29,7 @@
     // server sent no input to repopulate (fresh page, no validation errors).
     @if (! $errors->any() && count(old()) === 0)
     function clearAutofill() {
-        var email = document.querySelector('input[name="email"]');
+        var email = document.querySelector('input[name="employee_id"]');
         if (email) email.value = '';
         pw.value = '';
         pw.type = 'password';
@@ -42,6 +42,3 @@
 })();
 </script>
 @endsection
-
-
-
