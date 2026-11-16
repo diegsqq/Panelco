@@ -35,7 +35,7 @@ class NotificationController extends Controller
                     $icon = 'bi-folder';
                 } elseif (Str::startsWith($type, 'password')) {
                     $category = 'danger';
-                    $icon = 'bi-lock';
+                    $icon = 'bi-lock-fill';
                 }
 
                 return [

@@ -1,10 +1,13 @@
 @extends('layouts.app')
+@section('full-screen', 'col-12')
 @section('content')
 <style>
     body:has(#printPage) main { padding: 0 !important; }
+    body:has(#printPage) { margin: 0; height: 100vh; overflow: hidden; }
+    html:has(#printPage) { height: 100%; }
 
     /* ── Shell ── */
-    #printPage { display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: #f7f7f7; }
+    #printPage { position: fixed; inset: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: #f7f7f7; z-index: 9999; }
     [data-theme="dark"] #printPage { background: #0e1512; }
 
     /* ── Top bar ── */
@@ -28,9 +31,9 @@
     [data-theme="dark"] .pp-btn { background: #1d2b24; border-color: #2c3d34; color: #c3d0c8; }
 
     /* ── Headline ── */
-    .pp-headline { flex: 0 0 auto; padding: .9rem 1.25rem .5rem; }
-    .pp-headline h2 { font-size: 1.3rem; font-weight: 800; color: #111; margin-bottom: .15rem; }
-    .pp-headline p { font-size: .82rem; color: #888; margin: 0; }
+    .pp-headline { flex: 0 0 auto; padding: .9rem 1.25rem .5rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .pp-headline h2 { font-size: 1.3rem; font-weight: 800; color: #111; margin: 0; white-space: nowrap; }
+    .pp-headline p { font-size: .82rem; color: #888; margin: 0; white-space: nowrap; opacity: 0.85; }
     [data-theme="dark"] .pp-headline h2 { color: #fff; }
     [data-theme="dark"] .pp-headline p { color: #8fa59a; }
 
@@ -38,7 +41,7 @@
     .pp-body { flex: 1 1 auto; display: flex; min-height: 0; overflow: hidden; }
 
     /* ── Left panel ── */
-    .pp-left { width: 280px; flex: 0 0 280px; background: #fff; border-right: 1px solid #e8e8e8; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 1.1rem; }
+    .pp-left { width: 380px; min-width: 320px; flex: 0 0 380px; background: #fff; border-right: 1px solid #e8e8e8; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 1.1rem; }
     [data-theme="dark"] .pp-left { background: #16211c; border-color: #26362e; }
 
     .pp-section-title { font-size: .72rem; font-weight: 700; color: #111; margin-bottom: .5rem; display: flex; align-items: center; gap: .3rem; }
@@ -102,7 +105,7 @@
     [data-theme="dark"] .pp-preview-title { color: #fff; }
     .pp-topic-tag { font-size: .7rem; background: #e6f3ea; color: #00743F; border-radius: 2rem; padding: .15rem .55rem; font-weight: 600; }
     .pp-preview-actions { margin-left: auto; display: flex; align-items: center; gap: .5rem; }
-    .pp-preview-wrap { flex: 1 1 auto; overflow-y: auto; background: #f0f0f0; padding: 1.5rem; display: flex; gap: 1rem; align-items: flex-start; justify-content: center; }
+    .pp-preview-wrap { flex: 1 1 auto; overflow-y: auto; background: #e8e8e8; padding: 1rem; display: flex; align-items: center; justify-content: center; max-height: 95vh; }
     [data-theme="dark"] .pp-preview-wrap { background: #0e1512; }
 
     /* Thumbnail strip */
@@ -114,7 +117,7 @@
     .pp-thumb-sel-badge { position: absolute; top: .2rem; right: .2rem; background: #00A868; color: #fff; font-size: .55rem; font-weight: 700; border-radius: .25rem; padding: .05rem .25rem; }
 
     /* Page preview */
-    .pp-page { background: #fff; border: 1px solid #e0e0e0; border-radius: .4rem; box-shadow: 0 2px 10px rgba(0,0,0,.08); padding: 2.5rem 2.75rem; max-width: 480px; width: 100%; min-height: 600px; flex: 1 1 auto; }
+    .pp-page { background: #fff; border: 1px solid #d0d0d0; border-radius: 0; box-shadow: 0 4px 16px rgba(0,0,0,.18); padding: 2rem 2.5rem; max-width: 90vw; max-height: 88vh; aspect-ratio: 8.5 / 11; flex: 0 0 auto; }
     [data-theme="dark"] .pp-page { background: #16211c; border-color: #26362e; }
     .pp-page-org { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: #00A868; }
     .pp-page-topic { font-size: .65rem; color: #aaa; margin-bottom: .6rem; text-transform: uppercase; letter-spacing: .4px; }
@@ -157,6 +160,12 @@
         ];
     }
     $pageCount = max(1, (int) ceil(str_word_count(strip_tags($rawContent ?: ($document->extracted_text ?? ''))) / 350));
+
+    // Split content into page-sized word chunks so each page shows its own portion
+    $plainText = strip_tags($rawContent ?: ($document->extracted_text ?? ''));
+    $allWords = explode(' ', $plainText);
+    $wordsPerPage = max(1, (int) ceil(count($allWords) / max($pageCount, 1)));
+    $pageChunks = array_chunk($allWords, $wordsPerPage);
 @endphp
 
 <div id="printPage">
@@ -280,7 +289,6 @@
                     </div>
                 </div>
                 <div class="d-flex gap-2 mt-2">
-                    <a href="{{ route('documents.show', $document) }}" class="pp-cancel-btn">Cancel</a>
                     <button class="pp-print-btn flex-fill" id="printNowBtn">
                         <i class="bi bi-printer"></i> <span id="printBtnLabel">Print {{ $pageCount }} pages</span>
                     </button>
@@ -316,7 +324,8 @@
 
                 {{-- Page preview ── --}}
                 <div class="d-flex flex-column gap-0 flex-fill" style="max-width:490px">
-                    <div class="pp-page">
+                    @for($p = 1; $p <= $pageCount; $p++)
+                    <div class="pp-page {{ $p > 1 ? 'mt-4' : '' }}" style="page-break-after: always;">
                         <div class="pp-page-org">{{ strtoupper($document->department?->name ?? config('app.name', 'PANELCO III')) }}</div>
                         <div class="pp-page-topic">{{ strtoupper(($document->department?->name ?? 'GENERAL') . ' / ' . (count($sections) > 0 ? $sections[0]['label'] : 'DOCUMENT')) }}</div>
                         <h1>{{ $document->title ?? $document->original_filename }}</h1>
@@ -324,29 +333,22 @@
                             Effective {{ $document->document_date?->format('F d, Y') ?? now()->format('F d, Y') }} &nbsp;·&nbsp; {{ $document->reference_number ?? 'HR-DOC-001' }} &nbsp;·&nbsp; Version {{ $document->version_number ?? '1' }}
                         </div>
 
-                        @if($document->summary)
-                        <p class="pp-page-intro">{{ \Illuminate\Support\Str::limit($document->summary, 320) }}</p>
-                        @endif
-
-                        @if($rawContent)
-                            {!! $rawContent !!}
-                        @else
-                            @foreach(array_slice(array_filter(explode("\n", $document->extracted_text ?? '')), 0, 20) as $line)
-                            @if(trim($line)) <p>{{ $line }}</p> @endif
-                            @endforeach
+                        @if(isset($pageChunks[$p - 1]))
+                        <p class="pp-page-intro">{{ implode(' ', array_slice($pageChunks[$p - 1], 0, 300)) }}</p>
                         @endif
 
                         <div class="pp-page-footer">
                             <span>{{ $document->uploader?->organization ?? config('app.name') }} · Internal use only</span>
-                            <span>1 / {{ $pageCount }}</span>
+                            <span>{{ $p }} / {{ $pageCount }}</span>
                         </div>
                     </div>
+                    @endfor
 
                     {{-- Pagination ── --}}
                     <div class="pp-page-pagination">
                         <button class="pp-btn" onclick="prevPage()"><i class="bi bi-chevron-left"></i></button>
-                        <span id="pageIndicator">1 of {{ count($sections) }} selected pages</span>
-                        <button class="pp-btn" onclick="nextPage()">Original page <i class="bi bi-chevron-right"></i></button>
+                        <span id="pageIndicator">1 of {{ $pageCount }} pages</span>
+                        <button class="pp-btn" onclick="nextPage()">Next page <i class="bi bi-chevron-right"></i></button>
                     </div>
                 </div>
 

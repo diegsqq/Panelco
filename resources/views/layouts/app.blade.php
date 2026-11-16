@@ -448,7 +448,7 @@
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="min-width:200px;border-radius:.85rem;padding:.4rem;">
                             <li class="px-3 py-2">
                                 <div class="fw-semibold" style="font-size:.88rem;">{{ auth()->user()->name }}</div>
-                                <div class="text-muted" style="font-size:.75rem;">{{ auth()->user()->email }}</div>
+                                <div class="text-muted" style="font-size:.75rem;">{{ auth()->user()->employee_id }}</div>
                             </li>
                             <li><hr class="dropdown-divider my-1"></li>
                             <li><a class="dropdown-item rounded-2" href="#" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="bi bi-gear me-2"></i>Settings</a></li>
@@ -561,7 +561,7 @@
                             </div>
                             <div class="s-row">
                                 <div class="s-row-ico green"><i class="bi bi-envelope"></i></div>
-                                <div class="s-row-body"><div class="s-row-label">Email address</div><div class="s-row-sub">{{ auth()->user()->email }}</div></div>
+                                <div class="s-row-body"><div class="s-row-label">ID number</div><div class="s-row-sub">{{ auth()->user()->employee_id }}</div></div>
                                 <a href="{{ route('settings.index') }}" class="s-row-action" onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).hide()"><i class="bi bi-chevron-right"></i></a>
                             </div>
                             @if(auth()->user()->phone)
@@ -588,20 +588,6 @@
                             <div class="s-row">
                                 <div class="s-row-ico green"><i class="bi bi-key"></i></div>
                                 <div class="s-row-body"><div class="s-row-label">Password</div><div class="s-row-sub">Change your account password</div></div>
-                                <a href="{{ route('settings.security') }}" class="s-row-action" onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).hide()"><i class="bi bi-chevron-right"></i></a>
-                            </div>
-                            <div class="s-row">
-                                <div class="s-row-ico {{ auth()->user()->two_factor_enabled ? 'green' : '' }}"><i class="bi bi-phone-shield"></i></div>
-                                <div class="s-row-body">
-                                    <div class="s-row-label">Two-Factor Authentication</div>
-                                    <div class="s-row-sub">
-                                        @if(auth()->user()->two_factor_enabled)
-                                            <span class="badge text-bg-success" style="font-size:.68rem">ON</span> Authenticator app active
-                                        @else
-                                            <span class="badge border border-secondary text-secondary" style="font-size:.68rem">OFF</span> Add an extra layer of protection
-                                        @endif
-                                    </div>
-                                </div>
                                 <a href="{{ route('settings.security') }}" class="s-row-action" onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).hide()"><i class="bi bi-chevron-right"></i></a>
                             </div>
                         </div>

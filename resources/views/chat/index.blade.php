@@ -36,8 +36,8 @@
     .lg-composer-top { display: flex; align-items: center; gap: .5rem; padding: .75rem 1rem .75rem .9rem; }
     .lg-composer input { flex: 1 1 auto; background: transparent; border: none; outline: none; color: #111; font-size: .9rem; min-width: 0; }
     .lg-composer input::placeholder { color: #aaa; }
-    .lg-composer-actions { display: flex; align-items: center; gap: .4rem; padding: .45rem .7rem .55rem; border-top: 1px solid #eee; }
-    .lg-doc-select { flex: 1 1 auto; background: #f7f7f7; border: 1px solid #ddd; border-radius: .5rem; color: #555; font-size: .75rem; padding: .28rem .55rem; }
+    .lg-composer-actions { display: flex; align-items: center; gap: .4rem; padding: .45rem .7rem .55rem; border-top: 1px solid #eee; flex-wrap: wrap; }
+    .lg-doc-select { flex: 1 1 0; min-width: 0; max-width: 100%; background: #f7f7f7; border: 1px solid #ddd; border-radius: .5rem; color: #555; font-size: .75rem; padding: .28rem .55rem; }
     .lg-doc-select option { background: #fff; }
     .lg-plus-btn { width: 28px; height: 28px; border-radius: 50%; background: transparent; border: 1px solid #ddd; color: #888; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s ease; flex: 0 0 28px; font-size: .85rem; }
     .lg-plus-btn:hover { background: #f0f0f0; border-color: #aaa; color: #333; }
@@ -176,13 +176,13 @@
                         </div>
                         @unless($document)
                         <div class="lg-composer-actions">
-                            <select name="document_id" class="lg-doc-select" aria-label="Focus on a document (optional)">
+                            <select name="document_id" id="document_id" class="lg-doc-select" aria-label="Focus on a document (optional)">
                                 <option value="">All accessible documents</option>
                                 @foreach($availableDocuments as $item)
                                 <option value="{{ $item->id }}" @selected((string)old('document_id') === (string)$item->id)>{{ \Illuminate\Support\Str::limit($item->title ?? $item->original_filename, 55) }}</option>
                                 @endforeach
                             </select>
-                            <select name="comparison_document_id" class="lg-doc-select" aria-label="Compare with (optional)">
+                            <select name="comparison_document_id" id="comparison_document_id" class="lg-doc-select" aria-label="Compare with (optional)">
                                 <option value="">No comparison</option>
                                 @foreach($availableDocuments as $item)
                                 <option value="{{ $item->id }}" @selected((string)old('comparison_document_id') === (string)$item->id)>{{ \Illuminate\Support\Str::limit($item->title ?? $item->original_filename, 55) }}</option>
@@ -244,6 +244,18 @@
             docSelect.closest('.lg-composer-actions').style.display = 'flex';
             docSelect.focus();
         });
+    }
+
+    var cmpSelect = document.getElementById('comparison_document_id');
+    function syncCmp() {
+        if (!cmpSelect || !docSelect) return;
+        var hasPrimary = !!docSelect.value;
+        cmpSelect.disabled = !hasPrimary;
+        if (!hasPrimary) cmpSelect.value = '';
+    }
+    if (docSelect) {
+        docSelect.addEventListener('change', syncCmp);
+        syncCmp();
     }
 
     /* Chips fill the input and submit */

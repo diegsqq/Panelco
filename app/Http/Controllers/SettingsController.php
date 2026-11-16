@@ -89,7 +89,7 @@ class SettingsController extends Controller
         $data = $request->validate([
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
-            'email' => ['required', 'email', 'max:100', 'unique:users,email,' . $user->id],
+            'employee_id' => ['required', 'string', 'size:4', 'unique:users,employee_id,' . $user->id],
             'phone' => ['nullable', 'string', 'max:30'],
             'job_title' => ['nullable', 'string', 'max:100'],
             'organization' => ['nullable', 'string', 'max:150'],
@@ -97,29 +97,18 @@ class SettingsController extends Controller
 
         $firstName = trim($data['first_name']);
         $lastName = trim($data['last_name']);
-        $newEmail = trim($data['email']);
+        $newEmployeeId = trim($data['employee_id']);
         $newPhone = isset($data['phone']) && $data['phone'] !== null ? trim($data['phone']) : null;
 
         $user->first_name = $firstName;
         $user->last_name = $lastName;
         $user->name = $firstName . ' ' . $lastName;
+        $user->employee_id = $newEmployeeId;
         $user->job_title = isset($data['job_title']) && $data['job_title'] !== null ? trim($data['job_title']) : null;
         $user->organization = isset($data['organization']) && $data['organization'] !== null ? trim($data['organization']) : null;
 
         $status = 'Your account details were updated.';
-        $newEmailPending = false;
         $newPhonePending = false;
-
-        // Email changed → verify at the NEW address before applying.
-        if ($newEmail !== $user->email) {
-            $user->pending_email = $newEmail;
-            $user->email_change_code = (string) random_int(100000, 999999);
-            $user->verification_expires_at = now()->addMinutes(30);
-            $newEmailPending = true;
-        } else {
-            $user->pending_email = null;
-            $user->email_change_code = null;
-        }
 
         // Contact number changed → code goes to the CURRENT email
         // (email is the working channel until SMS is configured).
@@ -137,20 +126,6 @@ class SettingsController extends Controller
 
         $failures = [];
 
-        if ($newEmailPending) {
-            if ($this->sendVerificationCode($user, $user->pending_email, 'Confirm your new email address for your SmartDocs account.', $user->email_change_code)) {
-                $status = 'A verification code was sent to your new email address.';
-            } else {
-                // Mail transport broken → don't leave a pending change
-                // the user can never confirm; revert and say why.
-                $user->pending_email = null;
-                $user->email_change_code = null;
-                $user->save();
-                $newEmailPending = false;
-                $failures[] = 'new email';
-            }
-        }
-
         if ($newPhonePending) {
             if ($this->sendVerificationCode($user, $user->email, 'Confirm your new contact number for your SmartDocs account.', $user->phone_change_code)) {
                 $status = $newEmailPending
@@ -165,7 +140,7 @@ class SettingsController extends Controller
             }
         }
 
-        if (! $newEmailPending && ! $newPhonePending && $failures === []) {
+        if (! $newPhonePending && $failures === []) {
             $status = 'Your account details were updated.';
         }
 
@@ -181,7 +156,6 @@ class SettingsController extends Controller
             'entity_type' => \App\Models\User::class,
             'entity_id' => $user->id,
             'metadata' => [
-                'email_pending' => $newEmailPending,
                 'phone_pending' => $newPhonePending,
             ],
         ]);

@@ -23,6 +23,51 @@
         }
     }
 @endphp
+{{-- Session & audit retention --}}
+<div class="row g-4 mb-1 mt-1">
+<div class="col-lg-6">
+<div class="card card-p3 p-4 h-100">
+<div class="d-flex align-items-center gap-2 mb-3">
+<span class="stat-icon" style="background:#e6f3ea;color:var(--p3-navy)"><i class="bi bi-hourglass-split"></i></span>
+<div><div class="fw-semibold">Session and audit retention</div><small class="text-muted">Idle sign-out window and how long audit logs are kept.</small></div>
+</div>
+@if($isAdmin)
+<form method="POST" action="{{ route('settings.retention') }}">
+@csrf
+@method('PUT')
+<div class="row g-3">
+<div class="col-md-6">
+<label class="form-label">Session Timeout (minutes)</label>
+<div class="input-group"><span class="input-group-text"><i class="bi bi-clock"></i></span>
+<input name="session_timeout_minutes" type="number" min="5" max="1440" class="form-control" value="{{ old('session_timeout_minutes', $val('session_timeout_minutes', config('session.lifetime'))) }}" required></div>
+<small class="text-muted">5 – 1440 minutes. Users are signed out after this idle period.</small>
+</div>
+<div class="col-md-6">
+<label class="form-label">Audit Log Retention (days)</label>
+<div class="input-group"><span class="input-group-text"><i class="bi bi-journal-text"></i></span>
+<input name="audit_retention_days" type="number" min="1" max="3650" class="form-control" value="{{ old('audit_retention_days', $val('audit_retention_days', '90')) }}" required></div>
+<small class="text-muted">1 – 3650 days. Older audit entries are purged automatically.</small>
+</div>
+</div>
+<button class="btn btn-outline-success mt-3 px-4"><i class="bi bi-check-lg me-1"></i>{{ __('settings.save') }}</button>
+</form>
+@else
+<div class="row g-3">
+<div class="col-md-6">
+<label class="form-label">Session Timeout (minutes)</label>
+<input type="number" class="form-control" value="{{ $val('session_timeout_minutes', '120') }}" disabled>
+</div>
+<div class="col-md-6">
+<label class="form-label">Audit Log Retention (days)</label>
+<input type="number" class="form-control" value="{{ $val('audit_retention_days', '90') }}" disabled>
+</div>
+</div>
+<div class="p3-security-note mt-3"><i class="bi bi-lock-fill me-1"></i>Only admins can change retention settings.</div>
+@endif
+</div>
+</div>
+</div>
+
 <div class="cfg-page-title">Privacy and security</div>
 <div class="cfg-page-sub">Protect your account with a strong password and a second login step.
     @if($me->two_factor_enabled)
@@ -70,64 +115,7 @@
 </div>
 </div>
 
-{{-- Two-factor authentication --}}
-<div class="col-lg-6">
-<div class="card card-p3 p-4 h-100">
-<div class="d-flex align-items-center gap-2 mb-3">
-<span class="stat-icon" style="background:#e6f3ea;color:var(--p3-navy)"><i class="bi bi-phone-shield"></i></span>
-<div><div class="fw-semibold">Two-Factor Authentication (2FA)</div><small class="text-muted">Google Authenticator or any TOTP app — no SMS needed.</small></div>
-</div>
 
-<div class="mt-2">
-@if($me->two_factor_enabled)
-<div class="alert alert-success d-flex align-items-start gap-2" role="alert">
-<i class="bi bi-check-circle-fill mt-1"></i>
-<small>Your account requires a 6-digit app code after the password at every sign-in.</small>
-</div>
-<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-<form method="POST" action="{{ route('settings.2fa.disable') }}">
-@csrf
-<button class="btn btn-outline-danger" onclick="return confirm('Turn off two-factor authentication? Your account will be less protected.')"><i class="bi bi-shield-x me-1"></i>Turn OFF 2FA</button>
-</form>
-<span class="p3-security-chip"><i class="bi bi-phone me-1"></i>Authenticator app active</span>
-</div>
-@elseif($pending2fa && $qrSvg)
-<div class="text-center mb-3">
-<div class="p3-qr-box d-inline-block">{!! $qrSvg !!}</div>
-</div>
-<div class="p3-steps mb-3">
-<div class="p3-step-row"><span class="p3-step">1</span><span>Install <b>Google Authenticator</b> (or any TOTP app).</span></div>
-<div class="p3-step-row"><span class="p3-step">2</span><span>Scan this QR, or type the key <code>{{ $pending2fa }}</code>.</span></div>
-<div class="p3-step-row"><span class="p3-step">3</span><span>Enter the current 6-digit code below.</span></div>
-</div>
-<form method="POST" action="{{ route('settings.2fa.confirm') }}" class="d-flex gap-2 flex-wrap align-items-center">
-@csrf
-<input name="code" class="form-control p3-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="123456" autocomplete="one-time-code" required>
-<button class="btn btn-outline-success px-3"><i class="bi bi-shield-check me-1"></i>Activate 2FA</button>
-</form>
-@elseif($pending2fa)
-<div class="alert alert-danger" role="alert">
-<small><i class="bi bi-exclamation-triangle-fill me-1"></i>QR could not be generated. Start setup again.</small>
-</div>
-<form method="POST" action="{{ route('settings.2fa.setup') }}">
-@csrf
-<button class="btn btn-outline-secondary"><i class="bi bi-arrow-clockwise me-1"></i>Restart setup</button>
-</form>
-@else
-<div class="d-flex gap-3 align-items-start mb-3">
-<span class="stat-icon" style="width:38px;height:38px;background:#e6f3ea;color:#00743F;flex:0 0 38px"><i class="bi bi-qr-code" style="font-size:1.05rem"></i></span>
-<small class="text-muted">After your password, open the app on your phone and type the current 6-digit code. Works offline, nothing is sent by SMS.</small>
-</div>
-<div class="p3-security-note mb-3"><i class="bi bi-lightbulb-fill me-1"></i>Recommended — blocks sign-in even if your password leaks.</div>
-<form method="POST" action="{{ route('settings.2fa.setup') }}">
-@csrf
-<button class="btn btn-outline-success px-4"><i class="bi bi-shield-lock me-1"></i>Enable 2FA</button>
-</form>
-@endif
-</div>
-
-</div>
-</div>
 </div>
 
 <div class="card card-p3 p-4 mt-4">
@@ -228,51 +216,4 @@
     });
 })();
 </script>
-{{-- Session & audit retention --}}
-<div class="row g-4 mb-1 mt-1">
-<div class="col-lg-6">
-<div class="card card-p3 p-4 h-100">
-<div class="d-flex align-items-center gap-2 mb-3">
-<span class="stat-icon" style="background:#e6f3ea;color:var(--p3-navy)"><i class="bi bi-hourglass-split"></i></span>
-<div><div class="fw-semibold">Session and audit retention</div><small class="text-muted">Idle sign-out window and how long audit logs are kept.</small></div>
-</div>
-@if($isAdmin)
-<form method="POST" action="{{ route('settings.retention') }}">
-@csrf
-@method('PUT')
-<div class="row g-3">
-<div class="col-md-6">
-<label class="form-label">Session Timeout (minutes)</label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-clock"></i></span>
-<input name="session_timeout_minutes" type="number" min="5" max="1440" class="form-control" value="{{ old('session_timeout_minutes', $val('session_timeout_minutes', config('session.lifetime'))) }}" required></div>
-<small class="text-muted">5 – 1440 minutes. Users are signed out after this idle period.</small>
-</div>
-<div class="col-md-6">
-<label class="form-label">Audit Log Retention (days)</label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-journal-text"></i></span>
-<input name="audit_retention_days" type="number" min="1" max="3650" class="form-control" value="{{ old('audit_retention_days', $val('audit_retention_days', '90')) }}" required></div>
-<small class="text-muted">1 – 3650 days. Older audit entries are purged automatically.</small>
-</div>
-</div>
-<button class="btn btn-outline-success mt-3 px-4"><i class="bi bi-check-lg me-1"></i>{{ __('settings.save') }}</button>
-</form>
-@else
-<div class="row g-3">
-<div class="col-md-6">
-<label class="form-label">Session Timeout (minutes)</label>
-<input type="number" class="form-control" value="{{ $val('session_timeout_minutes', '120') }}" disabled>
-</div>
-<div class="col-md-6">
-<label class="form-label">Audit Log Retention (days)</label>
-<input type="number" class="form-control" value="{{ $val('audit_retention_days', '90') }}" disabled>
-</div>
-</div>
-<div class="p3-security-note mt-3"><i class="bi bi-lock-fill me-1"></i>Only admins can change retention settings.</div>
-@endif
-</div>
-</div>
-</div>
 @endsection
-
-
-

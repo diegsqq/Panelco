@@ -44,7 +44,7 @@
 <div class="flex-grow-1" style="min-width:220px">
 <div class="fw-semibold fs-6">{{ $me->name }}</div>
 @if($me->job_title)<div class="small" style="color:#00743F">{{ $me->job_title }}</div>@endif
-<small class="text-muted d-block">{{ $me->email }}{{ $me->organization ? ' · ' . $me->organization : '' }}</small>
+<small class="text-muted d-block">{{ $me->employee_id }}{{ $me->organization ? ' · ' . $me->organization : '' }}</small>
 <div class="d-flex gap-2 mt-2 flex-wrap align-items-center">
 <label class="btn btn-sm btn-outline-success mb-0" for="avatarInput" style="cursor:pointer"><i class="bi bi-camera me-1"></i>{{ __('settings.upload_photo') }}</label>
 <button id="avatarSave" type="submit" form="avatarForm" class="btn btn-sm btn-outline-success mb-0 d-none"><i class="bi bi-check-lg me-1"></i>{{ __('settings.save') }}</button>
@@ -60,36 +60,47 @@
 <small class="text-muted d-block mt-2">{{ __('settings.avatar_hint') }}</small>
 </div>
 </div>
+</div>{{-- /avatar & identity card --}}
+
 <form method="POST" action="{{ route('settings.profile') }}">
 @csrf
 @method('PUT')
+<div class="row g-4 mb-1 mt-1">
+{{-- Left card: personal details --}}
+<div class="col-lg-6">
+<div class="card card-p3 p-4 h-100">
+<div class="d-flex align-items-center gap-2 mb-3">
+<span class="stat-icon" style="background:#e6f3ea;color:var(--p3-navy)"><i class="bi bi-person-vcard"></i></span>
+<div><div class="fw-semibold">Personal details</div><small class="text-muted">Your name and ID number.</small></div>
+</div>
 <div class="row g-3">
-<div class="col-12 col-md-6">
+<div class="col-12">
 <label for="settingsFirstName" class="form-label">{{ __('settings.first_name') }}</label>
 <div class="input-group"><span class="input-group-text"><i class="bi bi-person"></i></span>
 <input id="settingsFirstName" name="first_name" class="form-control" value="{{ old('first_name', $fallbackFirst) }}" required maxlength="100"></div>
 </div>
-<div class="col-12 col-md-6">
+<div class="col-12">
 <label for="settingsLastName" class="form-label">{{ __('settings.last_name') }}</label>
 <div class="input-group"><span class="input-group-text"><i class="bi bi-person-badge"></i></span>
 <input id="settingsLastName" name="last_name" class="form-control" value="{{ old('last_name', $fallbackLast) }}" required maxlength="100"></div>
 </div>
-<div class="col-12 col-md-6">
-<label for="settingsEmail" class="form-label">{{ __('settings.email') }}</label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-envelope"></i></span>
-<input id="settingsEmail" name="email" type="email" class="form-control" value="{{ old('email', $me->pending_email ?? $me->email) }}" required maxlength="100"></div>
+<div class="col-12">
+<label for="settingsEmployeeId" class="form-label">ID number</label>
+<div class="input-group"><span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+<input id="settingsEmployeeId" name="employee_id" type="text" class="form-control" value="{{ old('employee_id', $me->employee_id) }}" required maxlength="4" pattern="[0-9]{4}" inputmode="numeric"></div>
 </div>
-<div class="col-12 col-md-6">
-<label for="settingsPhone" class="form-label">{{ __('settings.phone') }} <span class="text-muted small">{{ __('settings.optional') }}</span></label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-phone"></i></span>
-<input id="settingsPhone" name="phone" class="form-control" value="{{ old('phone', $me->pending_phone ?? $me->phone) }}" placeholder="09XX XXX XXXX" maxlength="30"></div>
 </div>
-<div class="col-12 col-md-6">
-<label for="settingsJobTitle" class="form-label">{{ __('settings.job_title') }} <span class="text-muted small">{{ __('settings.job_title_hint') }}</span></label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-briefcase"></i></span>
-<input id="settingsJobTitle" name="job_title" class="form-control" value="{{ old('job_title', $me->job_title) }}" placeholder="e.g. Records Officer" maxlength="100"></div>
 </div>
-<div class="col-12 col-md-6">
+</div>
+{{-- Right card: organization --}}
+<div class="col-lg-6">
+<div class="card card-p3 p-4 h-100">
+<div class="d-flex align-items-center gap-2 mb-3">
+<span class="stat-icon" style="background:#e6f3ea;color:var(--p3-navy)"><i class="bi bi-building"></i></span>
+<div><div class="fw-semibold">{{ __('settings.organization') }}</div><small class="text-muted">Where you work.</small></div>
+</div>
+<div class="row g-3">
+<div class="col-12">
 <label for="settingsOrganization" class="form-label">{{ __('settings.organization') }}</label>
 <div class="input-group"><span class="input-group-text"><i class="bi bi-building"></i></span>
 <input id="settingsOrganization" name="organization" class="form-control" value="{{ old('organization', $me->organization) }}" placeholder="PANELCO III" maxlength="150"></div>
@@ -98,6 +109,9 @@
 <div class="mt-3 d-flex align-items-center gap-3 flex-wrap">
 <button class="btn btn-outline-success px-4"><i class="bi bi-check-lg me-1"></i>{{ __('settings.save_account') }}</button>
 <small class="text-muted"><i class="bi bi-shield-check me-1"></i>{{ __('settings.verify_note') }}</small>
+</div>
+</div>
+</div>
 </div>
 </form>
 
@@ -136,7 +150,6 @@
 </form>
 </div>
 @endif
-</div>
 </div>
 </div>
 

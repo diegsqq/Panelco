@@ -207,32 +207,6 @@
         </div>
     </div>
 
-    {{-- ── Department cards ── --}}
-    @if($departments->isNotEmpty())
-    <div class="lib-dept-section">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="fw-bold" style="color:#1a1a2e;font-size:.8rem">Browse by department</span>
-            <a href="{{ route('documents.library') }}" class="small fw-semibold text-decoration-none" style="color:#7b7fa8">View all departments →</a>
-        </div>
-        <div class="lib-dept-grid">
-            @foreach($departments->take(4) as $dept)
-            @php
-                $deptDocCount = (int) ($deptDocCounts->get($dept->id, 0));
-            @endphp
-            <a href="{{ route('documents.library', ['department_id' => $dept->id]) }}"
-               class="lib-dept-card {{ request('department_id') == $dept->id ? 'active' : '' }}">
-                <div class="lib-dept-ico"><i class="bi bi-building"></i></div>
-                <div style="min-width:0;flex:1 1 auto">
-                    <div class="lib-dept-name">{{ $dept->name }}</div>
-                    <div class="lib-dept-meta">{{ $deptDocCount }} document{{ $deptDocCount !== 1 ? 's' : '' }}</div>
-                </div>
-                <button type="button" class="p-0 border-0 bg-transparent" style="color:#c8c8d8;font-size:.7rem;line-height:1;flex:0 0 auto" onclick="event.preventDefault()" aria-label="More options"><i class="bi bi-three-dots"></i></button>
-            </a>
-            @endforeach
-        </div>
-    </div>
-    @endif
-
     {{-- ── Category cards ── --}}
     @if($categories->isNotEmpty())
     <div class="lib-dept-section mt-4">

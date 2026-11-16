@@ -22,8 +22,8 @@
 <div class="input-group"><span class="input-group-text"><i class="bi bi-person"></i></span><input name="name" class="form-control" value="{{ old('name', $user->name) }}" required></div>
 </div>
 <div class="col-md-6">
-<label class="form-label">Email</label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-envelope"></i></span><input name="email" type="email" class="form-control" value="{{ old('email', $user->email) }}" autocomplete="off" autocapitalize="off" spellcheck="false" required></div>
+<label class="form-label">ID number</label>
+<div class="input-group"><span class="input-group-text"><i class="bi bi-person-badge"></i></span><input name="employee_id" type="text" class="form-control" value="{{ old('employee_id', $user->employee_id) }}" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" required></div>
 </div>
 <div class="col-md-6">
 <label class="form-label">New Password <span class="text-muted small">(leave blank to keep current)</span></label>

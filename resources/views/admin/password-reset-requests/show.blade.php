@@ -161,8 +161,8 @@
             <div class="admin-review-value">{{ $request->user?->name ?? '—' }}</div>
         </div>
         <div class="admin-review-row">
-            <div class="admin-review-label">Email</div>
-            <div class="admin-review-value">{{ $request->user?->email ?? '—' }}</div>
+            <div class="admin-review-label">ID number</div>
+            <div class="admin-review-value">{{ $request->user?->employee_id ?? '—' }}</div>
         </div>
         <div class="admin-review-row">
             <div class="admin-review-label">Reason</div>

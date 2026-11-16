@@ -81,7 +81,7 @@ class UserController extends Controller
         $user = User::create([
             'employee_id' => $data['employee_id'],
             'name' => $data['name'],
-            'email' => $data['email'] ?? ($data['employee_id'] . '@panelco3.local'),
+            'email' => $data['email'] ?? $data['employee_id'],
             'password' => Hash::make($data['password']),
             'role' => $data['role'] ?? User::ROLE_EMPLOYEE,
             'department_id' => $data['department_id'] ?? null,
@@ -171,7 +171,7 @@ class UserController extends Controller
         $user->fill([
             'employee_id' => $data['employee_id'],
             'name' => $data['name'],
-            'email' => $data['email'] ?? ($data['employee_id'] . '@panelco3.local'),
+            'email' => $data['email'] ?? $data['employee_id'],
             'role' => $data['role'],
             'department_id' => $data['department_id'] ?? null,
         ]);

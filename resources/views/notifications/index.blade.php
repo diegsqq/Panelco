@@ -53,9 +53,9 @@
     .nf-list { display: flex; flex-direction: column; gap: .6rem; }
 
     .nf-card {
-        position: relative; display: flex; align-items: flex-start; gap: .9rem;
-        background: #fff; border: 1px solid #ebebeb; border-radius: 1rem;
-        padding: 1rem 1.15rem 1rem 1.25rem; text-decoration: none; color: inherit;
+        position: relative; display: flex; align-items: center; gap: .7rem;
+        background: #fff; border: 1px solid #ebebeb; border-radius: .85rem;
+        padding: .55rem .7rem .55rem .8rem; text-decoration: none; color: inherit;
         transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
         overflow: hidden;
     }
@@ -64,7 +64,7 @@
     .nf-card.unread::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: linear-gradient(180deg, #00A868, #7ed99f); }
     .nf-card.fade-out { opacity: 0; transform: translateX(20px); transition: all .25s ease; }
 
-    .nf-icon { width: 44px; height: 44px; flex: 0 0 44px; border-radius: .85rem; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; position: relative; }
+    .nf-icon { width: 30px; height: 30px; flex: 0 0 30px; border-radius: .55rem; display: flex; align-items: center; justify-content: center; font-size: .85rem; position: relative; }
     .nf-icon.primary { background: #e6f3ea; color: #00743F; }
     .nf-icon.warning { background: #fff3cd; color: #856404; }
     .nf-icon.danger { background: #f8d7da; color: #721c24; }
@@ -75,8 +75,8 @@
 
     .nf-body { flex: 1 1 auto; min-width: 0; }
     .nf-row { display: flex; align-items: flex-start; justify-content: space-between; gap: .6rem; }
-    .nf-title { font-weight: 700; font-size: .95rem; color: #1a1a2e; margin: 0 0 .2rem; line-height: 1.3; }
-    .nf-msg { color: #5a5a5a; font-size: .85rem; line-height: 1.5; margin: 0 0 .45rem; word-break: break-word; }
+    .nf-title { font-weight: 700; font-size: .82rem; color: #1a1a2e; margin: 0 0 .1rem; line-height: 1.2; }
+    .nf-msg { color: #5a5a5a; font-size: .75rem; line-height: 1.35; margin: 0 0 .25rem; word-break: break-word; }
     .nf-meta { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; font-size: .72rem; color: #9a9ab0; }
     .nf-badge { display: inline-flex; align-items: center; gap: .25rem; padding: .14rem .55rem; border-radius: 2rem; font-size: .66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; }
     .nf-badge.unread { background: #00A868; color: #fff; }
@@ -140,19 +140,17 @@
     </div>
 
     <div class="nf-toolbar">
-        <div class="nf-search">
-            <i class="bi bi-search"></i>
-            <input type="text" id="nfSearch" placeholder="Search notifications..." aria-label="Search notifications">
-        </div>
         <div class="nf-filters">
             <button class="nf-filter active" data-filter="all">All <span class="nf-count" id="cAll">{{ count($notifications) }}</span></button>
             <button class="nf-filter" data-filter="unread">Unread <span class="nf-count" id="cUnread">{{ $unreadCount }}</span></button>
             <button class="nf-filter" data-filter="read">Read <span class="nf-count" id="cRead">{{ count($notifications) - $unreadCount }}</span></button>
-        </div>
-        <div class="nf-actions">
-            <button class="nf-btn primary" id="markAllReadPage" {{ $unreadCount === 0 ? 'disabled' : '' }}>
+            <button class="nf-btn primary" id="markAllReadPage" {{ $unreadCount === 0 ? 'disabled' : '' }} style="margin-left:.35rem;">
                 <i class="bi bi-check2-all"></i> Mark all read
             </button>
+        </div>
+        <div class="nf-search">
+            <i class="bi bi-search"></i>
+            <input type="text" id="nfSearch" placeholder="Search notifications..." aria-label="Search notifications">
         </div>
     </div>
 

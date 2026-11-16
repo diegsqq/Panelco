@@ -8,6 +8,7 @@ use App\Models\Document;
 use App\Models\DocumentCategory;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
@@ -16,7 +17,7 @@ class HomeController extends Controller
         $this->middleware('auth');
     }
 
-    public function index(): Renderable
+    public function index(Request $request): Renderable
     {
         $user = auth()->user();
 
@@ -24,6 +25,19 @@ class HomeController extends Controller
         if (! $user->isAdmin()) {
             $documentQuery->where('uploaded_by', $user->id);
         }
+
+        // ── Sorting for the "All files" dashboard table ──
+        $allowedSorts = [
+            'title' => 'title',
+            'category' => 'category_id',
+            'uploader' => 'uploaded_by',
+            'updated_at' => 'updated_at',
+            'file_size' => 'file_size',
+        ];
+        $sort = $request->input('sort', 'updated_at');
+        $dirRaw = strtolower((string) $request->input('dir', 'desc'));
+        $dir = in_array($dirRaw, ['asc', 'desc']) ? $dirRaw : 'desc';
+        $sortCol = $allowedSorts[$sort] ?? 'updated_at';
 
         $stats = [
             'total' => (clone $documentQuery)->count(),
@@ -90,8 +104,14 @@ class HomeController extends Controller
             ->latest()->limit(9)->get();
         $recentFiles = (clone $documentQuery)->with(['category', 'uploader:id,name'])
             ->latest()->limit(5)->get();
-        $allFiles = (clone $documentQuery)->with(['category', 'uploader:id,name'])
-            ->latest()->limit(10)->get();
+        $allFilesQuery = (clone $documentQuery)->with(['category', 'uploader:id,name']);
+        if ($sort === 'category') {
+            $allFilesQuery->leftJoin('document_categories as cat_sort', 'cat_sort.id', '=', 'documents.category_id')
+                ->orderBy('cat_sort.name', $dir);
+        } else {
+            $allFilesQuery->orderBy($sortCol, $dir);
+        }
+        $allFiles = $allFilesQuery->select('documents.*')->limit(10)->get();
         $expiringDocuments = (clone $documentQuery)
             ->whereNotNull('expiration_date')
             ->whereDate('expiration_date', '<=', now()->addDays(30)->toDateString())
@@ -230,6 +250,8 @@ class HomeController extends Controller
             'monthlyUploads',
             'maxMonthlyUploads',
             'recentActivity',
+            'sort',
+            'dir',
             'mostAccessedDocuments'
         ));
     }

@@ -157,12 +157,7 @@
             @endif
         </div>
         <div class="wd-welcome-right">
-            <div class="wd-stats" aria-label="Document statistics">
-                <div class="wd-stat"><div class="wd-stat-val" style="color:#00A868">{{ number_format($stats['total']) }}</div><div class="wd-stat-lbl">Total</div></div>
-                <div class="wd-stat"><div class="wd-stat-val" style="color:#00743F">{{ number_format($stats['completed']) }}</div><div class="wd-stat-lbl">Done</div></div>
-                <div class="wd-stat"><div class="wd-stat-val" style="color:#fd7e14">{{ number_format($stats['pending']) }}</div><div class="wd-stat-lbl">Pending</div></div>
-                <div class="wd-stat"><div class="wd-stat-val" style="color:#dc3545">{{ number_format($stats['failed']) }}</div><div class="wd-stat-lbl">Failed</div></div>
-            </div>
+
             <div class="wd-welcome-actions">
                 <a href="{{ route('chat.index') }}" class="wd-btn-ghost"><i class="bi bi-lightning-charge-fill"></i> Ask Lightning AI</a>
                 <a href="{{ route('documents.upload') }}" class="wd-btn-primary"><i class="bi bi-cloud-arrow-up-fill"></i> Upload files</a>
@@ -247,11 +242,39 @@
                         <caption class="visually-hidden">All files</caption>
                         <thead>
                             <tr>
-                                <th scope="col">File name <i class="bi bi-arrow-up" style="font-size:.55rem"></i></th>
-                                <th scope="col" style="width:180px">Categories</th>
-                                <th scope="col" style="width:230px">Shared by</th>
-                                <th scope="col" style="width:160px">Last modified</th>
-                                <th scope="col" style="width:125px">Size</th>
+                                @php
+                                    $curSort = $sort ?? 'updated_at';
+                                    $curDir = $dir ?? 'desc';
+                                    $sortLink = function (string $col) use ($curSort, $curDir) {
+                                        $next = ($curSort === $col && $curDir === 'asc') ? 'desc' : 'asc';
+                                        return request()->fullUrlWithQuery(['sort' => $col, 'dir' => $next]);
+                                    };
+                                @endphp
+                                <th scope="col" style="cursor:pointer">
+                                    <a href="{{ $sortLink('title') }}" class="text-decoration-none d-flex align-items-center gap-1">
+                                        File name @if($curSort === 'title')<i class="bi bi-arrow-{{ $curDir === 'asc' ? 'up' : 'down' }}-short" style="font-size:.55rem"></i>@else<i class="bi bi-arrow-down-up" style="font-size:.55rem;opacity:.45"></i>@endif
+                                    </a>
+                                </th>
+                                <th scope="col" style="width:180px;cursor:pointer">
+                                    <a href="{{ $sortLink('category') }}" class="text-decoration-none d-flex align-items-center gap-1">
+                                        Categories @if($curSort === 'category')<i class="bi bi-arrow-{{ $curDir === 'asc' ? 'up' : 'down' }}-short" style="font-size:.55rem"></i>@else<i class="bi bi-arrow-down-up" style="font-size:.55rem;opacity:.45"></i>@endif
+                                    </a>
+                                </th>
+                                <th scope="col" style="width:230px;cursor:pointer">
+                                    <a href="{{ $sortLink('uploader') }}" class="text-decoration-none d-flex align-items-center gap-1">
+                                        Shared by @if($curSort === 'uploader')<i class="bi bi-arrow-{{ $curDir === 'asc' ? 'up' : 'down' }}-short" style="font-size:.55rem"></i>@else<i class="bi bi-arrow-down-up" style="font-size:.55rem;opacity:.45"></i>@endif
+                                    </a>
+                                </th>
+                                <th scope="col" style="width:160px;cursor:pointer">
+                                    <a href="{{ $sortLink('updated_at') }}" class="text-decoration-none d-flex align-items-center gap-1">
+                                        Last modified @if($curSort === 'updated_at')<i class="bi bi-arrow-{{ $curDir === 'asc' ? 'up' : 'down' }}-short" style="font-size:.55rem"></i>@else<i class="bi bi-arrow-down-up" style="font-size:.55rem;opacity:.45"></i>@endif
+                                    </a>
+                                </th>
+                                <th scope="col" style="width:125px;cursor:pointer">
+                                    <a href="{{ $sortLink('file_size') }}" class="text-decoration-none d-flex align-items-center gap-1">
+                                        Size @if($curSort === 'file_size')<i class="bi bi-arrow-{{ $curDir === 'asc' ? 'up' : 'down' }}-short" style="font-size:.55rem"></i>@else<i class="bi bi-arrow-down-up" style="font-size:.55rem;opacity:.45"></i>@endif
+                                    </a>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
