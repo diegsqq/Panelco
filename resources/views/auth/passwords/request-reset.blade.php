@@ -22,9 +22,25 @@
         box-shadow: 0 28px 80px rgba(19, 58, 39, .13);
     }
     .reset-request-header {
+        position: relative;
         padding: clamp(2rem, 5vw, 3rem) clamp(2rem, 5vw, 3rem) 1.5rem;
         text-align: center;
     }
+    .reset-request-back {
+        position: absolute;
+        top: 1.25rem;
+        left: 1.25rem;
+        margin-top: 0;
+    }
+    .reset-request-bell {
+        position: absolute;
+        top: 1.25rem;
+        right: 1.25rem;
+        color: #087a4b;
+        font-size: 1.1rem;
+        opacity: .85;
+    }
+    .reset-request-bell:hover { color: #064b34; }
     .reset-request-brand {
         display: flex;
         align-items: center;
@@ -109,13 +125,24 @@
         transform: translateY(-1px);
     }
     .reset-request-help {
-        margin-top: 1.5rem;
-        padding-top: 1.1rem;
-        color: #87948c;
-        border-top: 1px solid #edf1ee;
-        font-size: .76rem;
+        margin: 1.5rem 0 0;
+        padding: 1rem 1.25rem;
+        color: #294438;
+        background: #f0f9f3;
+        border: 1px solid #d5e8db;
+        border-radius: .85rem;
+        font-size: .8rem;
         line-height: 1.6;
         text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+    }
+    .reset-request-help i {
+        color: #087a4b;
+        font-size: 1rem;
+        flex: 0 0 auto;
     }
     .reset-request-help a {
         color: #087a4b;
@@ -134,7 +161,7 @@
         text-decoration: none;
         font-size: .85rem;
         font-weight: 600;
-        margin-top: 1rem;
+        margin-top: 0;
     }
     .reset-request-back:hover {
         color: #064b34;
@@ -177,6 +204,8 @@
 <div class="reset-request-page">
     <div class="reset-request-frame">
         <div class="reset-request-header">
+            <a href="{{ route('login') }}" class="reset-request-back"><i class="bi bi-arrow-left me-1"></i>Back to sign in</a>
+            <a href="#" id="resetBell" class="reset-request-bell" aria-label="Notifications"><i class="bi bi-bell-fill"></i></a>
             <div class="reset-request-brand">
                 <img src="{{ asset('images/logo.png') }}" alt="PANELCO III logo">
                 <span>SmartDocs AI<small>PANELCO III</small></span>
@@ -219,7 +248,6 @@
                 <button type="submit" class="btn reset-request-submit">Submit request <i class="bi bi-send me-1"></i></button>
             </form>
 
-            <a href="{{ route('login') }}" class="reset-request-back"><i class="bi bi-arrow-left me-1"></i>Back to sign in</a>
         </div>
 
         <div class="reset-request-help">
@@ -227,4 +255,97 @@
         </div>
     </div>
 </div>
+
+<div class="reset-status-toast" id="resetStatusToast">
+    <div class="rst-ico" id="resetStatusIcon"><i class="bi bi-bell-fill"></i></div>
+    <div class="rst-body">
+        <div class="rst-title" id="resetStatusTitle">Notifications</div>
+        <div class="rst-msg" id="resetStatusMsg">Enter your Employee ID, then click the bell to check your request status.</div>
+        <div class="rst-pw" id="resetStatusPw" style="display:none;"><i class="bi bi-key me-1"></i>Default password: P@55w0rd</div>
+    </div>
+    <button type="button" class="rst-close" id="resetStatusClose" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+</div>
+
+<style>
+    .reset-status-toast {
+        position: fixed; top: 1.25rem; left: 50%; transform: translateX(-50%) translateY(-120%);
+        z-index: 1080; min-width: 300px; max-width: 460px; background: #fff; border: 1px solid #e5e5e5;
+        border-radius: 1rem; box-shadow: 0 12px 32px rgba(0,0,0,.18); padding: .9rem 1.1rem;
+        display: flex; align-items: flex-start; gap: .75rem; transition: transform .35s ease, opacity .35s ease; opacity: 0;
+    }
+    .reset-status-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .reset-status-toast .rst-ico { width: 40px; height: 40px; flex: 0 0 40px; border-radius: .7rem; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; background: #e6f3ea; color: #00A868; }
+    .reset-status-toast .rst-body { flex: 1 1 auto; min-width: 0; }
+    .reset-status-toast .rst-title { font-weight: 700; font-size: .92rem; color: #1a1a2e; margin: 0 0 .2rem; }
+    .reset-status-toast .rst-msg { font-size: .82rem; color: #5a5a5a; line-height: 1.45; margin: 0; }
+    .reset-status-toast .rst-close { background: transparent; border: 0; color: #9a9ab0; font-size: 1rem; cursor: pointer; padding: 0; line-height: 1; }
+    .reset-status-toast .rst-close:hover { color: #555; }
+    .reset-status-toast .rst-pw { margin-top: .4rem; padding: .35rem .6rem; background: #f5f5f5; border-radius: .5rem; font-size: .78rem; color: #1a1a2e; font-weight: 600; display: inline-block; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var bell = document.getElementById('resetBell');
+    var toast = document.getElementById('resetStatusToast');
+    var title = document.getElementById('resetStatusTitle');
+    var msg = document.getElementById('resetStatusMsg');
+    var icon = document.getElementById('resetStatusIcon');
+    var pw = document.getElementById('resetStatusPw');
+    var closeBtn = document.getElementById('resetStatusClose');
+    var empInput = document.getElementById('employee_id');
+
+    function showToast(t, m, type) {
+        title.textContent = t;
+        msg.textContent = m;
+        if (type === 'approved') {
+            icon.style.background = '#e6f3ea'; icon.style.color = '#00A868';
+            icon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
+            pw.style.display = 'inline-block';
+        } else if (type === 'declined') {
+            icon.style.background = '#f8d7da'; icon.style.color = '#dc3545';
+            icon.innerHTML = '<i class="bi bi-x-circle-fill"></i>';
+            pw.style.display = 'none';
+        } else if (type === 'pending') {
+            icon.style.background = '#fff3cd'; icon.style.color = '#856404';
+            icon.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+            pw.style.display = 'none';
+        } else {
+            icon.style.background = '#e7f1fb'; icon.style.color = '#0d6efd';
+            icon.innerHTML = '<i class="bi bi-bell-fill"></i>';
+            pw.style.display = 'none';
+        }
+        toast.classList.add('show');
+        clearTimeout(toast._t);
+        toast._t = setTimeout(function () { toast.classList.remove('show'); }, 6000);
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', function () { toast.classList.remove('show'); });
+
+    if (bell) {
+        bell.addEventListener('click', function (e) {
+            e.preventDefault();
+            var empId = (empInput && empInput.value ? empInput.value.trim() : '');
+            if (!empId || empId.length !== 4) {
+                showToast('Notifications', 'Enter your 4-digit Employee ID first, then click the bell.', 'info');
+                return;
+            }
+            fetch('{{ route('password.reset.request.status') }}?employee_id=' + encodeURIComponent(empId), {
+                headers: { 'Accept': 'application/json' }
+            }).then(function (r) { return r.json(); }).then(function (data) {
+                if (data.status === 'approved') {
+                    showToast('Request Approved', 'Your password has been reset to the default. Sign in with your Employee ID and the default password.', 'approved');
+                } else if (data.status === 'declined') {
+                    showToast('Request Declined', data.admin_note ? ('Your request was declined: ' + data.admin_note) : 'Your password reset request was declined by the administrator.', 'declined');
+                } else if (data.status === 'pending') {
+                    showToast('Request Pending', 'Your password reset request is still under review by an administrator.', 'pending');
+                } else {
+                    showToast('No Request Found', 'No password reset request found for this Employee ID.', 'info');
+                }
+            }).catch(function () {
+                showToast('Error', 'Could not fetch notification status. Please try again.', 'info');
+            });
+        });
+    }
+});
+</script>
 @endsection

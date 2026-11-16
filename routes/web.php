@@ -102,6 +102,7 @@ Route::middleware(['auth'])->prefix('notifications')->name('notifications.')->gr
 // Password reset request flow (user submits reason, admin approves/declines).
 Route::get('/password/reset/request', [App\Http\Controllers\PasswordResetRequestController::class, 'create'])->name('password.reset.request');
 Route::post('/password/reset/request', [App\Http\Controllers\PasswordResetRequestController::class, 'store'])->name('password.reset.request.store');
+Route::get('/password/reset/request/status', [App\Http\Controllers\PasswordResetRequestController::class, 'status'])->name('password.reset.request.status');
 
 // Second login step when 2FA is enabled (guest; password already checked).
 Route::get('/two-factor', [App\Http\Controllers\TwoFactorController::class, 'show'])->name('two-factor.show');
@@ -112,9 +113,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('users/{user}/access-reviews', [UserController::class, 'recordAccessReview'])->name('users.access-reviews.store');
     Route::patch('users/{user}/status', [UserController::class, 'updateStatus'])->name('users.status');
     Route::post('users/{user}/two-factor/reset', [UserController::class, 'resetTwoFactor'])->name('users.two-factor.reset');
-    Route::get('password-reset-requests/{passwordResetRequest}', [App\Http\Controllers\PasswordResetRequestController::class, 'show'])->name('admin.password-reset-requests.show');
-    Route::post('password-reset-requests/{passwordResetRequest}/approve', [App\Http\Controllers\PasswordResetRequestController::class, 'approve'])->name('admin.password-reset-requests.approve');
-    Route::post('password-reset-requests/{passwordResetRequest}/decline', [App\Http\Controllers\PasswordResetRequestController::class, 'decline'])->name('admin.password-reset-requests.decline');
+    Route::get('password-reset-requests/{passwordResetRequest}', [App\Http\Controllers\PasswordResetRequestController::class, 'show'])->name('password-reset-requests.show');
+    Route::post('password-reset-requests/{passwordResetRequest}/approve', [App\Http\Controllers\PasswordResetRequestController::class, 'approve'])->name('password-reset-requests.approve');
+    Route::post('password-reset-requests/{passwordResetRequest}/decline', [App\Http\Controllers\PasswordResetRequestController::class, 'decline'])->name('password-reset-requests.decline');
     Route::resource('users', UserController::class)->except(['show']);
     Route::resource('departments', DepartmentController::class)->except(['show']);
     Route::resource('categories', DocumentCategoryController::class)->except(['show']);

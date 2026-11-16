@@ -132,7 +132,7 @@
 </style>
 
 <div class="admin-review-page">
-    <a href="{{ route('admin.users.index') }}" class="admin-review-back"><i class="bi bi-arrow-left me-1"></i>Back to users</a>
+    <a href="{{ route('notifications.index') }}" class="admin-review-back"><i class="bi bi-arrow-left me-1"></i>Back to notifications</a>
 
     <h1 class="admin-review-title">Password Reset Request</h1>
     <p class="admin-review-subtitle">Review the employee's password reset request and approve or decline it.</p>

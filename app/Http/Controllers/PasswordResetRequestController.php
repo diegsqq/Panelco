@@ -13,7 +13,7 @@ class PasswordResetRequestController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth')->except(['create', 'store']);
+        $this->middleware('auth')->except(['create', 'store', 'status']);
     }
 
     /**
@@ -22,6 +22,35 @@ class PasswordResetRequestController extends Controller
     public function create()
     {
         return view('auth.passwords.request-reset');
+    }
+
+    /**
+     * Return the latest password reset request status for an employee (guest).
+     */
+    public function status(Request $request)
+    {
+        $data = $request->validate([
+            'employee_id' => ['required', 'string', 'size:4'],
+        ]);
+
+        $user = User::where('employee_id', $data['employee_id'])->first();
+        if (! $user) {
+            return response()->json(['status' => 'none']);
+        }
+
+        $resetRequest = PasswordResetRequest::where('user_id', $user->id)
+            ->latest()
+            ->first();
+
+        if (! $resetRequest) {
+            return response()->json(['status' => 'none']);
+        }
+
+        return response()->json([
+            'status' => $resetRequest->status,
+            'admin_note' => $resetRequest->admin_note,
+            'reviewed_at' => $resetRequest->reviewed_at?->format('M d, Y h:i A'),
+        ]);
     }
 
     /**

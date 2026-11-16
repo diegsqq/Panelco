@@ -89,7 +89,7 @@
     }
     .login-brand, .login-copy, .login-secure { position: relative; z-index: 1; }
     .login-brand { display: flex; align-items: center; gap: .8rem; color: #fff; }
-    .login-brand img { width: 48px; height: 48px; object-fit: contain; padding: 5px; background: #fff; border-radius: 13px; }
+    .login-brand img { width: 48px; height: 48px; object-fit: contain; padding: 5px; background: transparent; border-radius: 13px; }
     .login-brand small { display: block; margin-top: .12rem; color: rgba(255,255,255,.72); letter-spacing: .08em; }
     .login-copy { max-width: 430px; margin: 4.5rem 0 3rem; }
     .login-eyebrow { color: #b7f2d2; font-size: .75rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
@@ -148,6 +148,7 @@
             <div class="login-brand">
                 <img src="{{ asset('images/logo.png') }}" alt="PANELCO III logo">
                 <span class="fw-bold">SmartDocs AI<small>PANELCO III</small></span>
+
             </div>
             <div class="login-copy">
                 <div class="login-eyebrow">Your cooperative, connected</div>
@@ -200,11 +201,101 @@
                     </div>
                     <button type="submit" class="btn login-submit w-100">Sign in <i class="bi bi-arrow-right ms-1"></i></button>
                 </form>
-                <div class="login-help"><i class="bi bi-info-circle me-1"></i> Need access? Contact your administrator. Default password: P@55w0rd. Demo accounts: 0001 / 0002 / 0003.</div>
+                <div class="login-help"><i class="bi bi-info-circle me-1"></i> Need access? Contact your administrator. Default password: P@55w0rd.</div>
             </div>
         </section>
     </div>
 </div>
+
+@if(session('status') || session('warning'))
+@php
+    $loginStatusMsg = session('status') ?? session('warning') ?? '';
+    $loginStatusLower = strtolower($loginStatusMsg);
+    if (str_contains($loginStatusLower, 'submitted')) {
+        $loginStatusTitle = 'Request Submitted';
+        $loginStatusIcon = 'bi-send-check-fill';
+        $loginStatusBg = '#e6f3ea';
+        $loginStatusColor = '#00A868';
+    } elseif (str_contains($loginStatusLower, 'approved')) {
+        $loginStatusTitle = 'Request Approved';
+        $loginStatusIcon = 'bi-check-circle-fill';
+        $loginStatusBg = '#e6f3ea';
+        $loginStatusColor = '#00A868';
+    } elseif (str_contains($loginStatusLower, 'declined')) {
+        $loginStatusTitle = 'Request Declined';
+        $loginStatusIcon = 'bi-x-circle-fill';
+        $loginStatusBg = '#f8d7da';
+        $loginStatusColor = '#dc3545';
+    } else {
+        $loginStatusTitle = 'Notice';
+        $loginStatusIcon = 'bi-info-circle-fill';
+        $loginStatusBg = '#e7f1fb';
+        $loginStatusColor = '#0d6efd';
+    }
+@endphp
+<style>
+    .login-status-toast {
+        position: fixed;
+        top: 1.25rem;
+        left: 50%;
+        transform: translateX(-50%) translateY(-120%);
+        z-index: 1080;
+        min-width: 300px;
+        max-width: 460px;
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 1rem;
+        box-shadow: 0 12px 32px rgba(0,0,0,.18);
+        padding: .9rem 1.1rem;
+        display: flex;
+        align-items: flex-start;
+        gap: .75rem;
+        transition: transform .35s ease, opacity .35s ease;
+        opacity: 0;
+    }
+    .login-status-toast.show {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+    .login-status-toast .lst-ico {
+        width: 40px; height: 40px; flex: 0 0 40px; border-radius: .7rem;
+        display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+        background: {{ $loginStatusBg }}; color: {{ $loginStatusColor }};
+    }
+    .login-status-toast .lst-body { flex: 1 1 auto; min-width: 0; }
+    .login-status-toast .lst-title { font-weight: 700; font-size: .92rem; color: #1a1a2e; margin: 0 0 .2rem; }
+    .login-status-toast .lst-msg { font-size: .82rem; color: #5a5a5a; line-height: 1.45; margin: 0; }
+    .login-status-toast .lst-close {
+        background: transparent; border: 0; color: #9a9ab0; font-size: 1rem; cursor: pointer; padding: 0; line-height: 1;
+    }
+    .login-status-toast .lst-close:hover { color: #555; }
+    .login-status-toast .lst-pw {
+        margin-top: .4rem; padding: .35rem .6rem; background: #f5f5f5; border-radius: .5rem;
+        font-size: .78rem; color: #1a1a2e; font-weight: 600; display: inline-block;
+    }
+</style>
+<div class="login-status-toast" id="loginStatusToast">
+    <div class="lst-ico"><i class="bi {{ $loginStatusIcon }}"></i></div>
+    <div class="lst-body">
+        <div class="lst-title">{{ $loginStatusTitle }}</div>
+        <div class="lst-msg">{{ $loginStatusMsg }}</div>
+        @if(str_contains($loginStatusLower, 'approved') || str_contains($loginStatusLower, 'submitted'))
+            <div class="lst-pw"><i class="bi bi-key me-1"></i>Default password: P@55w0rd</div>
+        @endif
+    </div>
+    <button type="button" class="lst-close" id="loginStatusToastClose" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var t = document.getElementById('loginStatusToast');
+    if (!t) return;
+    requestAnimationFrame(function () { t.classList.add('show'); });
+    var close = document.getElementById('loginStatusToastClose');
+    if (close) close.addEventListener('click', function () { t.classList.remove('show'); });
+    setTimeout(function () { t.classList.remove('show'); }, 6000);
+});
+</script>
+@endif
 <script>
 (function () {
     var toggle = document.getElementById('pwToggle');

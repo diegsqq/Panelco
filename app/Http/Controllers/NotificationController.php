@@ -22,7 +22,7 @@ class NotificationController extends Controller
             ->map(function (Notification $n) {
                 $type = $n->type;
                 $category = 'info';
-                $icon = 'bi-info';
+                $icon = 'bi-info-circle';
 
                 if (Str::startsWith($type, 'auth.login')) {
                     $category = 'warning';
@@ -43,6 +43,7 @@ class NotificationController extends Controller
                     'type' => $n->type,
                     'title' => $n->title,
                     'message' => $n->message,
+                    'metadata' => $n->metadata,
                     'is_read' => (bool) $n->is_read,
                     'created_at' => $n->created_at?->toISOString(),
                     'readable_created_at' => $n->created_at?->diffForHumans(),
@@ -51,9 +52,18 @@ class NotificationController extends Controller
                 ];
             });
 
-        return response()->json([
-            'unread_count' => $request->user()->unreadNotifications()->count(),
+        $unreadCount = $request->user()->unreadNotifications()->count();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'unread_count' => $unreadCount,
+                'notifications' => $notifications,
+            ]);
+        }
+
+        return view('notifications.index', [
             'notifications' => $notifications,
+            'unreadCount' => $unreadCount,
         ]);
     }
 
