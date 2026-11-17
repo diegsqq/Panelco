@@ -18,6 +18,7 @@ Auth::routes(['register' => false, 'reset' => false]);
 Route::middleware('auth')->group(function () {
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
     Route::get('/dashboard', [App\Http\Controllers\HomeController::class, 'index'])->name('dashboard');
+    Route::view('/help', 'help.index')->name('help');
 
     Route::get('/upload', [App\Http\Controllers\DocumentController::class, 'create'])->name('documents.upload');
     Route::post('/upload/suggest', [App\Http\Controllers\DocumentController::class, 'suggest'])->name('documents.suggest');
