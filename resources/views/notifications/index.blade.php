@@ -271,6 +271,31 @@
     var toast = document.getElementById('nfToast');
     var toastText = document.getElementById('nfToastText');
 
+    // ── Notification ringtone: Web Audio API beep (no audio file needed) ──
+    var nfAudioCtx = null;
+    function playNotifSound() {
+        if (!nfAudioCtx) {
+            try { nfAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+        }
+        if (nfAudioCtx.state === 'suspended') nfAudioCtx.resume();
+        var t = nfAudioCtx.currentTime;
+        // Double beep: 880Hz → 1320Hz, then 1100Hz → 1650Hz
+        [880, 1100].forEach(function (f, i) {
+            var tt = t + (i * 0.14);
+            var osc = nfAudioCtx.createOscillator();
+            var gain = nfAudioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, tt);
+            osc.frequency.exponentialRampToValueAtTime(f * 1.5, tt + 0.10);
+            gain.gain.setValueAtTime(0.35, tt);
+            gain.gain.exponentialRampToValueAtTime(0.001, tt + 0.22);
+            osc.connect(gain);
+            gain.connect(nfAudioCtx.destination);
+            osc.start(tt);
+            osc.stop(tt + 0.22);
+        });
+    }
+
     function showToast(msg) {
         toastText.textContent = msg;
         toast.classList.add('show');
@@ -439,7 +464,7 @@
 
     // ringtone on load if there are unread notifications
     var unreadCards = container.querySelectorAll('.nf-card[data-read="0"]').length;
-    if (unreadCards > 0 && typeof playNotifSound === 'function') {
+    if (unreadCards > 0) {
         try { playNotifSound(); } catch (e) {}
     }
 })();
