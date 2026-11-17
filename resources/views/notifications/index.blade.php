@@ -351,6 +351,7 @@
         if (card.getAttribute('data-read') !== '0') return;
         // if clicking a link target, still mark read
         e.preventDefault();
+        playNotifSound();
         markRead(id).then(function () {
             card.classList.remove('unread');
             card.setAttribute('data-read', '1');
@@ -435,6 +436,12 @@
     });
 
     applyFilters();
+
+    // ringtone on load if there are unread notifications
+    var unreadCards = container.querySelectorAll('.nf-card[data-read="0"]').length;
+    if (unreadCards > 0 && typeof playNotifSound === 'function') {
+        try { playNotifSound(); } catch (e) {}
+    }
 })();
 </script>
 @endsection

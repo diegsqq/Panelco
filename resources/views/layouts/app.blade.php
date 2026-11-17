@@ -949,6 +949,27 @@
         }
     }
 
+    // ── Notification ringtone (Web Audio API beep, no audio file needed) ──
+    var audioCtx = null;
+    window.playNotifSound = function () {
+        if (!audioCtx) {
+            try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+        }
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        var t = audioCtx.currentTime;
+        var osc = audioCtx.createOscillator();
+        var gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, t);
+        osc.frequency.exponentialRampToValueAtTime(1320, t + 0.12);
+        gain.gain.setValueAtTime(0.15, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.25);
+    };
+
     menu.addEventListener('click', function (e) {
         var item = e.target.closest('.notification-item');
         if (!item) return;
@@ -960,6 +981,7 @@
                 item.classList.add('text-muted');
                 item.setAttribute('data-notification-read', '1');
                 refreshCount();
+                playNotifSound();
             });
         }
     });
