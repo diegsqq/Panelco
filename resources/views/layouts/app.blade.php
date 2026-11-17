@@ -772,8 +772,8 @@
     [data-theme="dark"] .s-row:hover { background:#1a2820; }
     .s-row-ico { width:32px;height:32px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:.9rem;color:#666;flex:0 0 32px; }
     .s-row-ico.green { background:#e6f3ea;color:#00A868; }
-    [data-theme="dark"] .s-row-ico { background:#1d2b24;color:#8fa59a; }
-    [data-theme="dark"] .s-row-ico.green { color:#7fe0ac; }
+    [data-theme="dark"] .s-row-ico { background:#1d2b24;color:#fff; }
+    [data-theme="dark"] .s-row-ico.green { color:#fff; }
     .s-row-body { flex:1 1 auto;min-width:0; }
     .s-row-label { font-size:.85rem;font-weight:600;color:#111; }
     .s-row-sub   { font-size:.74rem;color:#888; }
