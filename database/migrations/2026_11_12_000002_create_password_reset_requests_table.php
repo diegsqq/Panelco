@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('password_reset_requests', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
-            $table->string('employee_id', 4);
+            $table->string('employee_id', 5);
             $table->text('reason');
             $table->string('status')->default('pending'); // pending, approved, declined
             $table->foreignId('reviewed_by')->nullable()->constrained('users')->onDelete('set null');

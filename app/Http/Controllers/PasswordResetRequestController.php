@@ -30,7 +30,7 @@ class PasswordResetRequestController extends Controller
     public function status(Request $request)
     {
         $data = $request->validate([
-            'employee_id' => ['required', 'string', 'size:4'],
+            'employee_id' => ['required', 'string', 'size:5'],
         ]);
 
         $user = User::where('employee_id', $data['employee_id'])->first();
@@ -59,7 +59,7 @@ class PasswordResetRequestController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'employee_id' => ['required', 'string', 'size:4'],
+            'employee_id' => ['required', 'string', 'size:5'],
             'reason' => ['required', 'string', 'max:1000'],
         ]);
 

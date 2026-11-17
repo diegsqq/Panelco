@@ -47,7 +47,7 @@
 </div>
 <div class="col-md-6">
 <label for="newUserIdNumber" class="form-label">ID Number</label>
-<div class="input-group"><span class="input-group-text"><i class="bi bi-hash"></i></span><input id="newUserIdNumber" name="employee_id" type="text" class="form-control" value="{{ old('employee_id') }}" required maxlength="4" pattern="[0-9]{4}" inputmode="numeric" autocomplete="off" placeholder="0000"></div>
+<div class="input-group"><span class="input-group-text"><i class="bi bi-hash"></i></span><input id="newUserIdNumber" name="employee_id" type="text" class="form-control" value="{{ old('employee_id') }}" required maxlength="5" pattern="[0-9]{5}" inputmode="numeric" autocomplete="off" placeholder="00000"></div>
 <small class="text-muted">4 digits as shown on the employee record.</small>
 </div>
 <div class="col-md-6">

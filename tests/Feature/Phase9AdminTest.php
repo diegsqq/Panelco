@@ -681,7 +681,7 @@ class Phase9AdminTest extends TestCase
         $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
         $payload = [
             'name' => 'New PANELCO Employee',
-            'employee_id' => '0004',
+            'employee_id' => '00004',
             'password' => 'Safe-password-123!',
             'password_confirmation' => 'Safe-password-123!',
         ];
@@ -691,7 +691,7 @@ class Phase9AdminTest extends TestCase
         $this->post(route('admin.users.store'), $payload)->assertForbidden();
         $this->actingAs($admin)->post(route('admin.users.store'), [
             ...$payload,
-            'employee_id' => '0005',
+            'employee_id' => '00005',
             'password' => 'safe-password-123',
             'password_confirmation' => 'safe-password-123',
         ])->assertSessionHasErrors('password');
@@ -912,7 +912,7 @@ class Phase9AdminTest extends TestCase
 
         $this->actingAs($admin)->post(route('admin.users.store'), [
             'name' => 'Freshly Added User',
-            'employee_id' => '0004',
+            'employee_id' => '00004',
             'password' => 'Safe-password-123!',
             'password_confirmation' => 'Safe-password-123!',
         ])->assertRedirect(route('admin.users.index'));
@@ -1022,12 +1022,12 @@ class Phase9AdminTest extends TestCase
         // The default satisfies the account-creation password rule.
         $this->actingAs($admin)->post(route('admin.users.store'), [
             'name' => 'Default Password Employee',
-            'employee_id' => '0006',
+            'employee_id' => '00006',
             'password' => 'P@55w0rd',
             'password_confirmation' => 'P@55w0rd',
         ])->assertRedirect(route('admin.users.index'));
 
-        $created = User::where('employee_id', '0006')->firstOrFail();
+        $created = User::where('employee_id', '00006')->firstOrFail();
         $this->assertTrue(Hash::check('P@55w0rd', $created->password));
     }
 

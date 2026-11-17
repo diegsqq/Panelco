@@ -89,7 +89,7 @@ class SettingsController extends Controller
         $data = $request->validate([
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
-            'employee_id' => ['required', 'string', 'size:4', 'unique:users,employee_id,' . $user->id],
+            'employee_id' => ['required', 'string', 'size:5', 'unique:users,employee_id,' . $user->id],
             'phone' => ['nullable', 'string', 'max:30'],
             'job_title' => ['nullable', 'string', 'max:100'],
             'organization' => ['nullable', 'string', 'max:150'],

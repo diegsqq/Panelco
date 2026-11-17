@@ -87,7 +87,7 @@
 <div class="col-12">
 <label for="settingsEmployeeId" class="form-label">ID number</label>
 <div class="input-group"><span class="input-group-text"><i class="bi bi-person-badge"></i></span>
-<input id="settingsEmployeeId" name="employee_id" type="text" class="form-control" value="{{ old('employee_id', $me->employee_id) }}" required maxlength="4" pattern="[0-9]{4}" inputmode="numeric"></div>
+<input id="settingsEmployeeId" name="employee_id" type="text" class="form-control" value="{{ old('employee_id', $me->employee_id) }}" required maxlength="5" pattern="[0-9]{5}" inputmode="numeric"></div>
 </div>
 </div>
 </div>

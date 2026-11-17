@@ -181,7 +181,7 @@
                     @csrf
                     <div class="mb-3">
                         <label for="employee_id" class="form-label">Employee ID</label>
-                        <input id="employee_id" type="text" class="form-control @error('employee_id') is-invalid @enderror" name="employee_id" value="{{ old('employee_id') }}" required autocomplete="username" autofocus placeholder="0000" maxlength="4" pattern="[0-9]{4}" inputmode="numeric">
+                        <input id="employee_id" type="text" class="form-control @error('employee_id') is-invalid @enderror" name="employee_id" value="{{ old('employee_id') }}" required autocomplete="username" autofocus placeholder="00000" maxlength="5" pattern="[0-9]{5}" inputmode="numeric">
                         @error('employee_id')<span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>@enderror
                     </div>
                     <div class="mb-3">

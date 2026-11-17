@@ -71,7 +71,7 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'employee_id' => ['required', 'string', 'size:4', 'unique:users,employee_id'],
+            'employee_id' => ['required', 'string', 'size:5', 'unique:users,employee_id'],
             'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
             'password' => [...PasswordRules::newPassword(minLength: 8), 'confirmed'],
             'role' => ['sometimes', 'required', Rule::in(User::ROLES)],
@@ -151,7 +151,7 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'employee_id' => ['required', 'string', 'size:4', Rule::unique('users', 'employee_id')->ignore($user->id)],
+            'employee_id' => ['required', 'string', 'size:5', Rule::unique('users', 'employee_id')->ignore($user->id)],
             'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'password' => [...PasswordRules::newPassword(false), 'confirmed'],
             'role' => ['required', Rule::in(User::ROLES)],

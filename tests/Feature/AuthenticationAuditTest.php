@@ -18,7 +18,7 @@ class AuthenticationAuditTest extends TestCase
     {
         $user = User::factory()->create([
             'email' => 'employee@example.test',
-            'employee_id' => '0001',
+            'employee_id' => '00001',
             'password' => Hash::make('Password123!'),
         ]);
 
@@ -45,7 +45,7 @@ class AuthenticationAuditTest extends TestCase
     {
         for ($attempt = 0; $attempt < 6; $attempt++) {
             $this->post(route('login'), [
-                'employee_id' => '9999',
+                'employee_id' => '99999',
                 'password' => 'wrong-secret',
             ]);
         }
@@ -59,7 +59,7 @@ class AuthenticationAuditTest extends TestCase
     {
         $user = User::factory()->create([
             'email' => 'employee@example.test',
-            'employee_id' => '0001',
+            'employee_id' => '00001',
             'password' => Hash::make('Password123!'),
         ]);
 
@@ -83,8 +83,8 @@ class AuthenticationAuditTest extends TestCase
 
     public function test_security_page_shows_only_the_current_users_authentication_history(): void
     {
-        $user = User::factory()->create(['email' => 'history@example.test', 'employee_id' => '0001']);
-        $otherUser = User::factory()->create(['email' => 'other@example.test', 'employee_id' => '0002']);
+        $user = User::factory()->create(['email' => 'history@example.test', 'employee_id' => '00001']);
+        $otherUser = User::factory()->create(['email' => 'other@example.test', 'employee_id' => '00002']);
 
         $ownSuccess = AuditLog::create([
             'user_id' => $user->id,
