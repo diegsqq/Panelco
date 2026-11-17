@@ -69,6 +69,14 @@
         background: #12291d;
         border-color: #26362e;
     }
+    #main-content > div.card.card-p3.p-0.overflow-hidden > table > tbody > tr:nth-child(5) {
+        height: 44px;
+    }
+    #main-content > div.card.card-p3.p-0.overflow-hidden > table > tbody > tr:nth-child(5) > td {
+        padding-top: .55rem;
+        padding-bottom: .55rem;
+        line-height: 1.35;
+    }
 </style>
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">Audit Logs</h4>
