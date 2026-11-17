@@ -22,6 +22,8 @@
     .wd-btn-primary:hover { background: #333; color: #fff; }
     .wd-btn-ghost { display: inline-flex; align-items: center; gap: .4rem; background: #fff; color: #00743F; border: 1px solid #d5e8db; border-radius: .7rem; padding: .55rem 1rem; font-size: .84rem; font-weight: 700; text-decoration: none; transition: all .15s ease; white-space: nowrap; }
     .wd-btn-ghost:hover { background: #f0f9f3; border-color: #00A868; color: #00743F; }
+    .hp-cta { display: inline-flex; align-items: center; gap: .4rem; background: #00A868; color: #fff; border: none; border-radius: .7rem; padding: .55rem 1.05rem; font-size: .84rem; font-weight: 700; text-decoration: none; transition: background-color .15s ease; white-space: nowrap; }
+    .hp-cta:hover { background: #00743F; color: #fff; }
 
     /* ── Welcome ── */
     .wd-welcome { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
