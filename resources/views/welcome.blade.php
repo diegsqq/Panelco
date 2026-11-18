@@ -16,8 +16,8 @@ a:focus-visible{outline:3px solid #087a4b;outline-offset:4px}
 .skip-link:focus{top:1rem}
 .hero{position:relative;isolation:isolate;overflow:hidden;min-height:100dvh;min-height:100vh;border-radius:0;background:linear-gradient(145deg,#0b8955 0%,#076b45 48%,#064b34 100%);background-size:160% 160%;animation:hero-color-drift 18s ease-in-out infinite alternate;color:#fff;box-shadow:none;display:flex;flex-direction:column}
 .hero::before,.hero::after{position:absolute;z-index:-1;color:rgba(0,81,35,.18);font-weight:1000;line-height:.78;letter-spacing:-.08em;white-space:nowrap;pointer-events:none}
-.hero::before{content:"SMART";top:4.7rem;left:4%;font-size:clamp(6rem,17vw,15rem);animation:smart-drift 1.8s ease-in-out infinite alternate}
-.hero::after{content:"DOCS";top:11.4rem;right:3%;font-size:clamp(6rem,17vw,15rem);animation:docs-drift 1.8s ease-in-out infinite alternate}
+.hero::before{content:"P";top:4.7rem;left:4%;font-size:clamp(6rem,17vw,15rem);animation:p-drift 1.8s ease-in-out infinite alternate}
+.hero::after{content:"ARCHIVE";top:11.4rem;right:3%;font-size:clamp(6rem,17vw,15rem);animation:archive-drift 1.8s ease-in-out infinite alternate}
 .hero-nav{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:1.35rem clamp(2rem,6vw,5rem)}
 .brand{display:inline-flex;align-items:center;gap:.65rem;color:#fff;text-decoration:none;font-size:1.05rem;font-weight:800;letter-spacing:-.02em}
 .brand img{height:30px;width:auto;object-fit:contain}
@@ -49,8 +49,8 @@ a:focus-visible{outline:3px solid #087a4b;outline-offset:4px}
 .feature-card p{margin:0;color:#627167;font-size:.9rem;line-height:1.6}
 .site-footer{padding:2rem 0 .5rem;color:#718076;text-align:center;font-size:.8rem}
 @keyframes hero-color-drift{0%{background-position:0 45%}100%{background-position:100% 55%}}
-@keyframes smart-drift{0%,15%{transform:translateX(0)}100%{transform:translateX(12vw)}}
-@keyframes docs-drift{0%,15%{transform:translateX(0)}100%{transform:translateX(-12vw)}}
+@keyframes p-drift{0%,15%{transform:translateX(0)}100%{transform:translateX(12vw)}}
+@keyframes archive-drift{0%,15%{transform:translateX(0)}100%{transform:translateX(-12vw)}}
 .slow-flip{animation:flip 3s linear infinite}
 .fast-flip{animation:flip .3s linear infinite}
 @keyframes flip{from{transform:rotateY(0deg)}to{transform:rotateY(360deg)}}
