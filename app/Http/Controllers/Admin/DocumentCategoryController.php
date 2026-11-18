@@ -21,14 +21,16 @@ class DocumentCategoryController extends Controller
 
     public function index(): View
     {
-        $categories = DocumentCategory::withCount('documents')->orderBy('name')->paginate(15);
+        $categories = DocumentCategory::with('children')->withCount('documents')->orderBy('name')->paginate(15);
 
         return view('admin.categories.index', compact('categories'));
     }
 
     public function create(): View
     {
-        return view('admin.categories.create');
+        $categories = DocumentCategory::orderBy('name')->get();
+
+        return view('admin.categories.create', compact('categories'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -37,6 +39,7 @@ class DocumentCategoryController extends Controller
             'name' => ['required', 'string', 'max:255', 'unique:document_categories,name'],
             'description' => ['nullable', 'string'],
             'keywords' => ['nullable', 'string'],
+            'parent_id' => ['nullable', 'integer', 'exists:document_categories,id'],
         ]);
         $cat = DocumentCategory::create($data);
         AuditLog::create(['user_id' => auth()->id(), 'action' => 'category.created', 'entity_type' => DocumentCategory::class, 'entity_id' => $cat->id, 'metadata' => ['name' => $cat->name]]);
@@ -46,7 +49,9 @@ class DocumentCategoryController extends Controller
 
     public function edit(DocumentCategory $category): View
     {
-        return view('admin.categories.edit', compact('category'));
+        $categories = DocumentCategory::where('id', '!=', $category->id)->orderBy('name')->get();
+
+        return view('admin.categories.edit', compact('category', 'categories'));
     }
 
     public function update(Request $request, DocumentCategory $category): RedirectResponse
@@ -55,6 +60,7 @@ class DocumentCategoryController extends Controller
             'name' => ['required', 'string', 'max:255', Rule::unique('document_categories')->ignore($category->id)],
             'description' => ['nullable', 'string'],
             'keywords' => ['nullable', 'string'],
+            'parent_id' => ['nullable', 'integer', 'exists:document_categories,id'],
         ]);
         $category->update($data);
         AuditLog::create(['user_id' => auth()->id(), 'action' => 'category.updated', 'entity_type' => DocumentCategory::class, 'entity_id' => $category->id, 'metadata' => ['name' => $category->name]]);

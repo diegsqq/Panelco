@@ -12,6 +12,15 @@
     <input name="name" class="form-control" value="{{ old('name', $category->name) }}" placeholder="e.g. Maintenance" required>
 </div>
 <div class="mb-3">
+    <label class="form-label fw-semibold">Parent Category <span class="text-muted fw-normal">(optional, for subfolders)</span></label>
+    <select name="parent_id" class="form-select">
+        <option value="">— None (top-level) —</option>
+        @foreach ($categories ?? [] as $c)
+            <option value="{{ $c->id }}" @selected((string) old('parent_id', $category->parent_id) === (string) $c->id)>{{ $c->name }}</option>
+        @endforeach
+    </select>
+</div>
+<div class="mb-3">
     <label class="form-label fw-semibold">Description</label>
     <textarea name="description" class="form-control" rows="3" placeholder="What kind of documents belong to this category?">{{ old('description', $category->description) }}</textarea>
 </div>
