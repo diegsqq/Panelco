@@ -238,7 +238,10 @@ class DocumentContentEditingTest extends TestCase
             ->get(route('documents.show', $document))
             ->assertOk()
             ->assertSee('body:has(#docViewer) #p3Sidebar { display: none !important; }', false)
-            ->assertSee('body:has(#docViewer) > .container-fluid > .row > div.p-0.d-flex.flex-column { flex: 0 0 100%; max-width: 100%; width: 100%; }', false);
+            ->assertSee('body:has(#docViewer) > .container-fluid > .row > div.p-0.d-flex.flex-column { flex: 0 0 100%; max-width: 100%; width: 100%; }', false)
+            ->assertSee('id="dvZoomIn"', false)
+            ->assertSee('id="dvZoomOut"', false)
+            ->assertSee('id="dvZoomFit"', false);
     }
 
     public function test_documents_without_content_do_not_show_the_content_section(): void
