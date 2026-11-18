@@ -1,5 +1,5 @@
-@extends('layouts.app')
-@section('content')
+@extends('layouts.settings')
+@section('settings-content')
 @php $openForm = $errors->any() || count(old()) > 0; @endphp
 <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
 <h4 class="mb-0">User Management</h4>

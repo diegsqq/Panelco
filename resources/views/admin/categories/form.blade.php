@@ -1,5 +1,5 @@
-@extends('layouts.app')
-@section('content')
+@extends('layouts.settings')
+@section('settings-content')
 <h4>{{ isset($category) ? 'Edit Category' : 'New Category' }}</h4>
 <div class="card card-p3 p-4">
 <form method="POST" action="{{ isset($category) ? route('admin.categories.update', $category) : route('admin.categories.store') }}">

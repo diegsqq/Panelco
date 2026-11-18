@@ -1,6 +1,6 @@
-@extends('layouts.app')
+@extends('layouts.settings')
 
-@section('content')
+@section('settings-content')
 <style>
     .audit-table {
         --bs-table-bg: transparent;
@@ -38,7 +38,7 @@
     .audit-table .text-nowrap {
         white-space: nowrap;
     }
-    #main-content > div.mt-3 {
+    .cfg-content > div.mt-3 {
         margin-top: .75rem;
     }
     .pagination {
@@ -53,10 +53,10 @@
     .pagination .page-item:last-child .page-link {
         padding: .35rem .55rem;
     }
-    #main-content > div.mt-3 > nav {
+    .cfg-content > div.mt-3 > nav {
         justify-content: center;
     }
-    #main-content > div.mt-3 > nav > div {
+    .cfg-content > div.mt-3 > nav > div {
         justify-content: center;
         align-items: center;
         gap: .5rem;
@@ -65,14 +65,14 @@
         border-radius: .5rem;
         border: 1px solid #dee2e6;
     }
-    [data-theme="dark"] #main-content > div.mt-3 > nav > div {
+    [data-theme="dark"] .cfg-content > div.mt-3 > nav > div {
         background: #12291d;
         border-color: #26362e;
     }
-    #main-content > div.card.card-p3.p-0.overflow-hidden > table > tbody > tr:nth-child(5) {
+    .cfg-content > div.card.card-p3.p-0.overflow-hidden > table > tbody > tr:nth-child(5) {
         height: 44px;
     }
-    #main-content > div.card.card-p3.p-0.overflow-hidden > table > tbody > tr:nth-child(5) > td {
+    .cfg-content > div.card.card-p3.p-0.overflow-hidden > table > tbody > tr:nth-child(5) > td {
         padding-top: .55rem;
         padding-bottom: .55rem;
         line-height: 1.35;

@@ -1,5 +1,5 @@
-@extends('layouts.app')
-@section('content')
+@extends('layouts.settings')
+@section('settings-content')
 <div class="mb-3">
     <h4 class="mb-0 fw-bold"><i class="bi bi-tag-fill text-success me-2"></i>New Category</h4>
     <small class="text-muted">Create a category to auto-classify uploaded documents.</small>

@@ -1,5 +1,5 @@
-@extends('layouts.app')
-@section('content')
+@extends('layouts.settings')
+@section('settings-content')
 <div class="d-flex justify-content-between align-items-center mb-3">
 <h4 class="mb-0">Categories</h4>
 <a href="{{ route('admin.categories.create') }}" class="btn" style="background:#ffffff;color:#00A868;border:1px solid #00A868">New Category</a>

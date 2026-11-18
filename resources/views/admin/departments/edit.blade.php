@@ -1,5 +1,5 @@
-@extends('layouts.app')
-@section('content')
+@extends('layouts.settings')
+@section('settings-content')
 <h4>{{ isset($department) ? 'Edit Department' : 'New Department' }}</h4>
 <p class="text-muted">Use the approved PANELCO III department name or acronym exactly as provided.</p>
 <div class="card card-p3 p-4">

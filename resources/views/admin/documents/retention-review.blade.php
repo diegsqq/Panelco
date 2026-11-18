@@ -1,5 +1,5 @@
-@extends('layouts.app')
-@section('content')
+@extends('layouts.settings')
+@section('settings-content')
 <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
     <div>
         <h3 class="fw-bold mb-1">Document expiration review</h3>

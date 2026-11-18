@@ -1,6 +1,6 @@
-@extends('layouts.app')
+@extends('layouts.settings')
 
-@section('content')
+@section('settings-content')
 <style>
     .admin-review-page {
         padding: 2rem 1.5rem;
