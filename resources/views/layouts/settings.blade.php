@@ -36,7 +36,7 @@
     [data-theme="dark"] .cfg-nav-divider { border-color: #26362e; }
 
     /* Right content */
-    .cfg-content { flex: 1 1 auto; min-width: 0; padding: 1.5rem 2rem 2rem; max-width: 820px; }
+    .cfg-content { flex: 1 1 auto; min-width: 0; padding: 1.5rem 2rem 2rem; max-width: 820px; height: 100vh; overflow-y: auto; }
 
     .cfg-page-title { font-size: 1.55rem; font-weight: 800; color: #111; margin-bottom: .2rem; }
     .cfg-page-sub   { font-size: .84rem; color: #888; margin-bottom: 1.5rem; }
