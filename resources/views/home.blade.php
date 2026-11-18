@@ -418,6 +418,25 @@
             target.scrollBy({ left: dir * scrollAmount, behavior: 'smooth' });
         });
     });
+
+    // Disable slider buttons at scroll boundaries
+    document.querySelectorAll('.wd-folders, .wd-recents').forEach(function (strip) {
+        var parent = strip.parentElement;
+        if (!parent) return;
+        var leftBtn = parent.querySelector('.wd-slider-btn[data-dir="-1"]');
+        var rightBtn = parent.querySelector('.wd-slider-btn[data-dir="1"]');
+        if (!leftBtn || !rightBtn) return;
+
+        function updateButtons() {
+            var atStart = strip.scrollLeft <= 1;
+            var atEnd = strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 4;
+            leftBtn.disabled = atStart;
+            rightBtn.disabled = atEnd;
+        }
+        strip.addEventListener('scroll', updateButtons, { passive: true });
+        window.addEventListener('resize', updateButtons);
+        updateButtons();
+    });
 })();
 </script>
 <form id="wdDelForm" method="POST" style="display:none">@csrf @method('DELETE')</form>
