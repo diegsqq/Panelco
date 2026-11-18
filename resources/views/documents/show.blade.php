@@ -26,7 +26,8 @@
     .dv-badge-pending    { background: #fff3cd; color: #856404; }
     .dv-badge-rejected   { background: #f8d7da; color: #721c24; }
     .dv-meta-small { font-size: .75rem; color: #888; white-space: nowrap; }
-    .dv-titlebar-actions { display: flex; align-items: center; gap: .4rem; margin-left: auto; }
+    .dv-titlebar-actions { display: flex; align-items: center; justify-content: flex-end; gap: .4rem; margin-left: auto; }
+    #docViewer > .dv-titlebar > div { margin-left: auto; justify-content: flex-end; }
     .dv-btn { font-size: .78rem; font-weight: 600; border-radius: .55rem; padding: .35rem .75rem; border: 1px solid #ddd; background: #fff; color: #333; cursor: pointer; display: inline-flex; align-items: center; gap: .3rem; transition: all .12s ease; text-decoration: none; white-space: nowrap; }
     .dv-btn:hover { background: #f5f5f5; color: #111; border-color: #bbb; }
     .dv-btn-primary { background: #00A868; border-color: #00A868; color: #fff; }
