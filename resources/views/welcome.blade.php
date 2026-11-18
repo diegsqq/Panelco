@@ -63,17 +63,17 @@ a:focus-visible{outline:3px solid #087a4b;outline-offset:4px}
 <a class="skip-link" href="#main-content">Skip to main content</a>
 <header class="hero" id="hero">
     <nav class="hero-nav" aria-label="Main navigation">
-        <a class="brand" href="/" aria-label="PANELCO III SmartDocs AI home"></a>
+        <a class="brand" href="/" aria-label="P-ARCHIVE home"></a>
     </nav>
     <div class="hero-main">
         <div class="hero-copy">
             <div class="eyebrow"><i class="bi bi-shield-check" aria-hidden="true"></i> PANELCO III document intelligence</div>
             <h1>Know your records.<span>Trust every answer.</span></h1>
             <p>Find the documents you need and get answers grounded in authorized records, with clickable citations back to the source.</p>
-            <a href="{{ route('login') }}" class="hero-cta">Enter SmartDocs <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+            <a href="{{ route('login') }}" class="hero-cta">Enter P-ARCHIVE <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
         </div>
         <div class="hero-art">
-            <img src="{{ asset('images/logo.png') }}" alt="PANELCO III SmartDocs AI" class="hero-logo slow-flip">
+            <img src="{{ asset('images/logo.png') }}" alt="P-ARCHIVE" class="hero-logo slow-flip">
         </div>
     </div>
 </header>
