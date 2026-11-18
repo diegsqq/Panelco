@@ -89,7 +89,7 @@
     }
     .login-brand, .login-copy, .login-secure { position: relative; z-index: 1; }
     .login-brand { display: flex; align-items: center; gap: .8rem; color: #fff; }
-    .login-brand img { width: 48px; height: 48px; object-fit: contain; padding: 5px; background: transparent; border-radius: 13px; }
+    .login-brand img { width: 72px; height: 72px; object-fit: contain; padding: 8px; background: transparent; border-radius: 16px; }
     .login-brand small { display: block; margin-top: .12rem; color: rgba(255,255,255,.72); letter-spacing: .08em; }
     .login-copy { max-width: 430px; margin: 4.5rem 0 3rem; }
     .login-eyebrow { color: #b7f2d2; font-size: .75rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
