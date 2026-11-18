@@ -181,7 +181,6 @@
 
     {{-- ── Title bar ── --}}
     <div class="dv-titlebar">
-        <div class="dv-title">{{ $document->title ?? $document->original_filename }}</div>
         @if($document->uploader)
         <span class="dv-meta-small">· Owned by {{ $document->uploader->name }}</span>
         @endif
