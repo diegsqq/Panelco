@@ -25,7 +25,7 @@
     .lib-stat-ico  { width: 38px; height: 38px; border-radius: .6rem; background: #f4f4f6; display: flex; align-items: center; justify-content: center; color: #7b7fa8; font-size: 1.05rem; flex: 0 0 38px; }
     .lib-stat-val  { font-weight: 800; font-size: 1.3rem; color: #1a1a2e; line-height: 1.1; }
     .lib-stat-lbl  { font-size: .72rem; color: #9a9ab0; margin-top: .1rem; }
-    .lib-stat-right { flex: 1.4 1 0; border-right: 0; justify-content: flex-end; gap: .5rem; }
+    .lib-stat-right { flex: 1.4 1 0; border-right: 0; justify-content: flex-start; gap: .5rem; }
     .lib-stat-right .lib-stat-ico { background: #f4f4f6; color: #7b7fa8; }
     [data-theme="dark"] .lib-stat-ico  { background: #1d2b24; color: #8fa59a; }
     [data-theme="dark"] .lib-stat-val  { color: #fff; }
