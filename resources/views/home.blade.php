@@ -57,12 +57,12 @@
     .wd-folder-go { margin-left: auto; color: #c8c8d8; font-size: 1rem; flex: 0 0 auto; }
 
     /* ── Recent file cards (2-row horizontal swipe strip) ── */
-    .wd-recents { display: grid; grid-template-rows: repeat(1, auto); grid-auto-flow: column; grid-auto-columns: minmax(180px, 1fr); gap: .8rem; justify-content: start; overflow-x: auto; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; padding: .2rem .2rem .6rem; margin: -.2rem -.2rem 0; scrollbar-width: none; }
-    .wd-recent { scroll-snap-align: start; display: flex; align-items: center; gap: .75rem; background: #fff; border: 1px solid #ebebeb; border-radius: .85rem; padding: .85rem .95rem; text-decoration: none; transition: all .15s ease; min-width: 0; }
+    .wd-recents { display: grid; grid-template-rows: repeat(1, auto); grid-auto-flow: column; grid-auto-columns: minmax(260px, 1fr); gap: 1.2rem; justify-content: start; overflow-x: auto; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; padding: .5rem .5rem 1rem; margin: -.5rem -.5rem 0; scrollbar-width: none; }
+    .wd-recent { scroll-snap-align: start; display: flex; align-items: center; gap: 1rem; background: #fff; border: 1px solid #ebebeb; border-radius: 1rem; padding: 1.2rem 1.3rem; text-decoration: none; transition: all .15s ease; min-width: 0; }
     .wd-recent:hover { border-color: #b7e0c8; background: #fbfefc; box-shadow: 0 4px 14px rgba(10,31,92,.06); }
-    .wd-recent-ico { width: 40px; height: 40px; flex: 0 0 40px; border-radius: .6rem; background: #f0f9f3; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
-    .wd-recent-name { font-weight: 700; font-size: .85rem; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; line-height: 1.35; }
-    .wd-recent-meta { font-size: .7rem; color: #9a9ab0; margin-top: .1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; line-height: 1.35; }
+    .wd-recent-ico { width: 46px; height: 46px; flex: 0 0 46px; border-radius: .7rem; background: #f0f9f3; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+    .wd-recent-name { font-weight: 700; font-size: 1rem; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; line-height: 1.35; }
+    .wd-recent-meta { font-size: .8rem; color: #9a9ab0; margin-top: .1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; line-height: 1.35; }
 
     /* ── All files ── */
     .wd-table-wrap { overflow: visible; }
