@@ -88,7 +88,7 @@
         pointer-events: none;
     }
     .login-brand, .login-copy, .login-secure { position: relative; z-index: 1; }
-    .login-brand { display: flex; align-items: center; gap: .8rem; color: #fff; }
+    .login-brand { display: flex; align-items: center; justify-content: center; gap: .8rem; color: #fff; }
     .login-brand img { width: 120px; height: 120px; object-fit: contain; padding: 12px; background: transparent; border-radius: 24px; }
     .login-brand small { display: block; margin-top: .12rem; color: rgba(255,255,255,.72); letter-spacing: .08em; font-size: 1.2rem; }
     .login-copy { max-width: 430px; margin: 4.5rem 0 3rem; }
