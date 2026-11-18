@@ -159,6 +159,17 @@
     @media (max-width: 767.98px) {
         .dv-info { display: none; }
     }
+    @media screen and (min-width: 768px) {
+        #docViewer .dv-page { max-width: min(1120px, calc(100% - 3rem)); padding: 3rem clamp(1.5rem, 3.5vw, 4.5rem); }
+        #docViewer .dv-page h1 { font-size: clamp(2rem, 1.4rem + 1.5vw, 2.9rem); }
+        #docViewer .dv-page h2 { font-size: clamp(1.2rem, 1rem + .6vw, 1.6rem); }
+        #docViewer .dv-page h3 { font-size: clamp(1rem, .92rem + .35vw, 1.25rem); }
+        #docViewer .dv-page p,
+        #docViewer .dv-page ul,
+        #docViewer .dv-page ol,
+        #docViewer .dv-page .doc-render { font-size: clamp(.95rem, .86rem + .45vw, 1.18rem); line-height: 1.8; }
+        #docViewer .dv-page .doc-render { font-size: clamp(.95rem, .86rem + .45vw, 1.18rem) !important; }
+    }
     @media print {
         .dv-breadcrumb, .dv-toolbar, .dv-outline, .dv-info { display: none !important; }
         .dv-body { overflow: visible; }
