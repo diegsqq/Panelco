@@ -153,14 +153,7 @@
             <div class="login-copy">
                 <div class="login-eyebrow">Your cooperative, connected</div>
                 <h1>Find the right record. Get a clear answer.</h1>
-                <p>One secure place to explore your cooperative's documents and the knowledge inside them.</p>
-                <div class="login-features">
-                    <div class="login-feature"><i class="bi bi-folder2-open"></i><span>Documents organized and easy to find</span></div>
-                    <div class="login-feature"><i class="bi bi-chat-square-text"></i><span>Helpful summaries grounded in your records</span></div>
-                    <div class="login-feature"><i class="bi bi-shield-check"></i><span>Private access for authorized employees</span></div>
-                </div>
             </div>
-            <div class="login-secure"><i class="bi bi-lock-fill"></i> Secure employee access</div>
         </section>
 
         <section class="login-form-panel">
