@@ -103,9 +103,13 @@
     [data-theme="dark"] .dv-page-footer { border-color: #26362e; color: #4a5e54; }
 
     /* ── Right info panel ── */
-    .dv-info { width: 300px; flex: 0 0 300px; background: #fff; border-left: 1px solid #e8e8e8; overflow-y: auto; scrollbar-gutter: stable; padding: 1rem .9rem 2rem; display: flex; flex-direction: column; gap: .85rem; }
+    .dv-info { width: 300px; flex: 0 0 300px; min-height: 0; background: #fff; border-left: 1px solid #e8e8e8; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: 1rem .9rem 2rem; display: flex; flex-direction: column; gap: .85rem; }
+    .dv-info::-webkit-scrollbar { width: 10px; }
+    .dv-info::-webkit-scrollbar-thumb { background: #b7c6bc; border-radius: 6px; }
+    .dv-info::-webkit-scrollbar-track { background: transparent; }
+    [data-theme="dark"] .dv-info::-webkit-scrollbar-thumb { background: #3a5044; }
     [data-theme="dark"] .dv-info { background: #16211c; border-color: #26362e; }
-    .dv-info-section { border: 1px solid #ebebeb; border-radius: .75rem; overflow: hidden; }
+    .dv-info-section { border: 1px solid #ebebeb; border-radius: .75rem; overflow: hidden; flex: 0 0 auto; }
     [data-theme="dark"] .dv-info-section { border-color: #26362e; }
     .dv-info-section-head { display: flex; align-items: center; justify-content: space-between; padding: .7rem .85rem; background: #fafafa; border-bottom: 1px solid #ebebeb; }
     [data-theme="dark"] .dv-info-section-head { background: #131d18; border-color: #26362e; }
