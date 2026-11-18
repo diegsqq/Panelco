@@ -508,9 +508,6 @@
             @can('approve', $document)
             @if($document->processing_status === 'completed')
             <div class="dv-info-section">
-                <div class="dv-info-section-head">
-                    <span class="dv-info-section-title">Document approval</span>
-                </div>
                 <div class="dv-info-section-body">
                     <form method="POST" action="{{ route('documents.approve-document', $document) }}">
                         @csrf

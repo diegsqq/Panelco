@@ -110,9 +110,9 @@ class DocumentApprovalWorkflowTest extends TestCase
 
         $this->actingAs($manager)->get(route('documents.show', $document))
             ->assertOk()
-            ->assertSee('Document approval')
-            ->assertSee('Approve document')
-            ->assertSee('Reject document');
+            ->assertSee('Approval note (optional)')
+            ->assertSee('Approve</button>', false)
+            ->assertSee('Reject</button>', false);
 
         $this->actingAs($otherEmployee)->get(route('documents.show', $document))
             ->assertForbidden();
