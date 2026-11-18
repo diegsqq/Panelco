@@ -55,7 +55,7 @@
         .p3-sidebar .text-white { color: #242424 !important; }
         .p3-sidebar .nav-link { color: #555; border-radius: .55rem; padding: .45rem .6rem; font-weight: 500; display: flex; align-items: center; gap: .6rem; transition: background-color .25s ease, color .25s ease; }
         .p3-sidebar .nav-link:hover { background: #ededed; color: #171717; }
-        .p3-sidebar .nav-link.active { background: #fff; color: #171717; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-weight: 600; }
+        .p3-sidebar .nav-link.active { background: #fff; color: #171717; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-weight: 600; margin-top: .75rem; }
         .p3-sidebar .nav-link.active .nav-ico { color: #00A868; }
         .p3-sidebar nav { position: relative; }
         .p3-sidebar .nav-ico { width: 22px; height: 22px; flex: 0 0 22px; border-radius: 10px; background: transparent; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; color: inherit; transition: background .15s ease; }
