@@ -11,7 +11,9 @@
     .cfg-shell   { display: flex; gap: 0; height: 100vh; min-height: 100vh; }
 
     /* Left nav */
-    .cfg-nav     { width: 240px; flex: 0 0 240px; padding: 1.5rem .75rem 1.5rem 1rem; }
+    .cfg-nav     { width: 240px; flex: 0 0 240px; padding: 1.5rem .75rem 1.5rem 1rem; display: flex; flex-direction: column; height: 100vh; }
+    .cfg-nav-bottom { margin-top: auto; }
+    #settingsShell > nav > a:nth-child(15) { margin-top: auto; }
     .cfg-nav-title { font-size: 1.3rem; font-weight: 800; color: #111; padding: 0 .5rem; margin-bottom: 1.1rem; }
     [data-theme="dark"] .cfg-nav-title { color: #fff; }
 
@@ -119,7 +121,7 @@
         </a>
         @endcan
         <hr class="cfg-nav-divider">
-        <a class="cfg-nav-item" href="{{ route('dashboard') }}">
+        <a class="cfg-nav-item cfg-nav-bottom" href="{{ route('dashboard') }}">
             <i class="bi bi-grid-1x2-fill"></i> Back to dashboard
         </a>
     </nav>
