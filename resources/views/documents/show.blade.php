@@ -64,37 +64,48 @@
     [data-theme="dark"] .dv-outline-item.active { background: #12291d; color: #7fe0ac; }
 
     /* ── Center document page ── */
-    .dv-page-wrap { flex: 1 1 auto; overflow-y: auto; padding: 2rem 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
-    .dv-page { width: 100%; max-width: 740px; background: #fff; border: 1px solid #e0e0e0; border-radius: .5rem; box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: 3rem 3.5rem; min-height: 400px; }
-    [data-theme="dark"] .dv-page { background: #16211c; border-color: #26362e; box-shadow: none; }
+    .dv-page-wrap { flex: 1 1 auto; overflow-y: auto; padding: 2.25rem 1.5rem 3rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+    .dv-page { width: 100%; max-width: 820px; background: linear-gradient(180deg, #fff 0%, #fcfdfc 100%); border: 1px solid #e4ebe6; border-top: 3px solid #00A868; border-radius: 14px; box-shadow: 0 18px 45px rgba(16,40,27,.09), 0 2px 8px rgba(16,40,27,.05); padding: 3rem 3.75rem 2.25rem; min-height: 420px; color: #2c3a33; }
+    [data-theme="dark"] .dv-page { background: linear-gradient(180deg, #16211c 0%, #131d18 100%); border-color: #26362e; border-top-color: #00A868; box-shadow: none; color: #c3d0c8; }
 
-    .dv-page-org  { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: #00A868; margin-bottom: .15rem; }
-    .dv-page-category { font-size: .72rem; color: #888; margin-bottom: .6rem; }
-    .dv-page h1   { font-size: 1.75rem; font-weight: 800; color: #111; line-height: 1.2; margin-bottom: .35rem; }
-    .dv-page-meta { font-size: .75rem; color: #aaa; margin-bottom: 1.5rem; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
-    .dv-page-meta span { display: flex; align-items: center; gap: .25rem; }
-    .dv-page-intro { font-size: .88rem; color: #444; line-height: 1.7; margin-bottom: 1.5rem; }
-    .dv-page h2 { font-size: 1.1rem; font-weight: 700; color: #111; margin-top: 1.75rem; margin-bottom: .5rem; }
-    .dv-page h3 { font-size: .95rem; font-weight: 700; color: #333; margin-top: 1.25rem; margin-bottom: .4rem; }
-    .dv-page p  { font-size: .88rem; color: #333; line-height: 1.75; margin-bottom: .85rem; }
-    .dv-page ul, .dv-page ol { font-size: .88rem; color: #333; line-height: 1.75; padding-left: 1.5rem; margin-bottom: .85rem; }
-    .dv-page table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: .83rem; }
-    .dv-page table th { background: #f5f5f5; font-weight: 600; padding: .5rem .75rem; border: 1px solid #e0e0e0; text-align: left; }
-    .dv-page table td { padding: .5rem .75rem; border: 1px solid #e0e0e0; }
-    .dv-page table tr:nth-child(even) td { background: #fafafa; }
-    .dv-page-callout { background: #f0f9f3; border-left: 3px solid #00A868; border-radius: 0 .5rem .5rem 0; padding: .7rem 1rem; margin: 1rem 0; font-size: .85rem; color: #2d5a3d; }
-    .dv-page-footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e8e8e8; font-size: .72rem; color: #aaa; display: flex; justify-content: space-between; }
-    .dv-page-pagination { font-size: .78rem; color: #aaa; text-align: center; display: flex; align-items: center; gap: .75rem; justify-content: center; }
-    .dv-page-pagination button { background: #fff; border: 1px solid #e0e0e0; border-radius: .4rem; padding: .25rem .6rem; font-size: .78rem; cursor: pointer; color: #555; }
+    .dv-page-org { display: inline-block; font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; color: #00743F; background: #e6f3ea; border-radius: 2rem; padding: .2rem .65rem; margin-bottom: .9rem; }
+    .dv-page-category { font-size: .78rem; color: #8a978f; margin-bottom: .5rem; }
+    .dv-page h1 { font-size: 2rem; font-weight: 800; letter-spacing: -.02em; color: #12251a; line-height: 1.18; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #edf1ee; }
+    .dv-page-meta { font-size: .76rem; color: #7d8a82; margin-bottom: 2rem; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+    .dv-page-meta span { display: inline-flex; align-items: center; gap: .35rem; background: #f4f7f5; border: 1px solid #e6ece8; border-radius: 2rem; padding: .25rem .65rem; }
+    .dv-page-meta i { color: #00A868; font-size: .8rem; }
+    .dv-page-intro { font-size: .95rem; color: #4a5a52; line-height: 1.8; margin-bottom: 1.75rem; }
+    .dv-page h2 { font-size: 1.2rem; font-weight: 700; color: #12251a; margin-top: 2rem; margin-bottom: .75rem; padding-left: .8rem; border-left: 3px solid #00A868; }
+    .dv-page h3 { font-size: 1rem; font-weight: 700; color: #2c3a33; margin-top: 1.5rem; margin-bottom: .5rem; }
+    .dv-page p { font-size: .92rem; color: #38463e; line-height: 1.8; margin-bottom: 1rem; }
+    .dv-page ul, .dv-page ol { font-size: .92rem; color: #38463e; line-height: 1.8; padding-left: 1.6rem; margin-bottom: 1rem; }
+    .dv-page li { margin-bottom: .35rem; }
+    .dv-page table { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid #e2e9e4; border-radius: .6rem; overflow: hidden; margin-bottom: 1.25rem; font-size: .86rem; }
+    .dv-page table th { background: #f2f8f4; font-weight: 700; color: #1f6b3a; padding: .65rem .85rem; border-bottom: 1px solid #dfe8e2; text-align: left; }
+    .dv-page table td { padding: .65rem .85rem; border-bottom: 1px solid #edf1ee; }
+    .dv-page table tr:last-child td { border-bottom: 0; }
+    .dv-page table tbody tr:hover td { background: #fafdfb; }
+    .dv-page-callout { background: #f0f9f3; border: 1px solid #d9ecdf; border-left: 3px solid #00A868; border-radius: .6rem; padding: .85rem 1rem; margin: 1.25rem 0; font-size: .87rem; color: #2d5a3d; }
+    .dv-page-footer { margin-top: 2.5rem; padding-top: 1.1rem; border-top: 1px solid #edf1ee; font-size: .72rem; color: #9aa79f; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .dv-page-pagination { font-size: .78rem; color: #9aa79f; display: flex; align-items: center; gap: .75rem; justify-content: center; }
+    .dv-page-pagination button { background: #fff; border: 1px solid #dfe7e1; border-radius: .55rem; padding: .35rem .7rem; font-size: .82rem; cursor: pointer; color: #5f6e65; display: inline-flex; align-items: center; transition: all .12s ease; }
     .dv-page-pagination button:hover { background: #e6f3ea; border-color: #00A868; color: #00743F; }
-    [data-theme="dark"] .dv-page h1, [data-theme="dark"] .dv-page h2, [data-theme="dark"] .dv-page h3 { color: #fff; }
-    [data-theme="dark"] .dv-page p, [data-theme="dark"] .dv-page ul, [data-theme="dark"] .dv-page ol { color: #c3d0c8; }
-    [data-theme="dark"] .dv-page table th { background: #1d2b24; border-color: #2c3d34; color: #c3d0c8; }
-    [data-theme="dark"] .dv-page table td { border-color: #2c3d34; }
-    [data-theme="dark"] .dv-page table tr:nth-child(even) td { background: #131d18; }
+    [data-theme="dark"] .dv-page h1, [data-theme="dark"] .dv-page h2, [data-theme="dark"] .dv-page h3 { color: #eaf2ec; }
+    [data-theme="dark"] .dv-page h1 { border-color: #26362e; }
+    [data-theme="dark"] .dv-page p, [data-theme="dark"] .dv-page ul, [data-theme="dark"] .dv-page ol { color: #b9c8be; }
+    [data-theme="dark"] .dv-page-org { background: #12291d; color: #7fe0ac; }
+    [data-theme="dark"] .dv-page-category { color: #7f9488; }
+    [data-theme="dark"] .dv-page-meta span { background: #1a2620; border-color: #26362e; color: #8fa59a; }
+    [data-theme="dark"] .dv-page-meta i { color: #7fe0ac; }
+    [data-theme="dark"] .dv-page table { border-color: #26362e; }
+    [data-theme="dark"] .dv-page table th { background: #1d2b24; border-color: #26362e; color: #c3d0c8; }
+    [data-theme="dark"] .dv-page table td { border-color: #26362e; }
+    [data-theme="dark"] .dv-page table tbody tr:hover td { background: #1a2820; }
     [data-theme="dark"] .dv-page-intro, [data-theme="dark"] .dv-page-meta { color: #8fa59a; }
-    [data-theme="dark"] .dv-page-callout { background: #12291d; color: #7fe0ac; border-color: #00A868; }
+    [data-theme="dark"] .dv-page-callout { background: #12291d; color: #7fe0ac; border-color: #2c5c3d; border-left-color: #00A868; }
     [data-theme="dark"] .dv-page-footer { border-color: #26362e; color: #4a5e54; }
+    [data-theme="dark"] .dv-page-pagination button { background: #1d2b24; border-color: #2c3d34; color: #c3d0c8; }
+    [data-theme="dark"] .dv-page-pagination button:hover { background: #12291d; border-color: #00A868; color: #7fe0ac; }
 
     /* ── Right info panel ── */
     .dv-info { width: 300px; flex: 0 0 300px; min-height: 0; background: #fff; border-left: 1px solid #e8e8e8; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: 1rem .9rem 2rem; display: flex; flex-direction: column; gap: .85rem; }
@@ -152,7 +163,7 @@
         .dv-breadcrumb, .dv-toolbar, .dv-outline, .dv-info { display: none !important; }
         .dv-body { overflow: visible; }
         .dv-page-wrap { overflow: visible; padding: 0; }
-        .dv-page { box-shadow: none; border: none; border-radius: 0; padding: 0; }
+        .dv-page { background: #fff !important; box-shadow: none; border: none; border-radius: 0; padding: 0; }
     }
 </style>
 
@@ -253,12 +264,12 @@
 
             {{-- Flash messages --}}
             @if(session('status'))
-            <div class="alert alert-success alert-dismissible fade show w-100" style="max-width:740px;border-radius:.75rem" role="alert">
+            <div class="alert alert-success alert-dismissible fade show w-100" style="max-width:820px;border-radius:.75rem" role="alert">
                 {{ session('status') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
             @endif
             @if($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show w-100" style="max-width:740px;border-radius:.75rem" role="alert">
+            <div class="alert alert-danger alert-dismissible fade show w-100" style="max-width:820px;border-radius:.75rem" role="alert">
                 <ul class="mb-0">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
@@ -276,8 +287,8 @@
                 <h1>{{ $document->title ?? $document->original_filename }}</h1>
                 <div class="dv-page-meta">
                     @if($document->document_date)<span><i class="bi bi-calendar3"></i> Effective {{ $document->document_date->format('F d, Y') }}</span>@endif
-                    @if($document->reference_number)<span>· {{ $document->reference_number }}</span>@endif
-                    <span>· Version {{ $document->version_number ?? '1' }}</span>
+                    @if($document->reference_number)<span><i class="bi bi-hash"></i> {{ $document->reference_number }}</span>@endif
+                    <span><i class="bi bi-clock-history"></i> Version {{ $document->version_number ?? '1' }}</span>
                 </div>
 
                 @if($document->content || $document->content_header || $document->content_footer)
