@@ -1,12 +1,14 @@
 @extends('layouts.app')
 
+@section('full-screen', 'col-12')
+
 @section('content')
 <style>
     /* ── Chrome-style settings shell ── */
     body:has(#settingsShell) { background: #f5f5f5; }
     [data-theme="dark"]:has(#settingsShell) { background: var(--p3-bg); }
 
-    .cfg-shell   { display: flex; gap: 0; min-height: calc(100vh - 56px); }
+    .cfg-shell   { display: flex; gap: 0; height: 100vh; min-height: 100vh; }
 
     /* Left nav */
     .cfg-nav     { width: 240px; flex: 0 0 240px; padding: 1.5rem .75rem 1.5rem 1rem; }
