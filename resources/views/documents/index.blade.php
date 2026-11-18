@@ -208,7 +208,6 @@
     </div>
 
     {{-- ── Category cards ── --}}
-    @if($categories->isNotEmpty())
     <div class="lib-dept-section mt-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="fw-bold" style="color:#1a1a2e;font-size:.8rem">Folders</span>
@@ -222,6 +221,7 @@
                     <div class="lib-dept-meta">Create a category</div>
                 </div>
             </a>
+            @if($categories->isNotEmpty())
             @foreach($categories->take(4) as $cat)
             @php
                 $catDocCount = (int) ($catDocCounts->get($cat->id, 0));
@@ -236,9 +236,9 @@
                 <button type="button" class="p-0 border-0 bg-transparent" style="color:#c8c8d8;font-size:.7rem;line-height:1;flex:0 0 auto" onclick="event.preventDefault()" aria-label="More options"><i class="bi bi-three-dots"></i></button>
             </a>
             @endforeach
+            @endif
         </div>
     </div>
-    @endif
 
     {{-- ── Table + detail panel ── --}}
     <div class="lib-content-row" id="libContentRow">
