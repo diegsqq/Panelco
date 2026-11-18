@@ -79,6 +79,8 @@
     .hp-cta-ico { width: 64px; height: 64px; border-radius: 50%; background: #e6f3ea; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: #00A868; font-size: 1.75rem; box-shadow: 0 8px 20px rgba(0,168,104,.15); }
     .hp-cta h5 { font-weight: 800; color: #1a1a2e; margin-bottom: .35rem; }
     .hp-cta p { color: #7a7a8a; font-size: .9rem; margin-bottom: 1.1rem; max-width: 480px; margin-left: auto; margin-right: auto; }
+    .hp-cta > a { background: #00A868; border-color: #00A868; color: #fff; }
+    .hp-cta > a:hover, .hp-cta > a:focus { background: #00743F; border-color: #00743F; color: #fff; }
 
     [data-theme="dark"] .hp-card { background: #16211c; border-color: #26362e; }
     [data-theme="dark"] .hp-card-title { color: #e5eee8; }
