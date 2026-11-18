@@ -5,7 +5,7 @@
     <small class="text-muted">Create a category to auto-classify uploaded documents.</small>
 </div>
 <div class="card card-p3 p-4">
-<form method="POST" action="{{ route('admin.categories.store') }}">
+<form method="POST" action="{{ route('categories.store') }}">
 @csrf
 <div class="mb-3">
     <label class="form-label fw-semibold">Name <span class="text-danger">*</span></label>
@@ -34,7 +34,7 @@
 </div>
 <div class="d-flex gap-2">
     <button class="btn px-4" style="background:#ffffff;color:#00A868;border:1px solid #00A868"><i class="bi bi-check-lg me-1"></i>Save</button>
-    <a href="{{ route('admin.categories.index') }}" class="btn btn-outline-secondary">Cancel</a>
+    <a href="{{ route('documents.library') }}" class="btn btn-outline-secondary">Cancel</a>
 </div>
 </form>
 </div>

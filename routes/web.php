@@ -108,6 +108,11 @@ Route::get('/password/reset/request/status', [App\Http\Controllers\PasswordReset
 Route::get('/two-factor', [App\Http\Controllers\TwoFactorController::class, 'show'])->name('two-factor.show');
 Route::post('/two-factor', [App\Http\Controllers\TwoFactorController::class, 'verify'])->middleware('throttle:5,1')->name('two-factor.verify');
 
+Route::middleware('auth')->group(function () {
+    Route::get('categories/create', [DocumentCategoryController::class, 'create'])->name('categories.create');
+    Route::post('categories', [DocumentCategoryController::class, 'store'])->name('categories.store');
+});
+
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('documents/retention-review', [DocumentRetentionController::class, 'index'])->name('documents.retention-review');
     Route::post('users/{user}/access-reviews', [UserController::class, 'recordAccessReview'])->name('users.access-reviews.store');

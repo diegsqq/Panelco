@@ -216,7 +216,7 @@
         </div>
         <div class="lib-dept-grid">
             @can('admin')
-            <a href="{{ route('admin.categories.create') }}" class="lib-dept-card" style="border-style:dashed;border-color:#b7e0c8;background:#f6fbf7">
+            <a href="{{ route('categories.create') }}" class="lib-dept-card" style="border-style:dashed;border-color:#b7e0c8;background:#f6fbf7">
                 <div class="lib-dept-ico" style="background:#e6f3ea;color:#00A868"><i class="bi bi-plus-lg"></i></div>
                 <div style="min-width:0;flex:1 1 auto">
                     <div class="lib-dept-name" style="color:#00743F">New folder</div>

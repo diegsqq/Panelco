@@ -16,7 +16,8 @@ class DocumentCategoryController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth', 'role:admin']);
+        $this->middleware(['auth', 'role:admin'])->except(['create', 'store']);
+        $this->middleware(['auth'])->only(['create', 'store']);
     }
 
     public function index(): View
