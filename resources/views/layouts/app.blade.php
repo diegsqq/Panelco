@@ -58,6 +58,7 @@
         .p3-sidebar .nav-link.active { background: #fff; color: #171717; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-weight: 600; margin-top: .75rem; }
         .p3-sidebar .nav-link.active .nav-ico { color: #00A868; }
         .p3-sidebar nav { position: relative; }
+        #p3Sidebar > div.mt-auto.pt-3 { border-top: 1px solid #e8e8e8; }
         .p3-sidebar .nav-ico { width: 22px; height: 22px; flex: 0 0 22px; border-radius: 10px; background: transparent; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; color: inherit; transition: background .15s ease; }
         .p3-brand-mark { width: 42px; height: 42px; border-radius: 12px; background: #fff; display: flex; align-items: center; justify-content: center; color: var(--p3-navy); font-size: 1.4rem; box-shadow: 0 4px 12px rgba(0,0,0,.25); }
         .p3-topbar { background: #f5f5f5; border: 0; }
@@ -196,6 +197,7 @@
         [data-theme="dark"] .p3-sidebar .nav-link { color: #c3d0c8; }
         [data-theme="dark"] .p3-sidebar .nav-link:hover, [data-theme="dark"] .p3-sidebar .nav-link.active { background: #1d2b24; color: #fff; }
         [data-theme="dark"] .p3-sidebar .nav-link.active .nav-ico { color: #7fe0ac; }
+        [data-theme="dark"] #p3Sidebar > div.mt-auto.pt-3 { border-top-color: #26362e; }
         [data-theme="dark"] .p3-logout { background: transparent; border-color: #3a4c43; color: #c3d0c8; }
         [data-theme="dark"] .p3-logout:hover, [data-theme="dark"] .p3-logout:focus { background: #1d2b24; border-color: #3a4c43; color: #f1a8a8; }
         /* Settings — avatar, tiles, QR, notifications */
