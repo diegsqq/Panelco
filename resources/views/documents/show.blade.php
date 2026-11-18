@@ -384,14 +384,6 @@
                         <span class="dv-info-val" style="color:#00A868">v{{ $document->version_number ?? '1' }}</span>
                     </div>
                     <div class="dv-info-row">
-                        <span class="dv-info-key">Status</span>
-                        <span class="dv-info-val">
-                            <span class="dv-badge {{ $document->approval_status === 'approved' ? 'dv-badge-published' : 'dv-badge-pending' }}">
-                                {{ ucfirst($document->approval_status ?? 'pending') }}
-                            </span>
-                        </span>
-                    </div>
-                    <div class="dv-info-row">
                         <span class="dv-info-key">Department</span>
                         <span class="dv-info-val">{{ $document->department?->name ?? '—' }}</span>
                     </div>
@@ -433,38 +425,6 @@
                 </div>
             </div>
 
-            {{-- Recent versions ── --}}
-            <div class="dv-info-section">
-                <div class="dv-info-section-head">
-                    <span class="dv-info-section-title">Recent versions</span>
-                    <i class="bi bi-clock-history" style="font-size:.8rem;color:#aaa"></i>
-                </div>
-                <div class="dv-info-section-body">
-                    <div class="dv-version-row dv-version-current">
-                        <div class="dv-version-dot"></div>
-                        <div style="flex:1;min-width:0">
-                            <div style="font-size:.77rem;font-weight:600">v{{ $document->version_number ?? '1' }} · Current</div>
-                            <div style="font-size:.7rem;color:#aaa">{{ $document->updated_at->format('M d, g:i A') }} · {{ $document->currentVersionUploader?->name ?? $document->uploader?->name ?? '—' }}</div>
-                        </div>
-                    </div>
-                    @foreach($document->versions->take(3) as $v)
-                    <div class="dv-version-row">
-                        <div class="dv-version-dot"></div>
-                        <div style="flex:1;min-width:0">
-                            <div style="font-size:.77rem;font-weight:500">v{{ $v->version_number }}</div>
-                            <div style="font-size:.7rem;color:#aaa">{{ $v->created_at->format('M d, g:i A') }} · {{ $v->uploader?->name ?? '—' }}</div>
-                        </div>
-                        @can('download', $document)
-                        <a href="{{ route('documents.versions.download', [$document, $v]) }}" style="font-size:.75rem;color:#00A868;text-decoration:none" title="Download v{{ $v->version_number }}"><i class="bi bi-download"></i></a>
-                        @endcan
-                    </div>
-                    @endforeach
-                    @if($document->versions->count() > 3)
-                    <a href="#" data-bs-toggle="modal" data-bs-target="#versionHistoryModal" style="font-size:.75rem;color:#00A868;text-decoration:none">View all {{ $document->versions->count() + 1 }} versions →</a>
-                    @endif
-                </div>
-            </div>
-
             {{-- Ask Lightning AI ── --}}
             <div class="dv-info-section">
                 <div class="dv-ask-box">
@@ -503,26 +463,6 @@
                     @endcan
                 </div>
             </div>
-
-            {{-- Approval (managers) ── --}}
-            @can('approve', $document)
-            @if($document->processing_status === 'completed')
-            <div class="dv-info-section">
-                <div class="dv-info-section-body">
-                    <form method="POST" action="{{ route('documents.approve-document', $document) }}">
-                        @csrf
-                        <textarea name="review_note" class="form-control form-control-sm mb-2" rows="2" placeholder="Approval note (optional)"></textarea>
-                        <button class="dv-btn dv-btn-green w-100 mb-1"><i class="bi bi-check-lg"></i> Approve</button>
-                    </form>
-                    <form method="POST" action="{{ route('documents.reject-document', $document) }}">
-                        @csrf
-                        <textarea name="review_note" class="form-control form-control-sm mb-2" rows="2" placeholder="Reason for rejection" required></textarea>
-                        <button class="dv-btn w-100" style="color:#dc3545;border-color:#f5c6cb"><i class="bi bi-x-lg"></i> Reject</button>
-                    </form>
-                </div>
-            </div>
-            @endif
-            @endcan
 
         </aside>{{-- /dv-info --}}
 
