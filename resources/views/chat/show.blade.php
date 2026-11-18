@@ -172,7 +172,7 @@
 
         <div class="lg-sidebar-foot">
             <a href="{{ route('dashboard') }}" class="lg-new-btn" style="color:#5f6f66;font-size:.83rem">
-                <i class="bi bi-arrow-left"></i> Back to SmartDocs
+                <i class="bi bi-arrow-left"></i> Back to P-ARCHIVE
             </a>
         </div>
     </aside>

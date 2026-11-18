@@ -104,7 +104,7 @@
             <div class="hp-hero-ico"><i class="bi bi-question-circle-fill"></i></div>
             <div>
                 <h1 class="hp-hero-title">Help &amp; Support</h1>
-                <p class="hp-hero-sub">Find answers, manage your account, and get the most out of PANELCO III SmartDocs.</p>
+                <p class="hp-hero-sub">Find answers, manage your account, and get the most out of P-ARCHIVE.</p>
             </div>
         </div>
         <div class="hp-hero-chips">

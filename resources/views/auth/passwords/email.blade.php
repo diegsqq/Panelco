@@ -186,7 +186,7 @@
         <div class="password-header">
             <div class="password-brand">
                 <img src="{{ asset('images/logo.png') }}" alt="PANELCO III logo">
-                <span>SmartDocs AI<small>PANELCO III</small></span>
+                <span>P-ARCHIVE<small>PANELCO III</small></span>
             </div>
             <h1 class="password-title">Reset your password</h1>
             <p class="password-subtitle">Enter your email address and we’ll send you a secure reset link.</p>

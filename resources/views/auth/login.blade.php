@@ -147,7 +147,7 @@
             </svg>
             <div class="login-brand">
                 <img src="{{ asset('images/logo.png') }}" alt="PANELCO III logo">
-                <span class="fw-bold">SmartDocs AI<small>PANELCO III</small></span>
+                <span class="fw-bold">P-ARCHIVE<small>PANELCO III</small></span>
 
             </div>
             <div class="login-copy">

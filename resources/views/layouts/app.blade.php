@@ -26,7 +26,7 @@
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'PANELCO III SmartDocs AI') }}</title>
+    <title>{{ config('app.name', 'P-ARCHIVE') }}</title>
     <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -309,7 +309,7 @@
             <div class="d-flex align-items-center gap-2 mb-1 px-1">
                 <img src="{{ asset('images/logo.png') }}" alt="PANELCO III" style="width:58px;height:58px;object-fit:contain">
                 <div class="text-white lh-sm">
-                    <div class="fw-bold fs-3">SmartDocs AI</div>
+                    <div class="fw-bold fs-3">P-ARCHIVE</div>
                 </div>
             </div>
             <nav class="nav flex-column gap-1 flex-grow-1" id="p3Nav">

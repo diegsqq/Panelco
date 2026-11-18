@@ -153,7 +153,7 @@
     <div class="wd-welcome">
         <div class="wd-welcome-text">
             @if(auth()->user()->created_at->diffInDays(now()) <= 3)
-                <h1 class="wd-welcome-title">Welcome to SmartDocs, {{ strtok(auth()->user()->name, ' ') }}!</h1>
+                <h1 class="wd-welcome-title">Welcome to P-ARCHIVE, {{ strtok(auth()->user()->name, ' ') }}!</h1>
                 <p class="wd-welcome-sub">Get started by uploading your first document.</p>
             @else
                 <h1 class="wd-welcome-title">Welcome back, {{ strtok(auth()->user()->name, ' ') }}!</h1>

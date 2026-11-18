@@ -11,7 +11,7 @@
     if ($pending2fa && ! $me->two_factor_enabled) {
         try {
             $g2fa = new \PragmaRX\Google2FA\Google2FA();
-            $otpUrl = $g2fa->getQRCodeUrl('PANELCO III SmartDocs AI', $me->email, $pending2fa);
+            $otpUrl = $g2fa->getQRCodeUrl('P-ARCHIVE', $me->email, $pending2fa);
             $renderer = new \BaconQrCode\Renderer\ImageRenderer(
                 new \BaconQrCode\Renderer\RendererStyle\RendererStyle(320),
                 new \BaconQrCode\Renderer\Image\SvgImageBackEnd()

@@ -208,7 +208,7 @@
             <a href="#" id="resetBell" class="reset-request-bell" aria-label="Notifications"><i class="bi bi-bell-fill"></i></a>
             <div class="reset-request-brand">
                 <img src="{{ asset('images/logo.png') }}" alt="PANELCO III logo">
-                <span>SmartDocs AI<small>PANELCO III</small></span>
+                <span>P-ARCHIVE<small>PANELCO III</small></span>
             </div>
             <h1 class="reset-request-title">Forgot your password?</h1>
             <p class="reset-request-subtitle">Enter your Employee ID and explain why you need a password reset. An administrator will review your request.</p>
