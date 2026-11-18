@@ -11,31 +11,24 @@
     [data-theme="dark"] #docViewer { background: #0e1512; }
 
     /* ── Breadcrumb bar ── */
-    .dv-breadcrumb { flex: 0 0 auto; display: flex; align-items: center; gap: .4rem; padding: .5rem 1.25rem; font-size: .78rem; color: #888; border-bottom: 1px solid #e8e8e8; background: #fff; }
+    .dv-breadcrumb { flex: 0 0 auto; display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; padding: .5rem 1.25rem; font-size: .78rem; color: #888; border-bottom: 1px solid #e8e8e8; background: #fff; }
     .dv-breadcrumb a { color: #555; text-decoration: none; }
     .dv-breadcrumb a:hover { color: #00A868; }
     .dv-breadcrumb .sep { color: #ccc; }
     [data-theme="dark"] .dv-breadcrumb { background: #16211c; border-color: #26362e; color: #8fa59a; }
     [data-theme="dark"] .dv-breadcrumb a { color: #8fa59a; }
 
-    /* ── Title bar ── */
-    .dv-titlebar { flex: 0 0 auto; display: flex; align-items: center; justify-content: flex-end; gap: .75rem; padding: .6rem 1.25rem; border-bottom: 1px solid #e8e8e8; background: #fff; flex-wrap: wrap; }
-    .dv-title { font-weight: 700; font-size: 1rem; color: #111; flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .dv-badge { font-size: .7rem; font-weight: 700; padding: .2rem .55rem; border-radius: 2rem; border: none; }
-    .dv-badge-published { background: #d4edda; color: #155724; }
-    .dv-badge-pending    { background: #fff3cd; color: #856404; }
-    .dv-badge-rejected   { background: #f8d7da; color: #721c24; }
+    /* ── Breadcrumb actions ── */
     .dv-meta-small { font-size: .75rem; color: #888; white-space: nowrap; }
     .dv-titlebar-actions { display: flex; align-items: center; justify-content: flex-end; gap: .4rem; }
-    #docViewer > .dv-titlebar > div { justify-content: flex-end; }
+    #docViewer > .dv-breadcrumb > .dv-meta-small { margin-left: auto; }
+    #docViewer > .dv-breadcrumb > div { justify-content: flex-end; }
     .dv-btn { font-size: .78rem; font-weight: 600; border-radius: .55rem; padding: .35rem .75rem; border: 1px solid #ddd; background: #fff; color: #333; cursor: pointer; display: inline-flex; align-items: center; gap: .3rem; transition: all .12s ease; text-decoration: none; white-space: nowrap; }
     .dv-btn:hover { background: #f5f5f5; color: #111; border-color: #bbb; }
     .dv-btn-primary { background: #00A868; border-color: #00A868; color: #fff; }
     .dv-btn-primary:hover { background: #00743F; border-color: #00743F; color: #fff; }
     .dv-btn-green { background: #00A868; border-color: #00A868; color: #fff; }
     .dv-btn-green:hover { background: #00743F; border-color: #00743F; color: #fff; }
-    [data-theme="dark"] .dv-titlebar { background: #16211c; border-color: #26362e; }
-    [data-theme="dark"] .dv-title { color: #fff; }
     [data-theme="dark"] .dv-btn { background: #1d2b24; border-color: #2c3d34; color: #c3d0c8; }
     [data-theme="dark"] .dv-btn:hover { background: #243324; color: #fff; }
 
@@ -156,7 +149,7 @@
         .dv-info { display: none; }
     }
     @media print {
-        .dv-breadcrumb, .dv-titlebar, .dv-toolbar, .dv-outline, .dv-info { display: none !important; }
+        .dv-breadcrumb, .dv-toolbar, .dv-outline, .dv-info { display: none !important; }
         .dv-body { overflow: visible; }
         .dv-page-wrap { overflow: visible; padding: 0; }
         .dv-page { box-shadow: none; border: none; border-radius: 0; padding: 0; }
@@ -178,10 +171,6 @@
         @endif
         <span class="sep">/</span>
         <span>{{ \Illuminate\Support\Str::limit($document->title ?? $document->original_filename, 40) }}</span>
-    </div>
-
-    {{-- ── Title bar ── --}}
-    <div class="dv-titlebar">
         @if($document->uploader)
         <span class="dv-meta-small">· Owned by {{ $document->uploader->name }}</span>
         @endif
