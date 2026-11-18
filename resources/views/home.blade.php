@@ -201,7 +201,7 @@
                 <button type="button" class="wd-slider-btn" data-target=".wd-folders" data-dir="1" aria-label="Scroll folders right" style="position:absolute;right:-16px;top:50%;transform:translateY(-50%);z-index:5;"><i class="bi bi-chevron-right"></i></button>
             </div>
         @endif
-        <span class="wd-swipe-hint" id="foldersSwipeHint" aria-hidden="true"><i class="bi bi-chevron-double-right"></i></span>
+        </div>
     </section>
 
     {{-- ── Recent files ── --}}
@@ -398,16 +398,12 @@
 <script>
 (function () {
     var strip = document.querySelector('.wd-folders');
-    var hint = document.getElementById('foldersSwipeHint');
-    if (!strip || !hint) return;
+    if (!strip) return;
     function update() {
-        var overflow = strip.scrollWidth - strip.clientWidth > 1;
-        var atEnd = strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 4;
-        hint.classList.toggle('on', overflow && !atEnd);
+        // no-op hint removed
     }
     strip.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', update);
-    update();
 })();
 </script>
 
