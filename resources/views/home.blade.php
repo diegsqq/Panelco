@@ -44,10 +44,6 @@
     /* Swipe hint icon on folders strip */
     .wd-swipe-hint { position: absolute; right: .4rem; bottom: .9rem; width: 30px; height: 30px; border-radius: 50%; background: #fff; border: 1px solid #d5e8db; box-shadow: 0 2px 8px rgba(10,31,92,.14); color: #00A868; display: none; align-items: center; justify-content: center; font-size: .95rem; pointer-events: none; z-index: 4; animation: wd-swipe 1.2s ease-in-out infinite; }
     .wd-swipe-hint.on { display: flex; }
-    .wd-slider-btns { display: flex; gap: .4rem; }
-    .wd-slider-btn { width: 32px; height: 32px; border-radius: .5rem; border: 1px solid #d5e8db; background: #fff; color: #00743F; display: inline-flex; align-items: center; justify-content: center; font-size: .85rem; cursor: pointer; transition: all .15s ease; }
-    .wd-slider-btn:hover { background: #f0f9f3; border-color: #00A868; color: #00743F; }
-    .wd-slider-btn:disabled { opacity: .4; cursor: not-allowed; }
     @keyframes wd-swipe { 0%, 100% { transform: translateX(0); opacity: .8; } 50% { transform: translateX(6px); opacity: 1; } }
     [data-theme="dark"] .wd-swipe-hint { background: #1d2b24; border-color: #2f6b4f; color: #7fe0ac; box-shadow: none; }
 
@@ -174,10 +170,6 @@
     <section class="wd-section" aria-labelledby="wdFoldersTitle">
         <div class="wd-section-head">
             <h2 class="wd-section-title" id="wdFoldersTitle">Folders</h2>
-            <div class="wd-slider-btns" style="display:flex;gap:.4rem;">
-                <button type="button" class="wd-slider-btn" data-target=".wd-folders" data-dir="-1" aria-label="Scroll folders left"><i class="bi bi-chevron-left"></i></button>
-                <button type="button" class="wd-slider-btn" data-target=".wd-folders" data-dir="1" aria-label="Scroll folders right"><i class="bi bi-chevron-right"></i></button>
-            </div>
         </div>
         @if($categories->isEmpty())
             <div class="wd-card wd-empty"><i class="bi bi-folder2-open"></i>No folders yet — categories appear here as soon as they are added.</div>
@@ -409,20 +401,6 @@
     strip.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', update);
     update();
-})();
-</script>
-
-<script>
-(function () {
-    document.querySelectorAll('.wd-slider-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var target = document.querySelector(btn.getAttribute('data-target'));
-            if (!target) return;
-            var dir = parseInt(btn.getAttribute('data-dir'), 10);
-            var scrollAmount = target.clientWidth * 0.8;
-            target.scrollBy({ left: dir * scrollAmount, behavior: 'smooth' });
-        });
-    });
 })();
 </script>
 <form id="wdDelForm" method="POST" style="display:none">@csrf @method('DELETE')</form>
