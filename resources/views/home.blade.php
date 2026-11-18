@@ -53,7 +53,7 @@
     .wd-folder:hover { border-color: #b7e0c8; background: #fbfefc; box-shadow: 0 4px 14px rgba(10,31,92,.06); }
     .wd-folder-ico { width: 38px; height: 38px; flex: 0 0 38px; border-radius: .6rem; background: #e6f3ea; color: #00A868; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
     .wd-folder-name { font-weight: 700; font-size: .85rem; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; line-height: 1.35; }
-    .wd-folder-meta { font-size: .7rem; color: #9a9ab0; margin-top: .1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; line-height: 1.35; }
+    .wd-folder-meta { font-size: .7rem; color: #9a9ab0; margin-top: .1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; line-height: 2.35; }
     .wd-folder-go { margin-left: auto; color: #c8c8d8; font-size: .85rem; flex: 0 0 auto; }
 
     /* ── Recent file cards (2-row horizontal swipe strip) ── */
