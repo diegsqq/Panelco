@@ -44,6 +44,9 @@
     /* Swipe hint icon on folders strip */
     .wd-swipe-hint { position: absolute; right: .4rem; bottom: .9rem; width: 30px; height: 30px; border-radius: 50%; background: #fff; border: 1px solid #d5e8db; box-shadow: 0 2px 8px rgba(10,31,92,.14); color: #00A868; display: none; align-items: center; justify-content: center; font-size: .95rem; pointer-events: none; z-index: 4; animation: wd-swipe 1.2s ease-in-out infinite; }
     .wd-swipe-hint.on { display: flex; }
+    .wd-slider-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #d5e8db; background: #fff; color: #00743F; display: inline-flex; align-items: center; justify-content: center; font-size: .9rem; cursor: pointer; transition: all .15s ease; box-shadow: 0 2px 8px rgba(10,31,92,.12); }
+    .wd-slider-btn:hover { background: #f0f9f3; border-color: #00A868; color: #00743F; }
+    .wd-slider-btn:disabled { opacity: .4; cursor: not-allowed; }
     @keyframes wd-swipe { 0%, 100% { transform: translateX(0); opacity: .8; } 50% { transform: translateX(6px); opacity: 1; } }
     [data-theme="dark"] .wd-swipe-hint { background: #1d2b24; border-color: #2f6b4f; color: #7fe0ac; box-shadow: none; }
 
@@ -174,24 +177,28 @@
         @if($categories->isEmpty())
             <div class="wd-card wd-empty"><i class="bi bi-folder2-open"></i>No folders yet — categories appear here as soon as they are added.</div>
         @else
-            <div class="wd-folders">
-                @php
-                    $folderCounts = [];
-                    foreach ($categoryDistribution as $cd) {
-                        $folderCounts[$cd->category_id] = (int) $cd->total;
-                    }
-                @endphp
-                @foreach($categories as $folder)
-                    <?php $catCount = $folderCounts[$folder->id] ?? 0; ?>
-                    <a class="wd-folder" href="{{ route('documents.library', ['category_id' => $folder->id]) }}">
-                        <span class="wd-folder-ico"><i class="bi bi-folder-fill"></i></span>
-                        <span style="min-width:0">
-                            <span class="wd-folder-name d-block">{{ $folder->name }}</span>
-                            <span class="wd-folder-meta">{{ number_format($catCount) }} document{{ $catCount !== 1 ? 's' : '' }}</span>
-                        </span>
-                        <i class="bi bi-chevron-right wd-folder-go" aria-hidden="true"></i>
-                    </a>
-                @endforeach
+            <div style="position:relative;">
+                <button type="button" class="wd-slider-btn" data-target=".wd-folders" data-dir="-1" aria-label="Scroll folders left" style="position:absolute;left:-16px;top:50%;transform:translateY(-50%);z-index:5;"><i class="bi bi-chevron-left"></i></button>
+                <div class="wd-folders">
+                    @php
+                        $folderCounts = [];
+                        foreach ($categoryDistribution as $cd) {
+                            $folderCounts[$cd->category_id] = (int) $cd->total;
+                        }
+                    @endphp
+                    @foreach($categories as $folder)
+                        <?php $catCount = $folderCounts[$folder->id] ?? 0; ?>
+                        <a class="wd-folder" href="{{ route('documents.library', ['category_id' => $folder->id]) }}">
+                            <span class="wd-folder-ico"><i class="bi bi-folder-fill"></i></span>
+                            <span style="min-width:0">
+                                <span class="wd-folder-name d-block">{{ $folder->name }}</span>
+                                <span class="wd-folder-meta">{{ number_format($catCount) }} document{{ $catCount !== 1 ? 's' : '' }}</span>
+                            </span>
+                            <i class="bi bi-chevron-right wd-folder-go" aria-hidden="true"></i>
+                        </a>
+                    @endforeach
+                </div>
+                <button type="button" class="wd-slider-btn" data-target=".wd-folders" data-dir="1" aria-label="Scroll folders right" style="position:absolute;right:-16px;top:50%;transform:translateY(-50%);z-index:5;"><i class="bi bi-chevron-right"></i></button>
             </div>
         @endif
         <span class="wd-swipe-hint" id="foldersSwipeHint" aria-hidden="true"><i class="bi bi-chevron-double-right"></i></span>
@@ -401,6 +408,20 @@
     strip.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', update);
     update();
+})();
+</script>
+
+<script>
+(function () {
+    document.querySelectorAll('.wd-slider-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var target = document.querySelector(btn.getAttribute('data-target'));
+            if (!target) return;
+            var dir = parseInt(btn.getAttribute('data-dir'), 10);
+            var scrollAmount = target.clientWidth * 0.8;
+            target.scrollBy({ left: dir * scrollAmount, behavior: 'smooth' });
+        });
+    });
 })();
 </script>
 <form id="wdDelForm" method="POST" style="display:none">@csrf @method('DELETE')</form>
