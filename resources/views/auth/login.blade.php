@@ -92,19 +92,19 @@
     .login-brand img { width: 120px; height: 120px; object-fit: contain; padding: 12px; background: transparent; border-radius: 24px; }
     .login-brand small { display: block; margin-top: .12rem; color: rgba(255,255,255,.72); letter-spacing: .08em; font-size: 1.2rem; }
     .login-copy { max-width: 430px; margin: 4.5rem 0 3rem; }
-    .login-eyebrow { color: #b7f2d2; font-size: .75rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
-    .login-copy h1 { margin: 1rem 0; font-size: clamp(2rem, 3.5vw, 2.8rem); font-weight: 700; letter-spacing: -.04em; line-height: 1.12; }
+    .login-eyebrow { color: #b7f2d2; font-size: 1rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .login-copy h1 { margin: 1rem 0; font-size: clamp(2.5rem, 4vw, 3.2rem); font-weight: 700; letter-spacing: -.04em; line-height: 1.12; }
     .login-copy > p { max-width: 390px; color: rgba(255,255,255,.78); line-height: 1.7; }
     .login-features { display: grid; gap: 1rem; margin-top: 2rem; }
-    .login-feature { display: flex; align-items: center; gap: .8rem; color: rgba(255,255,255,.92); font-size: .9rem; }
+    .login-feature { display: flex; align-items: center; gap: .8rem; color: rgba(255,255,255,.92); font-size: 1.1rem; }
     .login-feature i { display: grid; width: 30px; height: 30px; place-items: center; color: #b7f2d2; background: rgba(255,255,255,.12); border-radius: 9px; }
-    .login-secure { display: flex; align-items: center; gap: .55rem; color: rgba(255,255,255,.7); font-size: .8rem; }
+    .login-secure { display: flex; align-items: center; gap: .55rem; color: rgba(255,255,255,.7); font-size: 1rem; }
     .login-secure i { color: #b7f2d2; }
     .login-form-panel { display: grid; place-items: center; padding: clamp(2rem, 5vw, 4rem); }
     .login-form-content { width: min(100%, 370px); }
-    .login-form-content h2 { margin: .25rem 0 .45rem; color: #163a2b; font-size: 1.8rem; font-weight: 700; letter-spacing: -.035em; }
+    .login-form-content h2 { margin: .25rem 0 .45rem; color: #163a2b; font-size: 2rem; font-weight: 700; letter-spacing: -.035em; }
     .login-form-content .login-subtitle { margin-bottom: 2rem; color: #718078; font-size: .92rem; }
-    .login-form-content .form-label { margin-bottom: .5rem; color: #294438; font-size: .84rem; font-weight: 600; }
+    .login-form-content .form-label { margin-bottom: .5rem; color: #294438; font-size: .94rem; font-weight: 600; }
     .login-form-content .form-control { min-height: 48px; border-color: #dce6df; border-radius: .7rem; font-size: .92rem; }
     .login-form-content .form-control::placeholder { color: #a0ada5; }
     .login-form-content .form-control:focus { border-color: #159461; box-shadow: 0 0 0 .22rem rgba(21,148,97,.13); }
@@ -116,7 +116,7 @@
     .login-form-content a:hover { color: #064b34; text-decoration: underline; }
     .login-submit { min-height: 49px; margin-top: .35rem; color: #fff; background: #087a4b; border: 0; border-radius: .7rem; font-weight: 650; transition: background .18s ease, transform .18s ease, box-shadow .18s ease; }
     .login-submit:hover { color: #fff; background: #06623d; box-shadow: 0 8px 18px rgba(8,122,75,.2); transform: translateY(-1px); }
-    .login-help { margin-top: 1.5rem; padding-top: 1.1rem; color: #87948c; border-top: 1px solid #edf1ee; font-size: .76rem; line-height: 1.6; }
+    .login-help { margin-top: 1.5rem; padding-top: 1.1rem; color: #87948c; border-top: 1px solid #edf1ee; font-size: .9rem; line-height: 1.6; }
     .login-form-content .alert-danger {
         background: #fdecea; border: 1px solid #f5c6c7; color: #842029; border-radius: .7rem; padding: .75rem 1rem;
     }
