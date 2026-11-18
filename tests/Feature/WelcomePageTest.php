@@ -79,6 +79,23 @@ class WelcomePageTest extends TestCase
             ->assertSee('body:has(#p3Dashboard) .p3-topbar { display: flex !important; }', false);
     }
 
+    public function test_dashboard_has_drive_style_right_click_create_menu(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('id="wdContextMenu"', false)
+            ->assertSee('id="wdContextMore"', false)
+            ->assertSee('id="wdNewFolderModal"', false)
+            ->assertSee('Alt+C then F')
+            ->assertSee('Alt+C then U')
+            ->assertSee('Alt+C then I')
+            ->assertSee('Google Apps Script')
+            ->assertSee('Google Drawings');
+    }
+
     public function test_production_session_cookie_defaults_to_https_only(): void
     {
         $this->assertSame(

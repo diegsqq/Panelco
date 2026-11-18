@@ -145,6 +145,26 @@
     [data-theme="dark"] .wd-dots { color: #8fa59a; }
     [data-theme="dark"] .wd-dots:hover, [data-theme="dark"] .wd-dots:focus { color: #7fe0ac; }
     [data-theme="dark"] .wd-empty { color: #8fa59a; }
+
+    /* ── Right-click create menu (Drive-style) ── */
+    .wd-ctx { position: fixed; z-index: 1080; display: none; align-items: flex-start; gap: .35rem; }
+    .wd-ctx.open { display: flex; }
+    .wd-ctx-panel { background: #fff; color: #202124; border: 1px solid #e3e3e3; border-radius: .75rem; box-shadow: 0 12px 32px rgba(32,33,36,.22), 0 2px 6px rgba(32,33,36,.12); padding: .4rem 0; min-width: 268px; }
+    .wd-ctx-sub { position: fixed; display: none; min-width: 236px; }
+    .wd-ctx-sub.open { display: block; }
+    .wd-ctx-item { width: 100%; display: flex; align-items: center; gap: .75rem; border: 0; background: transparent; color: inherit; text-align: left; padding: .5rem .85rem; font-size: .84rem; font-weight: 500; cursor: pointer; white-space: nowrap; }
+    .wd-ctx-item:hover, .wd-ctx-item:focus-visible { background: #f1f3f4; outline: none; }
+    .wd-ctx-ico { width: 20px; flex: 0 0 20px; font-size: 1.05rem; color: #5f6368; display: inline-flex; align-items: center; justify-content: center; }
+    .wd-ctx-label { flex: 1; }
+    .wd-ctx-key { color: #80868b; font-size: .7rem; font-weight: 400; }
+    .wd-ctx-caret { color: #9aa0a6; font-size: .75rem; }
+    .wd-ctx-sep { height: 1px; background: #e8eaed; margin: .35rem .5rem; }
+    .wd-ctx-toast { position: fixed; left: 50%; bottom: 1.5rem; transform: translate(-50%, 1rem); z-index: 1090; background: #202124; color: #fff; border-radius: .6rem; padding: .65rem 1rem; font-size: .84rem; box-shadow: 0 8px 24px rgba(0,0,0,.28); opacity: 0; pointer-events: none; transition: opacity .18s ease, transform .18s ease; }
+    .wd-ctx-toast.show { opacity: 1; transform: translate(-50%, 0); }
+    [data-theme="dark"] .wd-ctx-panel { background: #1d2b24; border-color: #2f6b4f; color: #e5eee8; box-shadow: 0 12px 32px rgba(0,0,0,.45); }
+    [data-theme="dark"] .wd-ctx-item:hover, [data-theme="dark"] .wd-ctx-item:focus-visible { background: #26382f; }
+    [data-theme="dark"] .wd-ctx-ico, [data-theme="dark"] .wd-ctx-key, [data-theme="dark"] .wd-ctx-caret { color: #8fa59a; }
+    [data-theme="dark"] .wd-ctx-sep { background: #2f6b4f; }
 </style>
 
 <div class="p3-dash" id="p3Dashboard">
@@ -371,6 +391,97 @@
 
 </div>
 
+{{-- ── Right-click create menu ── --}}
+<div class="wd-ctx" id="wdContextMenu" aria-hidden="true">
+    <div class="wd-ctx-panel wd-ctx-main" role="menu" aria-label="Create menu">
+        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="new-folder" title="Creates a new empty folder to organize your files.">
+            <span class="wd-ctx-ico"><i class="bi bi-folder-plus"></i></span><span class="wd-ctx-label">New folder</span><span class="wd-ctx-key">Alt+C then F</span>
+        </button>
+        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="file-upload" title="Lets you pick individual files from your computer to save in Google Drive.">
+            <span class="wd-ctx-ico"><i class="bi bi-file-earmark-arrow-up"></i></span><span class="wd-ctx-label">File upload</span><span class="wd-ctx-key">Alt+C then U</span>
+        </button>
+        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="folder-upload" title="Lets you upload an entire folder and all of its contents at once.">
+            <span class="wd-ctx-ico"><i class="bi bi-folder-symlink"></i></span><span class="wd-ctx-label">Folder upload</span><span class="wd-ctx-key">Alt+C then I</span>
+        </button>
+        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="new-project" title="Creates a workspace or project hub to group related files and tasks together.">
+            <span class="wd-ctx-ico"><i class="bi bi-kanban"></i></span><span class="wd-ctx-label">New project</span>
+        </button>
+        <div class="wd-ctx-sep"></div>
+        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="docs" title="Opens a word processor for writing documents, letters, or reports.">
+            <span class="wd-ctx-ico"><i class="bi bi-file-earmark-text"></i></span><span class="wd-ctx-label">Google Docs</span>
+        </button>
+        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="sheets" title="Opens a spreadsheet tool for data, tables, and calculations.">
+            <span class="wd-ctx-ico"><i class="bi bi-table"></i></span><span class="wd-ctx-label">Google Sheets</span>
+        </button>
+        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="slides" title="Opens a presentation builder for creating slideshows.">
+            <span class="wd-ctx-ico"><i class="bi bi-easel"></i></span><span class="wd-ctx-label">Google Slides</span>
+        </button>
+        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="vids" title="Opens an AI-powered video creation app for making work or project videos.">
+            <span class="wd-ctx-ico"><i class="bi bi-camera-video"></i></span><span class="wd-ctx-label">Google Vids</span>
+        </button>
+        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="forms" title="Opens a tool to build online surveys, quizzes, and registration forms.">
+            <span class="wd-ctx-ico"><i class="bi bi-ui-checks"></i></span><span class="wd-ctx-label">Google Forms</span>
+        </button>
+        <div class="wd-ctx-sep"></div>
+        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="more" aria-haspopup="menu" aria-expanded="false" aria-controls="wdContextMore" title="Expands a side menu showing extra Google apps and connected tools.">
+            <span class="wd-ctx-ico"><i class="bi bi-three-dots"></i></span><span class="wd-ctx-label">More</span><span class="wd-ctx-caret"><i class="bi bi-chevron-right"></i></span>
+        </button>
+    </div>
+    <div class="wd-ctx-panel wd-ctx-sub" id="wdContextMore" role="menu" aria-label="More apps" aria-hidden="true">
+        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="drawings" title="A tool for making simple diagrams, flowcharts, and graphics.">
+            <span class="wd-ctx-ico"><i class="bi bi-palette"></i></span><span class="wd-ctx-label">Google Drawings</span>
+        </button>
+        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="maps" title="Lets you create custom maps with pins, routes, and shapes.">
+            <span class="wd-ctx-ico"><i class="bi bi-map"></i></span><span class="wd-ctx-label">Google My Maps</span>
+        </button>
+        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="sites" title="A drag-and-drop builder for creating basic websites or internal pages.">
+            <span class="wd-ctx-ico"><i class="bi bi-globe2"></i></span><span class="wd-ctx-label">Google Sites</span>
+        </button>
+        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="markdown" title="Creates a plain-text file formatted with Markdown syntax (often used for notes or code documentation).">
+            <span class="wd-ctx-ico"><i class="bi bi-file-earmark-code"></i></span><span class="wd-ctx-label">Markdown</span>
+        </button>
+        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="apps-script" title="Opens a coding environment to write scripts that automate tasks across Google apps.">
+            <span class="wd-ctx-ico"><i class="bi bi-code-slash"></i></span><span class="wd-ctx-label">Google Apps Script</span>
+        </button>
+    </div>
+</div>
+<div class="wd-ctx-toast" id="wdContextToast" role="status" aria-live="polite"></div>
+
+{{-- ── New folder modal ── --}}
+<div class="modal fade" id="wdNewFolderModal" tabindex="-1" aria-labelledby="wdNewFolderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:440px;width:calc(100% - 2rem)">
+        <div class="modal-content p3-modal">
+            <form method="POST" action="{{ route('categories.store') }}">
+                @csrf
+                <input type="hidden" name="redirect_to" value="dashboard">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="wdNewFolderModalLabel"><i class="bi bi-folder-plus me-2" style="color:#00A868"></i>New folder</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-2">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="wdNewFolderName">Folder name</label>
+                        <input id="wdNewFolderName" name="name" class="form-control" maxlength="255" placeholder="e.g. Maintenance" required autofocus>
+                    </div>
+                    <div class="mb-1">
+                        <label class="form-label fw-semibold" for="wdNewFolderParent">Inside <span class="text-muted fw-normal">(optional)</span></label>
+                        <select id="wdNewFolderParent" name="parent_id" class="form-select">
+                            <option value="">— Top level —</option>
+                            @foreach($categories as $c)
+                                <option value="{{ $c->id }}">{{ $c->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success px-4"><i class="bi bi-check-lg me-1"></i>Create folder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 
 
 {{-- ── Password reset approved popup ── --}}
@@ -471,5 +582,195 @@
     });
 })();
 </script>
+
+<script>
+(function () {
+    var dash = document.getElementById('p3Dashboard');
+    var menu = document.getElementById('wdContextMenu');
+    var sub = document.getElementById('wdContextMore');
+    var moreItem = menu && menu.querySelector('[data-wd-action="more"]');
+    var toast = document.getElementById('wdContextToast');
+    var folderModalEl = document.getElementById('wdNewFolderModal');
+    var folderModal = folderModalEl && window.bootstrap ? new bootstrap.Modal(folderModalEl) : null;
+    var uploadUrl = @json(route('documents.upload'));
+    var folderUrl = @json(route('categories.create'));
+    var hideSubTimer = null;
+    var toastTimer = null;
+    var chordArmed = false;
+    var chordTimer = null;
+
+    if (!dash || !menu || !sub || !moreItem) return;
+
+    function flash(message) {
+        if (!toast) return;
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2600);
+    }
+
+    function closeSub(immediate) {
+        clearTimeout(hideSubTimer);
+        var apply = function () {
+            sub.classList.remove('open');
+            sub.setAttribute('aria-hidden', 'true');
+            moreItem.setAttribute('aria-expanded', 'false');
+        };
+        if (immediate) apply();
+        else hideSubTimer = setTimeout(apply, 140);
+    }
+
+    function positionSub() {
+        if (!sub.classList.contains('open')) return;
+        var mainRect = menu.getBoundingClientRect();
+        var width = sub.offsetWidth;
+        var height = sub.offsetHeight;
+        var left = mainRect.right - 6;
+        if (left + width > window.innerWidth - 8) left = Math.max(8, mainRect.left - width + 6);
+        var top = Math.max(8, Math.min(mainRect.top - 6, window.innerHeight - height - 8));
+        sub.style.left = left + 'px';
+        sub.style.top = top + 'px';
+    }
+
+    function openSub() {
+        clearTimeout(hideSubTimer);
+        sub.classList.add('open');
+        sub.setAttribute('aria-hidden', 'false');
+        moreItem.setAttribute('aria-expanded', 'true');
+        positionSub();
+    }
+
+    function closeMenu() {
+        menu.classList.remove('open');
+        menu.setAttribute('aria-hidden', 'true');
+        closeSub(true);
+    }
+
+    function openMenu(x, y) {
+        closeSub(true);
+        menu.classList.add('open');
+        menu.setAttribute('aria-hidden', 'false');
+        menu.style.left = '0px';
+        menu.style.top = '0px';
+        var rect = menu.getBoundingClientRect();
+        var left = Math.max(8, Math.min(x, window.innerWidth - rect.width - 8));
+        var top = Math.max(8, Math.min(y, window.innerHeight - rect.height - 8));
+        menu.style.left = left + 'px';
+        menu.style.top = top + 'px';
+    }
+
+    function isTyping(el) {
+        return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable);
+    }
+
+    function downloadMarkdown() {
+        var blob = new Blob(['# Untitled\n\n'], { type: 'text/markdown;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = 'Untitled.md';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    }
+
+    function openExternal(url) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    function runAction(action) {
+        closeMenu();
+        switch (action) {
+            case 'new-folder':
+                if (folderModal) folderModal.show();
+                else window.location.href = folderUrl;
+                break;
+            case 'file-upload':
+                window.location.href = uploadUrl;
+                break;
+            case 'folder-upload':
+                window.location.href = uploadUrl + '?mode=folder';
+                break;
+            case 'new-project':
+                flash('New project is not available in P-ARCHIVE yet.');
+                break;
+            case 'docs': openExternal('https://docs.google.com/document/u/0/create'); break;
+            case 'sheets': openExternal('https://docs.google.com/spreadsheets/u/0/create'); break;
+            case 'slides': openExternal('https://docs.google.com/presentation/u/0/create'); break;
+            case 'vids': openExternal('https://docs.google.com/vids/u/0/create'); break;
+            case 'forms': openExternal('https://docs.google.com/forms/u/0/create'); break;
+            case 'drawings': openExternal('https://docs.google.com/drawings/u/0/create'); break;
+            case 'maps': openExternal('https://mymaps.google.com/'); break;
+            case 'sites': openExternal('https://sites.google.com/new'); break;
+            case 'markdown': downloadMarkdown(); break;
+            case 'apps-script': openExternal('https://script.google.com/home/start'); break;
+        }
+    }
+
+    dash.addEventListener('contextmenu', function (e) {
+        e.preventDefault();
+        openMenu(e.clientX, e.clientY);
+    });
+
+    document.addEventListener('contextmenu', function (e) {
+        if (!menu.contains(e.target) && !dash.contains(e.target)) closeMenu();
+    });
+
+    document.addEventListener('click', function (e) {
+        if (menu.classList.contains('open') && !menu.contains(e.target)) closeMenu();
+    });
+
+    menu.addEventListener('click', function (e) {
+        var item = e.target.closest('[data-wd-action]');
+        if (!item) return;
+        e.preventDefault();
+        e.stopPropagation();
+        var action = item.getAttribute('data-wd-action');
+        if (action === 'more') {
+            if (sub.classList.contains('open')) closeSub(true); else openSub();
+            return;
+        }
+        runAction(action);
+    });
+
+    moreItem.addEventListener('mouseenter', openSub);
+    moreItem.addEventListener('focus', openSub);
+    sub.addEventListener('mouseenter', openSub);
+    menu.addEventListener('mouseleave', function () { closeSub(false); });
+
+    window.addEventListener('scroll', closeMenu, true);
+    window.addEventListener('resize', closeMenu);
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeMenu();
+            return;
+        }
+        if (chordArmed) {
+            var chord = { KeyF: 'new-folder', KeyU: 'file-upload', KeyI: 'folder-upload' };
+            var action = chord[e.code];
+            chordArmed = false;
+            clearTimeout(chordTimer);
+            if (action && !isTyping(e.target)) {
+                e.preventDefault();
+                runAction(action);
+                return;
+            }
+        }
+        if (e.altKey && e.code === 'KeyC' && !isTyping(e.target)) {
+            chordArmed = true;
+            clearTimeout(chordTimer);
+            chordTimer = setTimeout(function () { chordArmed = false; }, 3000);
+        }
+    });
+
+    folderModalEl && folderModalEl.addEventListener('show.bs.modal', function () {
+        var input = document.getElementById('wdNewFolderName');
+        if (input) setTimeout(function () { input.focus(); }, 120);
+    });
+})();
+</script>
+
 <form id="wdDelForm" method="POST" style="display:none">@csrf @method('DELETE')</form>
 @endsection

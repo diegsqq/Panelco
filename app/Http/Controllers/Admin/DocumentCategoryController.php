@@ -45,6 +45,10 @@ class DocumentCategoryController extends Controller
         $cat = DocumentCategory::create($data);
         AuditLog::create(['user_id' => auth()->id(), 'action' => 'category.created', 'entity_type' => DocumentCategory::class, 'entity_id' => $cat->id, 'metadata' => ['name' => $cat->name]]);
 
+        if ($request->input('redirect_to') === 'dashboard') {
+            return redirect()->route('dashboard')->with('status', 'Folder created.');
+        }
+
         return redirect()->route('admin.categories.index')->with('status', 'Category created.');
     }
 

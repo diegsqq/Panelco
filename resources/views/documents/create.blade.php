@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('content')
+@php($folderMode = request('mode') === 'folder')
 <style>
     /* ── Upload page shell ── */
     .up-page { width: 100%; min-height: 100%; }
@@ -124,15 +125,15 @@
     {{-- ── Step 1: file picker --}}
     <div class="card card-p3 p-4 up-card-group">
         <div class="d-flex align-items-center gap-2 mb-3">
-            <h6 class="fw-bold mb-0" style="color:#00743F">Choose a file</h6>
+            <h6 class="fw-bold mb-0" style="color:#00743F">{{ $folderMode ? 'Choose a folder' : 'Choose a file' }}</h6>
         </div>
 
         <div id="dropZone" class="up-zone p-4 text-center" role="button" tabindex="0" aria-label="Choose files to upload" aria-describedby="uploadInstructions">
             <div id="zoneIdle">
                 <div class="up-idle-icon"><i class="bi bi-cloud-arrow-up"></i></div>
-                <p class="up-zone-title">Drag &amp; drop your file here</p>
-                <p class="up-zone-sub">or <span style="color:#00743F;text-decoration:underline;cursor:pointer" onclick="document.getElementById('file').click()">browse from your computer</span></p>
-                <p class="up-zone-limits" id="uploadInstructions">PDF · DOCX · TXT · PNG · JPEG — up to {{ number_format(config('smartdocs.upload.max_kb', 51200) / 1024, 0) }} MB. You can select multiple files.</p>
+                <p class="up-zone-title">{{ $folderMode ? 'Choose a folder from your computer' : 'Drag & drop your file here' }}</p>
+                <p class="up-zone-sub">or <span style="color:#00743F;text-decoration:underline;cursor:pointer" onclick="document.getElementById('file').click()">{{ $folderMode ? 'browse for a folder' : 'browse from your computer' }}</span></p>
+                <p class="up-zone-limits" id="uploadInstructions">PDF · DOCX · TXT · PNG · JPEG — up to {{ number_format(config('smartdocs.upload.max_kb', 51200) / 1024, 0) }} MB. {{ $folderMode ? 'All supported files inside the folder will be queued.' : 'You can select multiple files.' }}</p>
             </div>
             <div id="zoneFile" class="d-none">
                 <div class="up-file-tile">
@@ -152,7 +153,7 @@
 
         <div class="up-progress mt-3" id="upProgress"><div class="up-progress-bar"></div></div>
 
-        <input id="file" name="file[]" type="file" class="d-none @error('file') is-invalid @enderror" accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" multiple required>
+        <input id="file" name="file[]" type="file" class="d-none @error('file') is-invalid @enderror" accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" multiple required @if($folderMode) webkitdirectory directory @endif>
         <input type="hidden" name="file_last_modified" id="fileLastModified" value="">
         @error('file')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
         <div class="form-text mt-3" id="suggestNote" role="status" aria-live="polite" aria-atomic="true"></div>
