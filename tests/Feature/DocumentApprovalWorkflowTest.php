@@ -119,7 +119,7 @@ class DocumentApprovalWorkflowTest extends TestCase
 
         $this->actingAs($employee)->get(route('documents.show', $document))
             ->assertOk()
-            ->assertSee('Pending')
+            ->assertSee('Document info')
             ->assertDontSee('Approve document')
             ->assertDontSee('Reject document');
     }

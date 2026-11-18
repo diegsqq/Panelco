@@ -182,10 +182,6 @@
     {{-- ── Title bar ── --}}
     <div class="dv-titlebar">
         <div class="dv-title">{{ $document->title ?? $document->original_filename }}</div>
-        <span class="dv-badge {{ $document->approval_status === 'approved' ? 'dv-badge-published' : ($document->approval_status === 'rejected' ? 'dv-badge-rejected' : 'dv-badge-pending') }}">
-            {{ $document->approval_status === 'approved' ? 'Published' : ucfirst($document->approval_status ?? 'Pending') }}
-        </span>
-        <span class="dv-meta-small">Version {{ $document->version_number ?? '1' }}</span>
         @if($document->uploader)
         <span class="dv-meta-small">· Owned by {{ $document->uploader->name }}</span>
         @endif

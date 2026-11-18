@@ -77,7 +77,7 @@ class DocumentVersionHistoryTest extends TestCase
         $this->get(route('documents.show', $document))
             ->assertOk()
             ->assertSee('Version history')
-            ->assertSee('Version 1')
+            ->assertSee('v1')
             ->assertSee('report-v1.txt');
     }
 
