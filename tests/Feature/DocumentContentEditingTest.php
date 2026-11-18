@@ -228,6 +228,19 @@ class DocumentContentEditingTest extends TestCase
             ->assertSee(route('documents.edit-content', $document), false);
     }
 
+    public function test_document_viewer_expands_content_to_full_width(): void
+    {
+        $this->seed();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $document = $this->makeDocument($employee);
+
+        $this->actingAs($employee)
+            ->get(route('documents.show', $document))
+            ->assertOk()
+            ->assertSee('body:has(#docViewer) #p3Sidebar { display: none !important; }', false)
+            ->assertSee('body:has(#docViewer) > .container-fluid > .row > div.p-0.d-flex.flex-column { flex: 0 0 100%; max-width: 100%; width: 100%; }', false);
+    }
+
     public function test_documents_without_content_do_not_show_the_content_section(): void
     {
         $this->seed();

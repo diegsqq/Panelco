@@ -2,6 +2,10 @@
 @section('content')
 <style>
     body:has(#docViewer) main { padding: 0 !important; }
+    @media (min-width: 768px) {
+        body:has(#docViewer) #p3Sidebar { display: none !important; }
+        body:has(#docViewer) > .container-fluid > .row > div.p-0.d-flex.flex-column { flex: 0 0 100%; max-width: 100%; width: 100%; }
+    }
     /* ── Shell ── */
     #docViewer { display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: #f5f5f5; }
     [data-theme="dark"] #docViewer { background: #0e1512; }
