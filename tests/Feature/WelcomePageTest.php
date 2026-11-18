@@ -93,7 +93,9 @@ class WelcomePageTest extends TestCase
             ->assertSee('Alt+C then U')
             ->assertSee('Alt+C then I')
             ->assertSee('Google Apps Script')
-            ->assertSee('Google Drawings');
+            ->assertSee('Google Drawings')
+            ->assertSee("menu.style.left = x + 'px';", false)
+            ->assertSee("menu.style.top = y + 'px';", false);
     }
 
     public function test_production_session_cookie_defaults_to_https_only(): void

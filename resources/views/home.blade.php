@@ -147,8 +147,9 @@
     [data-theme="dark"] .wd-empty { color: #8fa59a; }
 
     /* ── Right-click create menu (Drive-style) ── */
-    .wd-ctx { position: fixed; z-index: 1080; display: none; align-items: flex-start; gap: .35rem; }
+    .wd-ctx { position: fixed; z-index: 1080; display: none; align-items: flex-start; gap: .35rem; margin: 0; padding: 0; }
     .wd-ctx.open { display: flex; }
+    .wd-ctx-main { position: relative; left: 0; top: 0; }
     .wd-ctx-panel { background: #fff; color: #202124; border: 1px solid #e3e3e3; border-radius: .75rem; box-shadow: 0 12px 32px rgba(32,33,36,.22), 0 2px 6px rgba(32,33,36,.12); padding: .4rem 0; min-width: 268px; }
     .wd-ctx-sub { position: fixed; display: none; min-width: 236px; }
     .wd-ctx-sub.open { display: block; }
@@ -650,13 +651,8 @@
         closeSub(true);
         menu.classList.add('open');
         menu.setAttribute('aria-hidden', 'false');
-        menu.style.left = '0px';
-        menu.style.top = '0px';
-        var rect = menu.getBoundingClientRect();
-        var left = Math.max(8, Math.min(x, window.innerWidth - rect.width - 8));
-        var top = Math.max(8, Math.min(y, window.innerHeight - rect.height - 8));
-        menu.style.left = left + 'px';
-        menu.style.top = top + 'px';
+        menu.style.left = x + 'px';
+        menu.style.top = y + 'px';
     }
 
     function isTyping(el) {
