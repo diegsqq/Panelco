@@ -118,6 +118,10 @@
             <i class="bi bi-journal-text"></i> Audit logs
         </a>
         @endcan
+        <hr class="cfg-nav-divider">
+        <a class="cfg-nav-item" href="{{ route('dashboard') }}">
+            <i class="bi bi-grid-1x2-fill"></i> Back to dashboard
+        </a>
     </nav>
 
     {{-- ── Right content ── --}}
