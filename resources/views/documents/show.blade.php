@@ -19,15 +19,15 @@
     [data-theme="dark"] .dv-breadcrumb a { color: #8fa59a; }
 
     /* ── Title bar ── */
-    .dv-titlebar { flex: 0 0 auto; display: flex; align-items: center; gap: .75rem; padding: .6rem 1.25rem; border-bottom: 1px solid #e8e8e8; background: #fff; flex-wrap: wrap; }
+    .dv-titlebar { flex: 0 0 auto; display: flex; align-items: center; justify-content: flex-end; gap: .75rem; padding: .6rem 1.25rem; border-bottom: 1px solid #e8e8e8; background: #fff; flex-wrap: wrap; }
     .dv-title { font-weight: 700; font-size: 1rem; color: #111; flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .dv-badge { font-size: .7rem; font-weight: 700; padding: .2rem .55rem; border-radius: 2rem; border: none; }
     .dv-badge-published { background: #d4edda; color: #155724; }
     .dv-badge-pending    { background: #fff3cd; color: #856404; }
     .dv-badge-rejected   { background: #f8d7da; color: #721c24; }
     .dv-meta-small { font-size: .75rem; color: #888; white-space: nowrap; }
-    .dv-titlebar-actions { display: flex; align-items: center; justify-content: flex-end; gap: .4rem; margin-left: auto; }
-    #docViewer > .dv-titlebar > div { margin-left: auto; justify-content: flex-end; }
+    .dv-titlebar-actions { display: flex; align-items: center; justify-content: flex-end; gap: .4rem; }
+    #docViewer > .dv-titlebar > div { justify-content: flex-end; }
     .dv-btn { font-size: .78rem; font-weight: 600; border-radius: .55rem; padding: .35rem .75rem; border: 1px solid #ddd; background: #fff; color: #333; cursor: pointer; display: inline-flex; align-items: center; gap: .3rem; transition: all .12s ease; text-decoration: none; white-space: nowrap; }
     .dv-btn:hover { background: #f5f5f5; color: #111; border-color: #bbb; }
     .dv-btn-primary { background: #00A868; border-color: #00A868; color: #fff; }
