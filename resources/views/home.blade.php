@@ -6,10 +6,6 @@
     .p3-dash { display: flex; flex-direction: column; gap: 1.5rem; }
     html:has(#p3Dashboard), body:has(#p3Dashboard) { overflow: auto; }
     body:has(#p3Dashboard) .p3-topbar { display: none; }
-    @media (min-width: 768px) {
-        body:has(#p3Dashboard) #p3Sidebar { display: none !important; }
-        body:has(#p3Dashboard) > .container-fluid > .row > div.p-0.d-flex.flex-column { flex: 0 0 100%; max-width: 100%; width: 100%; }
-    }
     @media (max-width: 767.98px) {
         body:has(#p3Dashboard) .p3-topbar { display: flex !important; }
     }
