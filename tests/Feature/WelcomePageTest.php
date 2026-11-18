@@ -95,7 +95,9 @@ class WelcomePageTest extends TestCase
             ->assertSee('Google Apps Script')
             ->assertSee('Google Drawings')
             ->assertSee("menu.style.left = x + 'px';", false)
-            ->assertSee("menu.style.top = y + 'px';", false);
+            ->assertSee("menu.style.top = y + 'px';", false)
+            ->assertSee('body:has(#p3Dashboard) #p3Sidebar { display: none !important; }', false)
+            ->assertSee('body:has(#p3Dashboard) > .container-fluid > .row > div.p-0.d-flex.flex-column { flex: 0 0 100%; max-width: 100%; width: 100%; }', false);
     }
 
     public function test_production_session_cookie_defaults_to_https_only(): void
