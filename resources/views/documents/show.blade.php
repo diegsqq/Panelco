@@ -11,10 +11,14 @@
     [data-theme="dark"] #docViewer { background: #0e1512; }
 
     /* ── Breadcrumb bar ── */
-    .dv-breadcrumb { flex: 0 0 auto; display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; padding: .5rem 1.25rem; font-size: .78rem; color: #888; border-bottom: 1px solid #e8e8e8; background: #fff; }
+    .dv-breadcrumb { flex: 0 0 auto; display: flex; align-items: center; flex-wrap: nowrap; gap: .4rem; padding: .5rem 1.25rem; font-size: .78rem; color: #888; border-bottom: 1px solid #e8e8e8; background: #fff; overflow-x: auto; scrollbar-width: none; }
+    .dv-breadcrumb::-webkit-scrollbar { display: none; }
+    .dv-breadcrumb a, .dv-breadcrumb .sep, .dv-breadcrumb .dv-meta-small, .dv-breadcrumb .dv-titlebar-actions { flex: 0 0 auto; }
     .dv-breadcrumb a { color: #555; text-decoration: none; }
     .dv-breadcrumb a:hover { color: #00A868; }
     .dv-breadcrumb .sep { color: #ccc; }
+    .dv-breadcrumb .bc-title { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .dv-breadcrumb .dv-btn { font-size: .72rem; padding: .25rem .55rem; }
     [data-theme="dark"] .dv-breadcrumb { background: #16211c; border-color: #26362e; color: #8fa59a; }
     [data-theme="dark"] .dv-breadcrumb a { color: #8fa59a; }
 
@@ -64,8 +68,8 @@
     [data-theme="dark"] .dv-outline-item.active { background: #12291d; color: #7fe0ac; }
 
     /* ── Center document page ── */
-    .dv-page-wrap { flex: 1 1 auto; overflow-y: auto; padding: 2.25rem 1.5rem 3rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
-    .dv-page { width: 100%; max-width: 820px; background: linear-gradient(180deg, #fff 0%, #fcfdfc 100%); border: 1px solid #e4ebe6; border-top: 3px solid #00A868; border-radius: 14px; box-shadow: 0 18px 45px rgba(16,40,27,.09), 0 2px 8px rgba(16,40,27,.05); padding: 3rem 3.75rem 2.25rem; min-height: 420px; color: #2c3a33; }
+    .dv-page-wrap { flex: 1 1 auto; min-width: 0; overflow-x: hidden; overflow-y: auto; padding: 2.25rem 1.5rem 3rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+    .dv-page { width: 100%; max-width: 100%; box-sizing: border-box; background: linear-gradient(180deg, #fff 0%, #fcfdfc 100%); border: 1px solid #e4ebe6; border-top: 3px solid #00A868; border-radius: 14px; box-shadow: 0 18px 45px rgba(16,40,27,.09), 0 2px 8px rgba(16,40,27,.05); padding: 3rem 3.75rem 2.25rem; min-height: 420px; color: #2c3a33; }
     [data-theme="dark"] .dv-page { background: linear-gradient(180deg, #16211c 0%, #131d18 100%); border-color: #26362e; border-top-color: #00A868; box-shadow: none; color: #c3d0c8; }
 
     .dv-page-org { display: inline-block; font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; color: #00743F; background: #e6f3ea; border-radius: 2rem; padding: .2rem .65rem; margin-bottom: .9rem; }
@@ -192,7 +196,7 @@
         <a href="{{ route('documents.library', ['category_id' => $document->category->id]) }}">{{ $document->category->name }}</a>
         @endif
         <span class="sep">/</span>
-        <span>{{ \Illuminate\Support\Str::limit($document->title ?? $document->original_filename, 40) }}</span>
+        <span class="bc-title">{{ \Illuminate\Support\Str::limit($document->title ?? $document->original_filename, 40) }}</span>
         @if($document->uploader)
         <span class="dv-meta-small">· Owned by {{ $document->uploader->name }}</span>
         @endif
