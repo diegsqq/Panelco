@@ -104,6 +104,13 @@ class HomeController extends Controller
             ->latest()->limit(9)->get();
         $recentFiles = (clone $documentQuery)->with(['category', 'uploader:id,name'])
             ->latest()->limit(5)->get();
+        $sharedFiles = Document::query()->with(['category', 'uploader:id,name'])
+            ->where('uploaded_by', '!=', $user->id)
+            ->where(function ($q) use ($user) {
+                $q->where('access_level', 'all_employees')
+                    ->orWhereIn('id', $user->authorizedDocuments()->pluck('documents.id'));
+            })
+            ->latest()->limit(5)->get();
         $allFilesQuery = (clone $documentQuery)->with(['category', 'uploader:id,name']);
         if ($sort === 'category') {
             $allFilesQuery->leftJoin('document_categories as cat_sort', 'cat_sort.id', '=', 'documents.category_id')
@@ -240,6 +247,7 @@ class HomeController extends Controller
             'pendingClassificationReviewCount',
             'recent',
             'recentFiles',
+            'sharedFiles',
             'allFiles',
             'expiringDocuments',
             'categoryDistribution',

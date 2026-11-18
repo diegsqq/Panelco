@@ -249,18 +249,22 @@
             {{-- Tabs + toolbar (single row) --}}
             <div class="lib-tabs-row">
                 <div class="lib-tabs">
-                    <button class="lib-tab {{ !request('favorite') && !request('recent') ? 'active' : '' }}"
-                            onclick="location.href='{{ route('documents.library', array_merge(request()->except(['favorite','recent','page']), [])) }}'">
+                    <button class="lib-tab {{ !request('favorite') && !request('recent') && !request('shared') ? 'active' : '' }}"
+                            onclick="location.href='{{ route('documents.library', array_merge(request()->except(['favorite','recent','shared','page']), [])) }}'">
                         <i class="bi bi-files"></i> All documents
                         <span class="lib-tab-count">{{ $documents->total() }}</span>
                     </button>
                     <button class="lib-tab {{ request('recent') ? 'active' : '' }}"
-                            onclick="location.href='{{ route('documents.library', array_merge(request()->except(['favorite','recent','page']), ['recent'=>1])) }}'">
+                            onclick="location.href='{{ route('documents.library', array_merge(request()->except(['favorite','recent','shared','page']), ['recent'=>1])) }}'">
                         <i class="bi bi-clock-history"></i> Recently edited
                     </button>
                     <button class="lib-tab {{ request('favorite') ? 'active' : '' }}"
-                            onclick="location.href='{{ route('documents.library', array_merge(request()->except(['favorite','recent','page']), ['favorite'=>1])) }}'">
+                            onclick="location.href='{{ route('documents.library', array_merge(request()->except(['favorite','recent','shared','page']), ['favorite'=>1])) }}'">
                         <i class="bi bi-star"></i> Starred
+                    </button>
+                    <button class="lib-tab {{ request('shared') ? 'active' : '' }}"
+                            onclick="location.href='{{ route('documents.library', array_merge(request()->except(['favorite','recent','shared','page']), ['shared'=>1])) }}'">
+                        <i class="bi bi-people"></i> Shared with me
                     </button>
                 </div>
 

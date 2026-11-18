@@ -67,7 +67,8 @@ class DocumentController extends Controller
             // their own uploads plus documents shared with all employees.
             $query->where(function ($q) use ($user) {
                 $q->where('uploaded_by', $user->id)
-                    ->orWhere('access_level', 'all_employees');
+                    ->orWhere('access_level', 'all_employees')
+                    ->orWhereHas('authorizedUsers', fn ($u) => $u->where('users.id', $user->id));
             });
         }
 
@@ -184,6 +185,7 @@ class DocumentController extends Controller
             'sort' => ['nullable', Rule::in(['newest', 'oldest', 'alphabetical'])],
             'favorite' => ['nullable', 'boolean'],
             'recent' => ['nullable', 'boolean'],
+            'shared' => ['nullable', 'boolean'],
             'tag' => ['nullable', 'string', 'max:50'],
         ]);
     }
@@ -242,6 +244,14 @@ class DocumentController extends Controller
         if (! empty($validated['recent'])) {
             $query->whereNotNull('last_opened_at')
                 ->orderByDesc('last_opened_at');
+        }
+
+        if (! empty($validated['shared'])) {
+            $query->where('uploaded_by', '!=', $request->user()->id)
+                ->where(function ($q) use ($request) {
+                    $q->where('access_level', 'all_employees')
+                        ->orWhereHas('authorizedUsers', fn ($u) => $u->where('users.id', $request->user()->id));
+                });
         }
 
         if (! empty($validated['tag'])) {

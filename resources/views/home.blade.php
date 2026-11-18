@@ -235,6 +235,38 @@
         @endif
     </section>
 
+    {{-- ── Shared files ── --}}
+    <section class="wd-section" aria-labelledby="wdSharedTitle">
+        <div class="wd-section-head">
+            <h2 class="wd-section-title" id="wdSharedTitle">Shared files</h2>
+            <a href="{{ route('documents.library', ['shared' => 1]) }}" class="wd-filter"><i class="bi bi-arrow-right"></i> View all</a>
+        </div>
+        @if($sharedFiles->isEmpty())
+            <div class="wd-card wd-empty"><i class="bi bi-people"></i>No shared files yet. Documents shared with you will appear here.</div>
+        @else
+            <div class="wd-recents">
+                @foreach($sharedFiles as $file)
+                    @php
+                        $mime = $file->mime_type ?? '';
+                        $fileIcon = str_contains($mime, 'pdf') ? ['bi-file-earmark-pdf-fill', '#dc3545']
+                                  : (str_contains($mime, 'word') ? ['bi-file-earmark-word-fill', '#0d6efd']
+                                  : (str_starts_with($mime, 'image/') ? ['bi-file-earmark-image-fill', '#00A868']
+                                  : (str_contains($mime, 'text') ? ['bi-file-earmark-text-fill', '#6c757d']
+                                  : ['bi-file-earmark-fill', '#6c757d'])));
+                        $fileSize = $file->file_size >= 1048576 ? number_format($file->file_size / 1048576, 1) . ' MB' : number_format($file->file_size / 1024, 0) . ' KB';
+                    @endphp
+                    <a class="wd-recent" href="{{ route('documents.show', $file) }}">
+                        <span class="wd-recent-ico"><i class="bi {{ $fileIcon[0] }}" style="color:{{ $fileIcon[1] }}"></i></span>
+                        <span style="min-width:0">
+                            <span class="wd-recent-name d-block">{{ $file->title ?? $file->original_filename }}</span>
+                            <span class="wd-recent-meta">{{ $fileSize }} · {{ $file->uploader?->name ?? 'Unknown' }}</span>
+                        </span>
+                    </a>
+                @endforeach
+            </div>
+        @endif
+    </section>
+
     {{-- ── All files ── --}}
     <section class="wd-section" aria-labelledby="wdAllTitle">
         <div class="wd-section-head">
