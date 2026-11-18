@@ -320,9 +320,9 @@
                 
                 @endif
                 <a class="nav-link {{ request()->routeIs('chat.*') ? 'active' : '' }}" aria-current="{{ request()->routeIs('chat.*') ? 'page' : 'false' }}" href="{{ route('chat.index') }}"><span class="nav-ico"><i class="bi bi-lightning-charge-fill"></i></span>{{ __('nav.lightning') }}</a>
-                <a class="nav-link {{ request()->routeIs('help') ? 'active' : '' }}" aria-current="{{ request()->routeIs('help') ? 'page' : 'false' }}" href="{{ route('help') }}"><span class="nav-ico"><i class="bi bi-question-circle-fill"></i></span>Help</a>
             </nav>
-            <div class="mt-3">
+            <div class="mt-auto pt-3">
+                <a class="nav-link {{ request()->routeIs('help') ? 'active' : '' }}" aria-current="{{ request()->routeIs('help') ? 'page' : 'false' }}" href="{{ route('help') }}"><span class="nav-ico"><i class="bi bi-question-circle-fill"></i></span>Help</a>
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
             </div>
         </aside>
