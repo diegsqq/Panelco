@@ -5,15 +5,6 @@
     @media (min-width: 768px) {
         body:has(#docViewer) #p3Sidebar { display: none !important; }
         body:has(#docViewer) > .container-fluid > .row > div.p-0.d-flex.flex-column { flex: 0 0 100%; max-width: 100%; width: 100%; }
-        body:has(#docViewer) .dv-page { max-width: none; padding: 3rem clamp(2rem, 4vw, 5rem); }
-        body:has(#docViewer) .dv-page h1 { font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.5rem); }
-        body:has(#docViewer) .dv-page h2 { font-size: clamp(1.1rem, .98rem + .5vw, 1.4rem); }
-        body:has(#docViewer) .dv-page h3 { font-size: clamp(.95rem, .88rem + .3vw, 1.15rem); }
-        body:has(#docViewer) .dv-page p,
-        body:has(#docViewer) .dv-page ul,
-        body:has(#docViewer) .dv-page ol,
-        body:has(#docViewer) .doc-render { font-size: clamp(.92rem, .82rem + .35vw, 1.08rem); line-height: 1.8; }
-        body:has(#docViewer) .doc-render { font-size: clamp(.92rem, .82rem + .35vw, 1.08rem) !important; }
     }
     /* ── Shell ── */
     #docViewer { display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: #f5f5f5; }
@@ -54,9 +45,6 @@
     .dv-tool:hover { background: #f0f0f0; }
     .dv-tool.active { background: #e6f3ea; color: #00743F; }
     .dv-tool i { font-size: .85rem; }
-    .dv-zoom { display: flex; align-items: center; gap: .15rem; flex: 0 0 auto; }
-    .dv-zoom-value { min-width: 54px; justify-content: center; color: #00743F; font-weight: 700; }
-    .dv-page { transform-origin: top center; }
     .dv-autosave { margin-left: auto; font-size: .72rem; color: #aaa; display: flex; align-items: center; gap: .4rem; white-space: nowrap; flex: 0 0 auto; }
     .dv-autosave .dot { width: 7px; height: 7px; border-radius: 50%; background: #00A868; }
     [data-theme="dark"] .dv-toolbar { background: #16211c; border-color: #26362e; }
@@ -227,12 +215,6 @@
         <button class="dv-tool"><i class="bi bi-table"></i> Table</button>
         <button class="dv-tool"><i class="bi bi-image"></i> Image</button>
         <button class="dv-tool"><i class="bi bi-layout-text-window-reverse"></i> Header &amp; footer</button>
-        <div class="dv-toolbar-sep"></div>
-        <div class="dv-zoom" role="group" aria-label="Document zoom">
-            <button class="dv-tool" id="dvZoomOut" title="Zoom out" aria-label="Zoom out"><i class="bi bi-dash-lg"></i></button>
-            <button class="dv-tool dv-zoom-value" id="dvZoomFit" title="Fit page width">100%</button>
-            <button class="dv-tool" id="dvZoomIn" title="Zoom in" aria-label="Zoom in"><i class="bi bi-plus-lg"></i></button>
-        </div>
         <div class="dv-autosave">
             <span class="dot"></span>
             Auto-save <strong style="color:#333">On</strong>
@@ -737,46 +719,6 @@
     });
     if (input) input.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') { e.preventDefault(); if(input.value.trim()) { ask(input.value.trim()); input.value=''; } }
-    });
-})();
-</script>
-
-<script>
-(function () {
-    var page = document.querySelector('#docViewer .dv-page');
-    var wrap = document.getElementById('dvPageWrap');
-    var label = document.getElementById('dvZoomFit');
-    var zoomIn = document.getElementById('dvZoomIn');
-    var zoomOut = document.getElementById('dvZoomOut');
-    if (!page || !wrap || !label || !zoomIn || !zoomOut) return;
-
-    var zoom = 1;
-
-    function apply(next) {
-        zoom = Math.min(2, Math.max(.5, Math.round(next * 100) / 100));
-        page.style.zoom = zoom;
-        label.textContent = Math.round(zoom * 100) + '%';
-        label.setAttribute('title', 'Fit page width (current: ' + Math.round(zoom * 100) + '%)');
-    }
-
-    function fit() {
-        page.style.zoom = 1;
-        var style = window.getComputedStyle(wrap);
-        var padding = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
-        var available = wrap.clientWidth - padding - 8;
-        var natural = page.offsetWidth;
-        apply(available > 0 && natural > 0 ? available / natural : 1);
-    }
-
-    zoomIn.addEventListener('click', function () { apply(zoom + .1); });
-    zoomOut.addEventListener('click', function () { apply(zoom - .1); });
-    label.addEventListener('click', fit);
-
-    window.addEventListener('keydown', function (e) {
-        if (!(e.ctrlKey || e.metaKey)) return;
-        if (e.key === '=' || e.key === '+') { e.preventDefault(); apply(zoom + .1); }
-        if (e.key === '-') { e.preventDefault(); apply(zoom - .1); }
-        if (e.key === '0') { e.preventDefault(); apply(1); }
     });
 })();
 </script>
