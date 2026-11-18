@@ -376,10 +376,6 @@
                 </div>
                 <div class="dv-info-section-body">
                     <div class="dv-info-row">
-                        <span class="dv-info-key">Published version</span>
-                        <span class="dv-info-val" style="color:#00A868">v{{ $document->version_number ?? '1' }}</span>
-                    </div>
-                    <div class="dv-info-row">
                         <span class="dv-info-key">Department</span>
                         <span class="dv-info-val">{{ $document->department?->name ?? '—' }}</span>
                     </div>
