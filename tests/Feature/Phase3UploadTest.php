@@ -186,6 +186,7 @@ class Phase3UploadTest extends TestCase
             ->assertSee('role="button" tabindex="0" aria-label="Choose files to upload"', false)
             ->assertSee('aria-describedby="uploadInstructions" aria-controls="file"', false)
             ->assertSee('min-height: 150px', false)
+            ->assertSee('background: #f0f9f3; border-radius: .3rem', false)
             ->assertSee('id="fileList"', false)
             ->assertSee('id="file" name="file[]"', false)
             ->assertSee('multiple required', false)

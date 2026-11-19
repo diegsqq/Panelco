@@ -43,17 +43,17 @@
     [data-theme="dark"] .up-zone-limits { color: #7d9087; }
 
     /* ── File tiles ── */
-    .up-file-list { width: 100%; display: flex; flex-direction: column; gap: .4rem; max-height: 180px; overflow-y: auto; }
-    .up-file-tile { display: flex; align-items: center; gap: .7rem; padding: .5rem .7rem; background: #f0f9f3; border-radius: .7rem; width: 100%; }
+    .up-file-list { width: 100%; display: flex; flex-direction: column; gap: .3rem; max-height: 150px; overflow-y: auto; }
+    .up-file-tile { display: flex; align-items: center; gap: .55rem; padding: .35rem .55rem; background: #f0f9f3; border-radius: .3rem; width: 100%; }
     [data-theme="dark"] .up-file-tile { background: #1d2b24; }
-    .up-file-icon { width: 40px; height: 40px; flex: 0 0 40px; border-radius: 12px; background: #fff; color: #00A868; display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+    .up-file-icon { width: 32px; height: 32px; flex: 0 0 32px; border-radius: 6px; background: #fff; color: #00A868; display: inline-flex; align-items: center; justify-content: center; font-size: .95rem; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
     [data-theme="dark"] .up-file-icon { background: #243324; }
     .up-file-info { flex: 1 1 auto; min-width: 0; }
-    .up-file-name { font-weight: 700; font-size: .95rem; color: #1a1a2e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3; }
+    .up-file-name { font-weight: 700; font-size: .85rem; color: #1a1a2e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.25; }
     [data-theme="dark"] .up-file-name { color: #e5eee8; }
-    .up-file-meta { font-size: .72rem; color: #5a9e7a; margin-top: .1rem; }
+    .up-file-meta { font-size: .68rem; color: #5a9e7a; margin-top: .05rem; }
     [data-theme="dark"] .up-file-meta { color: #8fa59a; }
-    .up-remove { border: none; background: #f1f3f5; color: #6c757d; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 28px; transition: all .15s ease; }
+    .up-remove { border: none; background: #f1f3f5; color: #6c757d; width: 24px; height: 24px; border-radius: .25rem; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 24px; transition: all .15s ease; }
     [data-theme="dark"] .up-remove { background: #243324; color: #8fa59a; }
     .up-remove:hover { background: #f8d7da; color: #721c24; }
     [data-theme="dark"] .up-remove:hover { background: #3a1616; color: #f1a8a8; }
