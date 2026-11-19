@@ -43,20 +43,28 @@
     [data-theme="dark"] .up-zone-limits { color: #7d9087; }
 
     /* ── File tiles ── */
-    .up-file-list { width: 100%; display: flex; flex-direction: column; gap: .3rem; max-height: 150px; overflow-y: auto; }
-    .up-file-tile { display: flex; align-items: center; gap: .55rem; padding: .35rem .55rem; background: #f0f9f3; border-radius: .3rem; width: 100%; }
-    [data-theme="dark"] .up-file-tile { background: #1d2b24; }
-    .up-file-icon { width: 32px; height: 32px; flex: 0 0 32px; border-radius: 6px; background: #fff; color: #00A868; display: inline-flex; align-items: center; justify-content: center; font-size: .95rem; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
-    [data-theme="dark"] .up-file-icon { background: #243324; }
+    .up-file-list { width: 100%; display: flex; flex-direction: column; gap: .4rem; max-height: 168px; overflow-y: auto; padding-right: .15rem; scrollbar-width: thin; scrollbar-color: #b9dfc6 transparent; }
+    .up-file-list::-webkit-scrollbar { width: 6px; }
+    .up-file-list::-webkit-scrollbar-thumb { background: #b9dfc6; border-radius: 99px; }
+    [data-theme="dark"] .up-file-list { scrollbar-color: #2f6b4f transparent; }
+    [data-theme="dark"] .up-file-list::-webkit-scrollbar-thumb { background: #2f6b4f; }
+    .up-file-tile { display: flex; align-items: center; gap: .7rem; padding: .5rem .65rem; background: #fff; border: 1px solid #dcebe1; border-radius: .5rem; width: 100%; box-shadow: 0 1px 2px rgba(16,76,45,.05); transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+    .up-file-tile:hover { border-color: #00A868; box-shadow: 0 3px 10px rgba(0,168,104,.1); transform: translateY(-1px); }
+    [data-theme="dark"] .up-file-tile { background: #1a2820; border-color: #2f6b4f; box-shadow: none; }
+    [data-theme="dark"] .up-file-tile:hover { background: #1d2b24; border-color: #00A868; }
+    .up-file-icon { width: 34px; height: 34px; flex: 0 0 34px; border-radius: 8px; background: #e6f3ea; color: #00A868; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
     .up-file-info { flex: 1 1 auto; min-width: 0; }
     .up-file-name { font-weight: 700; font-size: .85rem; color: #1a1a2e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.25; }
     [data-theme="dark"] .up-file-name { color: #e5eee8; }
-    .up-file-meta { font-size: .68rem; color: #5a9e7a; margin-top: .05rem; }
-    [data-theme="dark"] .up-file-meta { color: #8fa59a; }
-    .up-remove { border: none; background: #f1f3f5; color: #6c757d; width: 24px; height: 24px; border-radius: .25rem; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 24px; transition: all .15s ease; }
+    .up-file-meta { display: flex; align-items: center; gap: .45rem; margin-top: .2rem; }
+    .up-file-ext { display: inline-flex; align-items: center; font-size: .6rem; font-weight: 800; letter-spacing: .4px; line-height: 1; padding: .18rem .35rem; border-radius: .25rem; background: #f1f3f5; color: #5f6368; }
+    .up-file-size { font-size: .68rem; color: #5a9e7a; }
+    [data-theme="dark"] .up-file-size { color: #8fa59a; }
+    .up-remove { border: 1px solid transparent; background: #f1f3f5; color: #6c757d; width: 26px; height: 26px; border-radius: .35rem; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 26px; font-size: .75rem; transition: all .15s ease; }
+    .up-remove:hover { background: #f8d7da; color: #721c24; border-color: #f5c2c7; }
+    .up-remove:focus-visible { outline: 2px solid #00A868; outline-offset: 2px; }
     [data-theme="dark"] .up-remove { background: #243324; color: #8fa59a; }
-    .up-remove:hover { background: #f8d7da; color: #721c24; }
-    [data-theme="dark"] .up-remove:hover { background: #3a1616; color: #f1a8a8; }
+    [data-theme="dark"] .up-remove:hover { background: #3a1616; color: #f1a8a8; border-color: #7a2e2e; }
     .up-file-summary { font-size: .78rem; color: #5a9e7a; margin-top: .7rem; }
     [data-theme="dark"] .up-file-summary { color: #8fa59a; }
 
@@ -152,7 +160,7 @@
                     <span class="up-file-icon"><i class="bi bi-file-earmark-fill"></i></span>
                     <div class="up-file-info">
                         <div class="up-file-name"></div>
-                        <div class="up-file-meta"></div>
+                        <div class="up-file-meta"><span class="up-file-ext"></span><span class="up-file-size"></span></div>
                     </div>
                     <button type="button" class="up-remove" title="Remove file" aria-label="Remove file"><i class="bi bi-x-lg"></i></button>
                 </div>
@@ -302,10 +310,15 @@
             icon.style.color = ic[1];
             icon.style.background = ic[2];
             tile.querySelector('.up-file-name').textContent = file.name;
-            tile.querySelector('.up-file-meta').textContent = humanSize(file.size) + ' · ' + (e.toUpperCase() || 'FILE');
+            var extBadge = tile.querySelector('.up-file-ext');
+            extBadge.textContent = e.toUpperCase() || 'FILE';
+            extBadge.style.color = ic[1];
+            extBadge.style.background = ic[2];
+            tile.querySelector('.up-file-size').textContent = humanSize(file.size);
             var remove = tile.querySelector('.up-remove');
             remove.setAttribute('data-index', String(index));
             remove.setAttribute('aria-label', 'Remove ' + file.name);
+            remove.title = 'Remove ' + file.name;
             remove.addEventListener('click', function (e2) {
                 e2.stopPropagation();
                 removeFileAt(index);
