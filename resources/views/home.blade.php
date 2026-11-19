@@ -624,13 +624,15 @@
     function positionSub() {
         if (!sub.classList.contains('open')) return;
         var mainRect = menu.getBoundingClientRect();
+        var label = moreItem.querySelector('.wd-ctx-label');
+        var anchorRect = label ? label.getBoundingClientRect() : moreItem.getBoundingClientRect();
         var width = sub.offsetWidth;
         var height = sub.offsetHeight;
         var left = mainRect.right - 6;
         if (left + width > window.innerWidth - 8) left = Math.max(8, mainRect.left - width + 6);
-        var top = Math.max(8, Math.min(mainRect.top - 6, window.innerHeight - height - 8));
+        var top = anchorRect.top + (anchorRect.height - height) / 2;
         sub.style.left = left + 'px';
-        sub.style.top = top + 'px';
+        sub.style.top = Math.max(8, Math.min(top, window.innerHeight - height - 8)) + 'px';
     }
 
     function openSub() {

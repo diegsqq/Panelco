@@ -94,6 +94,8 @@ class WelcomePageTest extends TestCase
             ->assertSee('Alt+C then I')
             ->assertSee('Google Apps Script')
             ->assertSee('Google Drawings')
+            ->assertSee("moreItem.querySelector('.wd-ctx-label')", false)
+            ->assertSee('anchorRect.top + (anchorRect.height - height) / 2', false)
             ->assertSee("menu.style.left = x + 'px';", false)
             ->assertSee("menu.style.top = y + 'px';", false);
     }
