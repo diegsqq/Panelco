@@ -185,10 +185,40 @@ class Phase3UploadTest extends TestCase
             ->assertOk()
             ->assertSee('role="button" tabindex="0" aria-label="Choose files to upload"', false)
             ->assertSee('aria-describedby="uploadInstructions" aria-controls="file"', false)
+            ->assertSee('id="fileList"', false)
+            ->assertSee('id="file" name="file[]"', false)
+            ->assertSee('multiple required', false)
             ->assertSee('id="fileMeta" role="status" aria-live="polite"', false)
             ->assertSee('id="suggestNote" role="status" aria-live="polite"', false)
             ->assertSee('input.files[0]', false)
             ->assertDontSee('input.files = (function ()', false);
+    }
+
+    public function test_upload_page_lists_each_selected_file_and_uploads_the_batch(): void
+    {
+        $this->seed();
+        Storage::fake('private');
+        Queue::fake();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+
+        $this->actingAs($employee)
+            ->get(route('documents.upload'))
+            ->assertOk()
+            ->assertSeeText('Upload documents')
+            ->assertSee('id="fileList"', false)
+            ->assertSee('multiple required', false);
+
+        $this->actingAs($employee)->post(route('documents.store'), [
+            'file' => [
+                UploadedFile::fake()->createWithContent('first.txt', 'First document'),
+                UploadedFile::fake()->createWithContent('second.txt', 'Second document'),
+                UploadedFile::fake()->createWithContent('third.txt', 'Third document'),
+            ],
+        ])->assertRedirect(route('documents.library'))
+            ->assertSessionHas('status', '3 documents uploaded and queued for processing.');
+
+        $this->assertSame(3, Document::count());
+        Queue::assertPushed(ProcessDocument::class, 3);
     }
 
     public function test_user_cannot_download_restricted_document(): void
@@ -323,7 +353,7 @@ class Phase3UploadTest extends TestCase
             ->assertSee('aria-label="Document result pages"', false)
             ->assertSee('aria-label="Page 1 of 1" aria-current="page"', false)
             ->assertSeeText('Approved plan')
-            ->assertSeeText('Complete')
+            ->assertSee('data-status="Completed"', false)
             ->assertDontSeeText('Pending plan');
     }
 

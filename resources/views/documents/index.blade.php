@@ -402,7 +402,7 @@
             </div>
 
             {{-- Pagination --}}
-            <div class="lib-pagination">
+            <div class="lib-pagination" role="navigation" aria-label="Document result pages">
                 <span class="lib-pagination-info">
                     Showing {{ $documents->firstItem() }}&ndash;{{ $documents->lastItem() }} of {{ number_format($documents->total()) }} documents
                 </span>
@@ -414,7 +414,7 @@
                     @endif
                     @foreach(range(max(1,$documents->currentPage()-1), min($documents->lastPage(),$documents->currentPage()+1)) as $pg)
                         @if($pg === $documents->currentPage())
-                            <span class="lib-pg-btn" style="background:#00A868;color:#fff;border-color:#00A868;font-weight:700">{{ $pg }}</span>
+                            <span class="lib-pg-btn" style="background:#00A868;color:#fff;border-color:#00A868;font-weight:700" aria-label="Page {{ $pg }} of {{ $documents->lastPage() }}" aria-current="page">{{ $pg }}</span>
                         @else
                             <a class="lib-pg-btn" href="{{ $documents->url($pg) }}">{{ $pg }}</a>
                         @endif

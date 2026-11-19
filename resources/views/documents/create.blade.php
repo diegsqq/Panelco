@@ -42,8 +42,9 @@
     .up-zone-limits { font-size: .72rem; color: #9a9ab0; }
     [data-theme="dark"] .up-zone-limits { color: #7d9087; }
 
-    /* ── File tile ── */
-    .up-file-tile { display: flex; align-items: center; gap: 1rem; padding: .7rem .9rem; background: #f0f9f3; border-radius: .8rem; margin: 0 auto; max-width: 100%; }
+    /* ── File tiles ── */
+    .up-file-list { width: 100%; display: flex; flex-direction: column; gap: .5rem; max-height: 260px; overflow-y: auto; }
+    .up-file-tile { display: flex; align-items: center; gap: 1rem; padding: .7rem .9rem; background: #f0f9f3; border-radius: .8rem; width: 100%; }
     [data-theme="dark"] .up-file-tile { background: #1d2b24; }
     .up-file-icon { width: 48px; height: 48px; flex: 0 0 48px; border-radius: 14px; background: #fff; color: #00A868; display: inline-flex; align-items: center; justify-content: center; font-size: 1.35rem; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
     [data-theme="dark"] .up-file-icon { background: #243324; }
@@ -56,6 +57,8 @@
     [data-theme="dark"] .up-remove { background: #243324; color: #8fa59a; }
     .up-remove:hover { background: #f8d7da; color: #721c24; }
     [data-theme="dark"] .up-remove:hover { background: #3a1616; color: #f1a8a8; }
+    .up-file-summary { font-size: .78rem; color: #5a9e7a; margin-top: .7rem; }
+    [data-theme="dark"] .up-file-summary { color: #8fa59a; }
 
     /* ── Analyzing line ── */
     .up-analyzing { font-size: .76rem; color: #00743F; margin-top: .6rem; display: flex; align-items: center; gap: .5rem; }
@@ -113,8 +116,8 @@
         <div class="up-head-info">
             <span class="up-head-ico"><i class="bi bi-cloud-arrow-up-fill"></i></span>
             <div>
-                <h1 class="up-head-title">Upload a document</h1>
-                <p class="up-head-sub">Title, category, and date are suggested automatically — edit anything before uploading.</p>
+                <h1 class="up-head-title">Upload documents</h1>
+                <p class="up-head-sub">Select one or more files — details are suggested for single files; edit anything before uploading.</p>
             </div>
         </div>
         <button class="up-btn-upload" id="submitBtn" type="submit" form="uploadForm" disabled>
@@ -125,30 +128,35 @@
     {{-- ── Step 1: file picker --}}
     <div class="card card-p3 p-4 up-card-group">
         <div class="d-flex align-items-center gap-2 mb-3">
-            <h6 class="fw-bold mb-0" style="color:#00743F">{{ $folderMode ? 'Choose a folder' : 'Choose a file' }}</h6>
+            <h6 class="fw-bold mb-0" style="color:#00743F">{{ $folderMode ? 'Choose a folder' : 'Choose files' }}</h6>
         </div>
 
-        <div id="dropZone" class="up-zone p-4 text-center" role="button" tabindex="0" aria-label="Choose files to upload" aria-describedby="uploadInstructions">
+        <div id="dropZone" class="up-zone p-4 text-center" role="button" tabindex="0" aria-label="Choose files to upload" aria-describedby="uploadInstructions" aria-controls="file">
             <div id="zoneIdle">
                 <div class="up-idle-icon"><i class="bi bi-cloud-arrow-up"></i></div>
-                <p class="up-zone-title">{{ $folderMode ? 'Choose a folder from your computer' : 'Drag & drop your file here' }}</p>
+                <p class="up-zone-title">{{ $folderMode ? 'Choose a folder from your computer' : 'Drag & drop your files here' }}</p>
                 <p class="up-zone-sub">or <span style="color:#00743F;text-decoration:underline;cursor:pointer" onclick="document.getElementById('file').click()">{{ $folderMode ? 'browse for a folder' : 'browse from your computer' }}</span></p>
                 <p class="up-zone-limits" id="uploadInstructions">PDF · DOCX · TXT · PNG · JPEG — up to {{ number_format(config('smartdocs.upload.max_kb', 51200) / 1024, 0) }} MB. {{ $folderMode ? 'All supported files inside the folder will be queued.' : 'You can select multiple files.' }}</p>
             </div>
-            <div id="zoneFile" class="d-none">
-                <div class="up-file-tile">
-                    <span class="up-file-icon" id="fileIcon"><i class="bi bi-file-earmark-fill"></i></span>
-                    <div class="up-file-info">
-                        <div class="up-file-name" id="fileName"></div>
-                        <div class="up-file-meta" id="fileMeta"></div>
-                        <div class="up-analyzing d-none" id="analyzingLine" role="status" aria-live="polite" aria-atomic="true">
-                            <span class="spinner-border spinner-border-sm me-1" style="width:.8rem;height:.8rem"></span>
-                            <span id="analyzingText">Reading document and suggesting details…</span>
-                        </div>
-                    </div>
-                    <button type="button" class="up-remove" id="removeFile" title="Remove file" aria-label="Remove file"><i class="bi bi-x-lg"></i></button>
+            <div id="zoneFile" class="d-none w-100">
+                <div class="up-file-list" id="fileList"></div>
+                <div class="up-file-summary" id="fileMeta" role="status" aria-live="polite" aria-atomic="true"></div>
+                <div class="up-analyzing d-none" id="analyzingLine" role="status" aria-live="polite" aria-atomic="true">
+                    <span class="spinner-border spinner-border-sm me-1" style="width:.8rem;height:.8rem"></span>
+                    <span id="analyzingText">Reading document and suggesting details…</span>
                 </div>
             </div>
+
+            <template id="fileTileTemplate">
+                <div class="up-file-tile">
+                    <span class="up-file-icon"><i class="bi bi-file-earmark-fill"></i></span>
+                    <div class="up-file-info">
+                        <div class="up-file-name"></div>
+                        <div class="up-file-meta"></div>
+                    </div>
+                    <button type="button" class="up-remove" title="Remove file" aria-label="Remove file"><i class="bi bi-x-lg"></i></button>
+                </div>
+            </template>
         </div>
 
         <div class="up-progress mt-3" id="upProgress"><div class="up-progress-bar"></div></div>
@@ -233,10 +241,9 @@
     var input = document.getElementById('file');
     var idle = document.getElementById('zoneIdle');
     var fileBox = document.getElementById('zoneFile');
-    var fileName = document.getElementById('fileName');
+    var fileList = document.getElementById('fileList');
+    var fileTileTemplate = document.getElementById('fileTileTemplate');
     var fileMeta = document.getElementById('fileMeta');
-    var fileIcon = document.getElementById('fileIcon');
-    var removeBtn = document.getElementById('removeFile');
     var progress = document.getElementById('upProgress');
     var analyzing = document.getElementById('analyzingLine');
     var suggestNote = document.getElementById('suggestNote');
@@ -284,26 +291,53 @@
         touched = { title: false, category: false, date: false };
     }
 
-    function showFile(file) {
-        var e = ext(file.name);
-        var ic = ICONS[e] || ['bi-file-earmark-fill', '#00A868', '#e6f3ea'];
-        fileIcon.className = 'up-file-icon bi ' + ic[0];
-        fileIcon.style.color = ic[1];
-        fileIcon.style.background = ic[2];
-        fileName.textContent = file.name;
-        fileMeta.textContent = humanSize(file.size) + ' · ' + e.toUpperCase();
+    function renderFiles(files) {
+        fileList.textContent = '';
+        files.forEach(function (file, index) {
+            var tile = fileTileTemplate.content.firstElementChild.cloneNode(true);
+            var e = ext(file.name);
+            var ic = ICONS[e] || ['bi-file-earmark-fill', '#00A868', '#e6f3ea'];
+            var icon = tile.querySelector('.up-file-icon');
+            icon.className = 'up-file-icon bi ' + ic[0];
+            icon.style.color = ic[1];
+            icon.style.background = ic[2];
+            tile.querySelector('.up-file-name').textContent = file.name;
+            tile.querySelector('.up-file-meta').textContent = humanSize(file.size) + ' · ' + (e.toUpperCase() || 'FILE');
+            var remove = tile.querySelector('.up-remove');
+            remove.setAttribute('data-index', String(index));
+            remove.setAttribute('aria-label', 'Remove ' + file.name);
+            remove.addEventListener('click', function (e2) {
+                e2.stopPropagation();
+                removeFileAt(index);
+            });
+            fileList.appendChild(tile);
+        });
+
+        var total = files.reduce(function (sum, file) { return sum + file.size; }, 0);
+        fileMeta.textContent = files.length === 1
+            ? humanSize(total) + ' · ' + (ext(files[0].name).toUpperCase() || 'FILE')
+            : files.length + ' files · ' + humanSize(total) + ' total';
         idle.classList.add('d-none');
         fileBox.classList.remove('d-none');
         zone.classList.add('filled');
-        clearBadges();
-        suggestNote.textContent = '';
         submitBtn.disabled = false;
+    }
+
+    function removeFileAt(index) {
+        var files = Array.prototype.slice.call(input.files);
+        files.splice(index, 1);
+        var dt = new DataTransfer();
+        files.forEach(function (file) { dt.items.add(file); });
+        input.files = dt.files;
+        input.dispatchEvent(new Event('change'));
     }
 
     function resetZone() {
         if (req) { req.abort(); req = null; }
         input.value = '';
         document.getElementById('fileLastModified').value = '';
+        fileList.textContent = '';
+        fileMeta.textContent = '';
         idle.classList.remove('d-none');
         fileBox.classList.add('d-none');
         zone.classList.remove('filled');
@@ -376,23 +410,37 @@
             });
     }
 
-    function accept(file) {
-        if (!file) return;
-        document.getElementById('fileLastModified').value = file.lastModified ? String(file.lastModified) : '';
-        showFile(file);
-        analyze(file);
+    function syncFiles() {
+        var files = Array.prototype.slice.call(input.files);
+        if (!files.length) { resetZone(); return; }
+
+        seq++;
+        if (req) { req.abort(); req = null; }
+        renderFiles(files);
+        clearBadges();
+        suggestNote.textContent = '';
+        analyzing.classList.add('d-none');
+        progress.classList.remove('on');
+
+        var firstFile = input.files[0];
+        var single = files.length === 1;
+        document.getElementById('fileLastModified').value = single && firstFile.lastModified ? String(firstFile.lastModified) : '';
+
+        if (single) {
+            analyze(firstFile);
+        } else {
+            detailsHint.textContent = 'Multiple files selected — each keeps its own filename; category and access apply to all.';
+        }
     }
 
-    zone.addEventListener('click', function (e) { if (e.target !== removeBtn && !removeBtn.contains(e.target)) input.click(); });
-    zone.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } });
-    input.addEventListener('change', function () {
-        if (!input.files.length) return;
-        accept(input.files[0]);
-        if (input.files.length > 1) {
-            fileMeta.textContent += ' · +' + (input.files.length - 1) + ' more file(s)';
-        }
+    zone.addEventListener('click', function (e) {
+        if (e.target.closest && e.target.closest('.up-remove')) return;
+        input.click();
     });
-    removeBtn.addEventListener('click', function (e) { e.stopPropagation(); resetZone(); });
+    zone.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }
+    });
+    input.addEventListener('change', syncFiles);
 
     ['dragenter', 'dragover'].forEach(function (ev) {
         zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.add('dragging'); });
@@ -403,7 +451,8 @@
     zone.addEventListener('drop', function (e) {
         if (!e.dataTransfer.files.length) return;
         var dt = new DataTransfer();
-        Array.from(e.dataTransfer.files).forEach(function (f) { dt.items.add(f); });
+        Array.prototype.slice.call(input.files).forEach(function (f) { dt.items.add(f); });
+        Array.prototype.slice.call(e.dataTransfer.files).forEach(function (f) { dt.items.add(f); });
         input.files = dt.files;
         input.dispatchEvent(new Event('change'));
     });
