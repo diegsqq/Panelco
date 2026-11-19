@@ -23,7 +23,7 @@
     .up-btn-upload:disabled { opacity: .65; cursor: not-allowed; transform: none; }
 
     /* ── File drop zone ── */
-    .up-zone { border: 2px dashed #b9dfc6; border-radius: 1rem; background: #f7fbf8; transition: all .2s ease; cursor: pointer; min-height: 240px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2.5rem 1.5rem; }
+    .up-zone { border: 2px dashed #b9dfc6; border-radius: .85rem; background: #f7fbf8; transition: all .2s ease; cursor: pointer; min-height: 150px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 1.25rem 1rem; }
     [data-theme="dark"] .up-zone { background: #16211c; border-color: #26362e; }
     .up-zone:hover { border-color: #00A868; background: #f0f9f3; }
     [data-theme="dark"] .up-zone:hover { border-color: #2f6b4f; background: #1d2b24; }
@@ -32,21 +32,21 @@
     [data-theme="dark"] .up-zone.dragging { background: #12291d; box-shadow: 0 0 0 4px rgba(0,168,104,.18); }
     .up-zone.filled { border-style: solid; border-color: #cfe9d7; background: #fff; cursor: default; }
     [data-theme="dark"] .up-zone.filled { background: #1d2b24; border-color: #2f6b4f; }
-    .up-zone .up-idle-icon { width: 64px; height: 64px; border-radius: 18px; background: #e6f3ea; color: #00A868; display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1rem; transition: transform .2s ease; }
+    .up-zone .up-idle-icon { width: 48px; height: 48px; border-radius: 14px; background: #e6f3ea; color: #00A868; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto .5rem; transition: transform .2s ease; }
     [data-theme="dark"] .up-zone .up-idle-icon { background: #1d2b24; color: #7fe0ac; }
     .up-zone:hover .up-idle-icon { transform: translateY(-3px); }
-    .up-zone-title { font-weight: 700; font-size: 1rem; color: #111; margin: 0 0 .25rem; }
+    .up-zone-title { font-weight: 700; font-size: .9rem; color: #111; margin: 0 0 .2rem; }
     [data-theme="dark"] .up-zone-title { color: #e5eee8; }
-    .up-zone-sub { color: #5a9e7a; font-size: .875rem; margin: 0 0 .5rem; }
+    .up-zone-sub { color: #5a9e7a; font-size: .8rem; margin: 0 0 .35rem; }
     [data-theme="dark"] .up-zone-sub { color: #8fa59a; }
-    .up-zone-limits { font-size: .72rem; color: #9a9ab0; }
+    .up-zone-limits { font-size: .68rem; color: #9a9ab0; }
     [data-theme="dark"] .up-zone-limits { color: #7d9087; }
 
     /* ── File tiles ── */
-    .up-file-list { width: 100%; display: flex; flex-direction: column; gap: .5rem; max-height: 260px; overflow-y: auto; }
-    .up-file-tile { display: flex; align-items: center; gap: 1rem; padding: .7rem .9rem; background: #f0f9f3; border-radius: .8rem; width: 100%; }
+    .up-file-list { width: 100%; display: flex; flex-direction: column; gap: .4rem; max-height: 180px; overflow-y: auto; }
+    .up-file-tile { display: flex; align-items: center; gap: .7rem; padding: .5rem .7rem; background: #f0f9f3; border-radius: .7rem; width: 100%; }
     [data-theme="dark"] .up-file-tile { background: #1d2b24; }
-    .up-file-icon { width: 48px; height: 48px; flex: 0 0 48px; border-radius: 14px; background: #fff; color: #00A868; display: inline-flex; align-items: center; justify-content: center; font-size: 1.35rem; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+    .up-file-icon { width: 40px; height: 40px; flex: 0 0 40px; border-radius: 12px; background: #fff; color: #00A868; display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
     [data-theme="dark"] .up-file-icon { background: #243324; }
     .up-file-info { flex: 1 1 auto; min-width: 0; }
     .up-file-name { font-weight: 700; font-size: .95rem; color: #1a1a2e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3; }
