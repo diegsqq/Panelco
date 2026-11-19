@@ -94,6 +94,7 @@ class WelcomePageTest extends TestCase
             ->assertSee('Alt+C then I')
             ->assertSee('Google Apps Script')
             ->assertSee('Google Drawings')
+            ->assertSee('A shared folder in Google Drive is a folder in your My Drive')
             ->assertSee("menu.style.left = x + 'px';", false)
             ->assertSee("menu.style.top = y + 'px';", false);
     }

@@ -40,6 +40,7 @@
     .wd-section-head { display: flex; align-items: center; justify-content: space-between; gap: .6rem; flex-wrap: wrap; }
     .wd-section-head .wd-tools { border: 0; padding: 0; }
     .wd-section-title { font-size: 1.02rem; font-weight: 800; color: #1a1a2e; margin: 0; }
+    .wd-section-note { font-size: .78rem; color: #7a7a8a; margin: .4rem 0 .9rem; line-height: 1.55; }
     .wd-section { position: relative; }
     /* Swipe hint icon on folders strip */
     .wd-swipe-hint { position: absolute; right: .4rem; bottom: .9rem; width: 30px; height: 30px; border-radius: 50%; background: #fff; border: 1px solid #d5e8db; box-shadow: 0 2px 8px rgba(10,31,92,.14); color: #00A868; display: none; align-items: center; justify-content: center; font-size: .95rem; pointer-events: none; z-index: 4; animation: wd-swipe 1.2s ease-in-out infinite; }
@@ -115,6 +116,7 @@
     [data-theme="dark"] .wd-stat { background: #16211c; border-color: #26362e; }
     [data-theme="dark"] .wd-stat-lbl { color: #8fa59a; }
     [data-theme="dark"] .wd-section-title { color: #e5eee8; }
+    [data-theme="dark"] .wd-section-note { color: #8fa59a; }
     [data-theme="dark"] .wd-folder, [data-theme="dark"] .wd-recent { background: #16211c; border-color: #26362e; }
     [data-theme="dark"] .wd-folder:hover, [data-theme="dark"] .wd-recent:hover { background: #1a2820; border-color: #2f6b4f; box-shadow: none; }
     [data-theme="dark"] .wd-folder-ico { background: #1d2b24; color: #fff; }
@@ -262,6 +264,7 @@
             <h2 class="wd-section-title" id="wdSharedTitle">Shared files</h2>
             <a href="{{ route('documents.library', ['shared' => 1]) }}" class="wd-filter"><i class="bi bi-arrow-right"></i> View all</a>
         </div>
+        <p class="wd-section-note">A shared folder in Google Drive is a folder in your My Drive that you give other people permission to view, comment on, or edit. Anyone with access can see the items inside according to their permission level, and new files placed in the folder generally inherit those same sharing rules.</p>
         @if($sharedFiles->isEmpty())
             <div class="wd-card wd-empty"><i class="bi bi-people"></i>No shared files yet. Documents shared with you will appear here.</div>
         @else
