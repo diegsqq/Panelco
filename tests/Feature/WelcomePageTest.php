@@ -96,6 +96,7 @@ class WelcomePageTest extends TestCase
             ->assertSee('Google Drawings')
             ->assertSee("moreItem.querySelector('.wd-ctx-label')", false)
             ->assertSee('anchorRect.top + (anchorRect.height - height) / 2', false)
+            ->assertSee('var left = mainRect.right + gap;', false)
             ->assertSee("menu.style.left = x + 'px';", false)
             ->assertSee("menu.style.top = y + 'px';", false);
     }
