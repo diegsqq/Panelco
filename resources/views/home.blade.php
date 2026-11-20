@@ -147,25 +147,17 @@
     [data-theme="dark"] .wd-empty { color: #8fa59a; }
 
     /* ── Right-click create menu (Drive-style) ── */
-    .wd-ctx { position: fixed; z-index: 1080; display: none; align-items: flex-start; gap: .35rem; margin: 0; padding: 0; }
-    .wd-ctx.open { display: flex; }
-    .wd-ctx-main { position: relative; left: 0; top: 0; }
+    .wd-ctx { position: fixed; z-index: 1080; display: none; }
+    .wd-ctx.open { display: block; }
     .wd-ctx-panel { background: #fff; color: #202124; border: 1px solid #e3e3e3; border-radius: .75rem; box-shadow: 0 12px 32px rgba(32,33,36,.22), 0 2px 6px rgba(32,33,36,.12); padding: .4rem 0; min-width: 268px; }
-    .wd-ctx-sub { position: fixed; display: none; min-width: 236px; }
-    .wd-ctx-sub.open { display: block; }
     .wd-ctx-item { width: 100%; display: flex; align-items: center; gap: .75rem; border: 0; background: transparent; color: inherit; text-align: left; padding: .5rem .85rem; font-size: .84rem; font-weight: 500; cursor: pointer; white-space: nowrap; }
     .wd-ctx-item:hover, .wd-ctx-item:focus-visible { background: #f1f3f4; outline: none; }
     .wd-ctx-ico { width: 20px; flex: 0 0 20px; font-size: 1.05rem; color: #5f6368; display: inline-flex; align-items: center; justify-content: center; }
     .wd-ctx-label { flex: 1; }
     .wd-ctx-key { color: #80868b; font-size: .7rem; font-weight: 400; }
-    .wd-ctx-caret { color: #9aa0a6; font-size: .75rem; }
-    .wd-ctx-sep { height: 1px; background: #e8eaed; margin: .35rem .5rem; }
-    .wd-ctx-toast { position: fixed; left: 50%; bottom: 1.5rem; transform: translate(-50%, 1rem); z-index: 1090; background: #202124; color: #fff; border-radius: .6rem; padding: .65rem 1rem; font-size: .84rem; box-shadow: 0 8px 24px rgba(0,0,0,.28); opacity: 0; pointer-events: none; transition: opacity .18s ease, transform .18s ease; }
-    .wd-ctx-toast.show { opacity: 1; transform: translate(-50%, 0); }
     [data-theme="dark"] .wd-ctx-panel { background: #1d2b24; border-color: #2f6b4f; color: #e5eee8; box-shadow: 0 12px 32px rgba(0,0,0,.45); }
     [data-theme="dark"] .wd-ctx-item:hover, [data-theme="dark"] .wd-ctx-item:focus-visible { background: #26382f; }
-    [data-theme="dark"] .wd-ctx-ico, [data-theme="dark"] .wd-ctx-key, [data-theme="dark"] .wd-ctx-caret { color: #8fa59a; }
-    [data-theme="dark"] .wd-ctx-sep { background: #2f6b4f; }
+    [data-theme="dark"] .wd-ctx-ico, [data-theme="dark"] .wd-ctx-key { color: #8fa59a; }
 </style>
 
 <div class="p3-dash" id="p3Dashboard">
@@ -404,49 +396,8 @@
         <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="folder-upload" title="Lets you upload an entire folder and all of its contents at once.">
             <span class="wd-ctx-ico"><i class="bi bi-folder-symlink"></i></span><span class="wd-ctx-label">Folder upload</span><span class="wd-ctx-key">Alt+C then I</span>
         </button>
-        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="new-project" title="Creates a workspace or project hub to group related files and tasks together.">
-            <span class="wd-ctx-ico"><i class="bi bi-kanban"></i></span><span class="wd-ctx-label">New project</span>
-        </button>
-        <div class="wd-ctx-sep"></div>
-        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="docs" title="Opens a word processor for writing documents, letters, or reports.">
-            <span class="wd-ctx-ico"><i class="bi bi-file-earmark-text"></i></span><span class="wd-ctx-label">Google Docs</span>
-        </button>
-        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="sheets" title="Opens a spreadsheet tool for data, tables, and calculations.">
-            <span class="wd-ctx-ico"><i class="bi bi-table"></i></span><span class="wd-ctx-label">Google Sheets</span>
-        </button>
-        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="slides" title="Opens a presentation builder for creating slideshows.">
-            <span class="wd-ctx-ico"><i class="bi bi-easel"></i></span><span class="wd-ctx-label">Google Slides</span>
-        </button>
-        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="vids" title="Opens an AI-powered video creation app for making work or project videos.">
-            <span class="wd-ctx-ico"><i class="bi bi-camera-video"></i></span><span class="wd-ctx-label">Google Vids</span>
-        </button>
-        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="forms" title="Opens a tool to build online surveys, quizzes, and registration forms.">
-            <span class="wd-ctx-ico"><i class="bi bi-ui-checks"></i></span><span class="wd-ctx-label">Google Forms</span>
-        </button>
-        <div class="wd-ctx-sep"></div>
-        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="more" aria-haspopup="menu" aria-expanded="false" aria-controls="wdContextMore" title="Expands a side menu showing extra Google apps and connected tools.">
-            <span class="wd-ctx-ico"><i class="bi bi-three-dots"></i></span><span class="wd-ctx-label">More</span><span class="wd-ctx-caret"><i class="bi bi-chevron-right"></i></span>
-        </button>
-    </div>
-    <div class="wd-ctx-panel wd-ctx-sub" id="wdContextMore" role="menu" aria-label="More apps" aria-hidden="true">
-        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="drawings" title="A tool for making simple diagrams, flowcharts, and graphics.">
-            <span class="wd-ctx-ico"><i class="bi bi-palette"></i></span><span class="wd-ctx-label">Google Drawings</span>
-        </button>
-        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="maps" title="Lets you create custom maps with pins, routes, and shapes.">
-            <span class="wd-ctx-ico"><i class="bi bi-map"></i></span><span class="wd-ctx-label">Google My Maps</span>
-        </button>
-        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="sites" title="A drag-and-drop builder for creating basic websites or internal pages.">
-            <span class="wd-ctx-ico"><i class="bi bi-globe2"></i></span><span class="wd-ctx-label">Google Sites</span>
-        </button>
-        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="markdown" title="Creates a plain-text file formatted with Markdown syntax (often used for notes or code documentation).">
-            <span class="wd-ctx-ico"><i class="bi bi-file-earmark-code"></i></span><span class="wd-ctx-label">Markdown</span>
-        </button>
-        <button type="button" class="wd-ctx-item" role="menuitem" data-wd-action="apps-script" title="Opens a coding environment to write scripts that automate tasks across Google apps.">
-            <span class="wd-ctx-ico"><i class="bi bi-code-slash"></i></span><span class="wd-ctx-label">Google Apps Script</span>
-        </button>
     </div>
 </div>
-<div class="wd-ctx-toast" id="wdContextToast" role="status" aria-live="polite"></div>
 
 {{-- ── New folder modal ── --}}
 <div class="modal fade" id="wdNewFolderModal" tabindex="-1" aria-labelledby="wdNewFolderModalLabel" aria-hidden="true">
@@ -588,69 +539,21 @@
 (function () {
     var dash = document.getElementById('p3Dashboard');
     var menu = document.getElementById('wdContextMenu');
-    var sub = document.getElementById('wdContextMore');
-    var moreItem = menu && menu.querySelector('[data-wd-action="more"]');
-    var toast = document.getElementById('wdContextToast');
     var folderModalEl = document.getElementById('wdNewFolderModal');
     var folderModal = folderModalEl && window.bootstrap ? new bootstrap.Modal(folderModalEl) : null;
     var uploadUrl = @json(route('documents.upload'));
     var folderUrl = @json(route('categories.create'));
-    var hideSubTimer = null;
-    var toastTimer = null;
     var chordArmed = false;
     var chordTimer = null;
 
-    if (!dash || !menu || !sub || !moreItem) return;
-
-    function flash(message) {
-        if (!toast) return;
-        toast.textContent = message;
-        toast.classList.add('show');
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2600);
-    }
-
-    function closeSub(immediate) {
-        clearTimeout(hideSubTimer);
-        var apply = function () {
-            sub.classList.remove('open');
-            sub.setAttribute('aria-hidden', 'true');
-            moreItem.setAttribute('aria-expanded', 'false');
-        };
-        if (immediate) apply();
-        else hideSubTimer = setTimeout(apply, 140);
-    }
-
-    function positionSub() {
-        if (!sub.classList.contains('open')) return;
-        var label = moreItem.querySelector('.wd-ctx-label');
-        var anchorRect = label ? label.getBoundingClientRect() : moreItem.getBoundingClientRect();
-        var width = sub.offsetWidth;
-        var height = sub.offsetHeight;
-        var gap = 8;
-        var left = anchorRect.right + gap;
-        if (left + width > window.innerWidth - 8) left = Math.max(8, anchorRect.left - width - gap);
-        var top = anchorRect.top + (anchorRect.height - height) / 2;
-        sub.style.left = left + 'px';
-        sub.style.top = Math.max(8, Math.min(top, window.innerHeight - height - 8)) + 'px';
-    }
-
-    function openSub() {
-        clearTimeout(hideSubTimer);
-        sub.classList.add('open');
-        sub.setAttribute('aria-hidden', 'false');
-        moreItem.setAttribute('aria-expanded', 'true');
-        positionSub();
-    }
+    if (!dash || !menu) return;
 
     function closeMenu() {
         menu.classList.remove('open');
         menu.setAttribute('aria-hidden', 'true');
-        closeSub(true);
     }
 
     function openMenu(x, y) {
-        closeSub(true);
         menu.classList.add('open');
         menu.setAttribute('aria-hidden', 'false');
         menu.style.left = x + 'px';
@@ -659,22 +562,6 @@
 
     function isTyping(el) {
         return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable);
-    }
-
-    function downloadMarkdown() {
-        var blob = new Blob(['# Untitled\n\n'], { type: 'text/markdown;charset=utf-8' });
-        var url = URL.createObjectURL(blob);
-        var link = document.createElement('a');
-        link.href = url;
-        link.download = 'Untitled.md';
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-    }
-
-    function openExternal(url) {
-        window.open(url, '_blank', 'noopener,noreferrer');
     }
 
     function runAction(action) {
@@ -690,19 +577,6 @@
             case 'folder-upload':
                 window.location.href = uploadUrl + '?mode=folder';
                 break;
-            case 'new-project':
-                flash('New project is not available in P-ARCHIVE yet.');
-                break;
-            case 'docs': openExternal('https://docs.google.com/document/u/0/create'); break;
-            case 'sheets': openExternal('https://docs.google.com/spreadsheets/u/0/create'); break;
-            case 'slides': openExternal('https://docs.google.com/presentation/u/0/create'); break;
-            case 'vids': openExternal('https://docs.google.com/vids/u/0/create'); break;
-            case 'forms': openExternal('https://docs.google.com/forms/u/0/create'); break;
-            case 'drawings': openExternal('https://docs.google.com/drawings/u/0/create'); break;
-            case 'maps': openExternal('https://mymaps.google.com/'); break;
-            case 'sites': openExternal('https://sites.google.com/new'); break;
-            case 'markdown': downloadMarkdown(); break;
-            case 'apps-script': openExternal('https://script.google.com/home/start'); break;
         }
     }
 
@@ -724,18 +598,8 @@
         if (!item) return;
         e.preventDefault();
         e.stopPropagation();
-        var action = item.getAttribute('data-wd-action');
-        if (action === 'more') {
-            if (sub.classList.contains('open')) closeSub(true); else openSub();
-            return;
-        }
-        runAction(action);
+        runAction(item.getAttribute('data-wd-action'));
     });
-
-    moreItem.addEventListener('mouseenter', openSub);
-    moreItem.addEventListener('focus', openSub);
-    sub.addEventListener('mouseenter', openSub);
-    menu.addEventListener('mouseleave', function () { closeSub(false); });
 
     window.addEventListener('scroll', closeMenu, true);
     window.addEventListener('resize', closeMenu);
