@@ -245,8 +245,22 @@ class DocumentContentEditingTest extends TestCase
             ->assertSee('@media (min-width: 768px) and (max-width: 991.98px)', false)
             ->assertSee('.dv-page::before, .dv-page::after', false)
             ->assertSee('class="dv-page-perf"', false)
-            ->assertSee('max-width: min(880px, calc(100% - 3rem))', false)
-            ->assertSee('min-height: 800px', false);
+            ->assertSee('max-width: min(var(--dv-page-w, 794px), calc(100% - 3rem))', false)
+            ->assertSee('min-height: var(--dv-page-h, 1123px)', false)
+            ->assertSee('--dv-page-w: 794px; --dv-page-h: 1123px;', false);
+    }
+
+    public function test_viewer_page_size_uses_document_page_layout(): void
+    {
+        $this->seed();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $document = $this->makeDocument($employee);
+        $document->update(['page_paper' => 'legal', 'page_orientation' => 'portrait']);
+
+        $this->actingAs($employee)
+            ->get(route('documents.show', $document))
+            ->assertOk()
+            ->assertSee('--dv-page-w: 816px; --dv-page-h: 1344px;', false);
     }
 
     public function test_documents_without_content_do_not_show_the_content_section(): void

@@ -1,5 +1,12 @@
 @extends('layouts.app')
 @section('content')
+@php
+    $pagePaper = $document->page_paper ?: \App\Support\PageLayout::DEFAULTS['paper'];
+    $pageOrientation = $document->page_orientation ?: \App\Support\PageLayout::DEFAULTS['orientation'];
+    $pageSize = \App\Support\PageLayout::dimensions($pagePaper, $pageOrientation);
+    $pageWidthPx = (int) round($pageSize['width_mm'] * 96 / 25.4);
+    $pageHeightPx = (int) round($pageSize['height_mm'] * 96 / 25.4);
+@endphp
 <style>
     body:has(#docViewer) main { padding: 0 !important; }
     @media (min-width: 768px) {
@@ -54,7 +61,7 @@
 
     /* ── Center document page ── */
     .dv-page-wrap { flex: 1 1 auto; min-width: 0; overflow-x: hidden; overflow-y: auto; padding: 2.25rem 1.5rem 3rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
-    .dv-page { position: relative; overflow: hidden; width: 100%; max-width: 100%; box-sizing: border-box; background: linear-gradient(180deg, #fff 0%, #fcfdfc 100%); border: 1px solid #e4ebe6; border-top: 4px solid #00A868; border-radius: 20px; box-shadow: 0 18px 45px rgba(16,40,27,.09), 0 2px 8px rgba(16,40,27,.05); padding: 3rem 3rem 2.75rem; min-height: 800px; color: #2c3a33; }
+    .dv-page { position: relative; overflow: hidden; width: 100%; max-width: var(--dv-page-w, 794px); box-sizing: border-box; background: linear-gradient(180deg, #fff 0%, #fcfdfc 100%); border: 1px solid #e4ebe6; border-top: 4px solid #00A868; border-radius: 20px; box-shadow: 0 18px 45px rgba(16,40,27,.09), 0 2px 8px rgba(16,40,27,.05); padding: 3rem 3rem 2.75rem; min-height: var(--dv-page-h, 1123px); aspect-ratio: var(--dv-page-w, 794) / var(--dv-page-h, 1123); color: #2c3a33; }
     .dv-page::before, .dv-page::after { content: ""; position: absolute; top: 7.4rem; width: 24px; height: 24px; border-radius: 50%; background: #f5f5f5; z-index: 2; }
     .dv-page::before { left: -12px; }
     .dv-page::after { right: -12px; }
@@ -155,7 +162,7 @@
         .dv-info { display: none; }
     }
     @media screen and (min-width: 768px) {
-        #docViewer .dv-page { max-width: min(880px, calc(100% - 3rem)); padding: 3.5rem clamp(1.5rem, 3vw, 3.25rem) 3rem; }
+        #docViewer .dv-page { max-width: min(var(--dv-page-w, 794px), calc(100% - 3rem)); padding: 3.5rem clamp(1.5rem, 3vw, 3.25rem) 3rem; }
         #docViewer .dv-page h1 { font-size: clamp(1.75rem, 1.25rem + 1.2vw, 2.5rem); }
         #docViewer .dv-page h2 { font-size: clamp(1.1rem, .95rem + .45vw, 1.4rem); }
         #docViewer .dv-page h3 { font-size: clamp(.95rem, .9rem + .25vw, 1.15rem); }
@@ -253,7 +260,7 @@
             </div>
             @endif
 
-            <div class="dv-page">
+            <div class="dv-page" style="--dv-page-w: {{ $pageWidthPx }}px; --dv-page-h: {{ $pageHeightPx }}px;">
                 <div class="dv-page-perf" aria-hidden="true"></div>
 
                 {{-- Page header ── --}}
