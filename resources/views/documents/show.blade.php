@@ -70,8 +70,6 @@
     [data-theme="dark"] .dv-page::before, [data-theme="dark"] .dv-page::after { background: #0e1512; }
     [data-theme="dark"] .dv-page-perf { border-color: #2c5c3d; }
 
-    .dv-page-org { display: inline-block; font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; color: #00743F; background: #e6f3ea; border-radius: 2rem; padding: .2rem .65rem; margin-bottom: .9rem; }
-    .dv-page-category { font-size: .78rem; color: #8a978f; margin-bottom: .5rem; }
     .dv-page h1 { font-size: 2rem; font-weight: 800; letter-spacing: -.02em; color: #12251a; line-height: 1.18; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #edf1ee; }
     .dv-page-meta { font-size: .76rem; color: #7d8a82; margin-bottom: 2rem; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
     .dv-page-meta span { display: inline-flex; align-items: center; gap: .35rem; background: #f4f7f5; border: 1px solid #e6ece8; border-radius: 2rem; padding: .25rem .65rem; }
@@ -100,8 +98,6 @@
     [data-theme="dark"] .dv-page h1, [data-theme="dark"] .dv-page h2, [data-theme="dark"] .dv-page h3 { color: #eaf2ec; }
     [data-theme="dark"] .dv-page h1 { border-color: #26362e; }
     [data-theme="dark"] .dv-page p, [data-theme="dark"] .dv-page ul, [data-theme="dark"] .dv-page ol { color: #b9c8be; }
-    [data-theme="dark"] .dv-page-org { background: #12291d; color: #7fe0ac; }
-    [data-theme="dark"] .dv-page-category { color: #7f9488; }
     [data-theme="dark"] .dv-page-meta span { background: #1a2620; border-color: #26362e; color: #8fa59a; }
     [data-theme="dark"] .dv-page-meta i { color: #7fe0ac; }
     [data-theme="dark"] .dv-page table { border-color: #26362e; }
@@ -272,12 +268,6 @@
                 <div class="dv-page-perf" aria-hidden="true"></div>
 
                 {{-- Page header ── --}}
-                <div class="dv-page-org">{{ strtoupper($document->department?->name ?? config('app.name', 'PANELCO III')) }}</div>
-                <div class="dv-page-category">
-                    {{ $document->category?->name ?? $document->suggestedCategory?->name ?? 'General' }}
-                    @if($document->department) / {{ $document->department->name }} @endif
-                    @if($document->category) / Topic 1 @endif
-                </div>
                 <h1>{{ $document->display_title }}</h1>
                 <div class="dv-page-meta">
                     @if($document->document_date)<span><i class="bi bi-calendar3"></i> Effective {{ $document->document_date->format('F d, Y') }}</span>@endif

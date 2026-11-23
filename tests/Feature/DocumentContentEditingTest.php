@@ -247,7 +247,9 @@ class DocumentContentEditingTest extends TestCase
             ->assertSee('class="dv-page-perf"', false)
             ->assertSee('max-width: min(var(--dv-page-w, 794px), calc(100% - 3rem))', false)
             ->assertSee('min-height: var(--dv-page-h, 1123px)', false)
-            ->assertSee('--dv-page-w: 794px; --dv-page-h: 1123px;', false);
+            ->assertSee('--dv-page-w: 794px; --dv-page-h: 1123px;', false)
+            ->assertDontSee('class="dv-page-org"', false)
+            ->assertDontSee('class="dv-page-category"', false);
     }
 
     public function test_viewer_shows_actual_extracted_file_text(): void
