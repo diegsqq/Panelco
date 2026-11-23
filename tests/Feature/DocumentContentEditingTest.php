@@ -250,6 +250,21 @@ class DocumentContentEditingTest extends TestCase
             ->assertSee('--dv-page-w: 794px; --dv-page-h: 1123px;', false);
     }
 
+    public function test_viewer_shows_actual_extracted_file_text(): void
+    {
+        $this->seed();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $document = $this->makeDocument($employee);
+        $document->update(['extracted_text' => "MEMORANDUM\n\nThis is the actual file text."]);
+
+        $this->actingAs($employee)
+            ->get(route('documents.show', $document))
+            ->assertOk()
+            ->assertSee('class="dv-page-text" id="doc-content"', false)
+            ->assertSee('This is the actual file text.', false)
+            ->assertSee('font-family: Georgia, "Times New Roman", Times, serif', false);
+    }
+
     public function test_viewer_page_size_uses_document_page_layout(): void
     {
         $this->seed();

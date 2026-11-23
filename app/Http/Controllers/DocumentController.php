@@ -835,7 +835,7 @@ class DocumentController extends Controller
 
         $highlightedHtml = null;
         if ($document->extracted_text) {
-            $visible = mb_substr($document->extracted_text, 0, 6000);
+            $visible = (string) $document->extracted_text;
             $safe = e($visible);
             $snippet = trim((string) request('excerpt', ''));
             if ($snippet !== '') {

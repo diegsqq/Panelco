@@ -77,6 +77,11 @@
     .dv-page-meta span { display: inline-flex; align-items: center; gap: .35rem; background: #f4f7f5; border: 1px solid #e6ece8; border-radius: 2rem; padding: .25rem .65rem; }
     .dv-page-meta i { color: #00A868; font-size: .8rem; }
     .dv-page-intro { font-size: .95rem; color: #4a5a52; line-height: 1.8; margin-bottom: 1.75rem; }
+    /* Actual file text — reads like a printed document page */
+    .dv-page-text { font-family: Georgia, "Times New Roman", Times, serif; font-size: 1rem; line-height: 1.75; color: #202b24; text-align: justify; hyphens: auto; margin-bottom: 2rem; padding: 1.5rem 1.75rem; background: #fff; border: 1px solid #eef2ef; border-radius: 10px; }
+    .dv-page-text mark { background: #fff2b8; color: inherit; padding: 0 .1em; border-radius: 2px; }
+    [data-theme="dark"] .dv-page-text { background: #131d18; border-color: #26362e; color: #d6e2d9; }
+    [data-theme="dark"] .dv-page-text mark { background: #6b5b16; color: #fff7cf; }
     .dv-page h2 { font-size: 1.2rem; font-weight: 700; color: #12251a; margin-top: 2rem; margin-bottom: .75rem; padding-left: .8rem; border-left: 3px solid #00A868; }
     .dv-page h3 { font-size: 1rem; font-weight: 700; color: #2c3a33; margin-top: 1.5rem; margin-bottom: .5rem; }
     .dv-page p { font-size: .92rem; color: #38463e; line-height: 1.8; margin-bottom: 1rem; }
@@ -236,7 +241,10 @@
                 @endif
                 @endforeach
                 @else
-                <a href="#doc-summary" class="dv-outline-item active">Document Summary</a>
+                @if(trim((string) $document->extracted_text) !== '')
+                <a href="#doc-content" class="dv-outline-item active">Document text</a>
+                @endif
+                <a href="#doc-summary" class="dv-outline-item">Document Summary</a>
                 <a href="#doc-details" class="dv-outline-item h2">Important Details</a>
                 <a href="#doc-actions" class="dv-outline-item h2">Corrective Actions</a>
                 @if(count($tables)) <a href="#doc-tables" class="dv-outline-item h2">Tables</a> @endif
@@ -299,6 +307,9 @@
 
                 @else
                 {{-- Extracted content fallback ── --}}
+                @if(trim((string) $highlightedHtml) !== '')
+                <div class="dv-page-text" id="doc-content">{!! $highlightedHtml !!}</div>
+                @endif
                 @if($document->summary)
                 <p class="dv-page-intro" id="doc-summary">{{ $document->summary }}</p>
                 @endif
@@ -324,7 +335,7 @@
                 @endforeach
                 @endif
 
-                @if(!$document->summary && !count($details) && !count($correctiveActions))
+                @if(!$document->summary && !count($details) && !count($correctiveActions) && trim((string) $highlightedHtml) === '')
                 <p style="color:#aaa;text-align:center;padding:3rem 0">
                     @if($document->processing_status !== 'completed')
                     <i class="bi bi-hourglass-split d-block fs-2 mb-2"></i>Document is still being processed.
