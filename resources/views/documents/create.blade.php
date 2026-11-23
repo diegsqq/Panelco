@@ -283,6 +283,16 @@
     });
 
     function ext(name) { var p = name.split('.'); return p.length > 1 ? p.pop().toLowerCase() : ''; }
+    function displayName(name) {
+        var dot = name.lastIndexOf('.');
+        var originalBase = dot > 0 ? name.slice(0, dot) : name;
+        var base = originalBase;
+        var suffix = dot > 0 ? name.slice(dot) : '';
+        while (/\s*\(\d+\)\s*$/.test(base)) {
+            base = base.replace(/\s*\(\d+\)\s*$/, '');
+        }
+        return (base !== '' ? base : originalBase) + suffix;
+    }
     function humanSize(bytes) { return bytes >= 1048576 ? (bytes / 1048576).toFixed(1) + ' MB' : (bytes / 1024).toFixed(1) + ' KB'; }
 
     function setBadges(on) {
@@ -309,7 +319,8 @@
             icon.className = 'up-file-icon bi ' + ic[0];
             icon.style.color = ic[1];
             icon.style.background = ic[2];
-            tile.querySelector('.up-file-name').textContent = file.name;
+            var shownName = displayName(file.name);
+            tile.querySelector('.up-file-name').textContent = shownName;
             var extBadge = tile.querySelector('.up-file-ext');
             extBadge.textContent = e.toUpperCase() || 'FILE';
             extBadge.style.color = ic[1];
@@ -317,8 +328,8 @@
             tile.querySelector('.up-file-size').textContent = humanSize(file.size);
             var remove = tile.querySelector('.up-remove');
             remove.setAttribute('data-index', String(index));
-            remove.setAttribute('aria-label', 'Remove ' + file.name);
-            remove.title = 'Remove ' + file.name;
+            remove.setAttribute('aria-label', 'Remove ' + shownName);
+            remove.title = 'Remove ' + shownName;
             remove.addEventListener('click', function (e2) {
                 e2.stopPropagation();
                 removeFileAt(index);

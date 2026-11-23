@@ -194,6 +194,8 @@ class Phase3UploadTest extends TestCase
             ->assertSee('id="fileMeta" role="status" aria-live="polite"', false)
             ->assertSee('id="suggestNote" role="status" aria-live="polite"', false)
             ->assertSee('input.files[0]', false)
+            ->assertSee('function displayName(name)', false)
+            ->assertSee('displayName(file.name)', false)
             ->assertDontSee('input.files = (function ()', false);
     }
 
