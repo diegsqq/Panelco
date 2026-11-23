@@ -257,14 +257,23 @@ class DocumentContentEditingTest extends TestCase
         $this->seed();
         $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
         $document = $this->makeDocument($employee);
-        $document->update(['extracted_text' => "MEMORANDUM\n\nThis is the actual file text."]);
+        $document->update([
+            'extracted_text' => "MEMORANDUM\n\nThis is the actual file text.",
+            'document_date' => '2026-11-23',
+            'reference_number' => 'REF-001',
+        ]);
 
         $this->actingAs($employee)
             ->get(route('documents.show', $document))
             ->assertOk()
             ->assertSee('class="dv-page-text" id="doc-content"', false)
             ->assertSee('This is the actual file text.', false)
-            ->assertSee('font-family: Georgia, "Times New Roman", Times, serif', false);
+            ->assertSee('font-family: Georgia, "Times New Roman", Times, serif', false)
+            ->assertSee('bi-clock-history', false)
+            ->assertDontSee('bi-calendar3', false)
+            ->assertDontSee('bi-hash', false)
+            ->assertDontSee('REF-001', false)
+            ->assertDontSee('Effective November 23, 2026', false);
     }
 
     public function test_viewer_page_size_uses_document_page_layout(): void

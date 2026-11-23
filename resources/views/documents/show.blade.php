@@ -270,8 +270,6 @@
                 {{-- Page header ── --}}
                 <h1>{{ $document->display_title }}</h1>
                 <div class="dv-page-meta">
-                    @if($document->document_date)<span><i class="bi bi-calendar3"></i> Effective {{ $document->document_date->format('F d, Y') }}</span>@endif
-                    @if($document->reference_number)<span><i class="bi bi-hash"></i> {{ $document->reference_number }}</span>@endif
                     <span><i class="bi bi-clock-history"></i> Version {{ $document->version_number ?? '1' }}</span>
                 </div>
 
