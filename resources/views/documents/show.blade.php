@@ -71,9 +71,6 @@
     [data-theme="dark"] .dv-page-perf { border-color: #2c5c3d; }
 
     .dv-page h1 { font-size: 2rem; font-weight: 800; letter-spacing: -.02em; color: #12251a; line-height: 1.18; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #edf1ee; }
-    .dv-page-meta { font-size: .76rem; color: #7d8a82; margin-bottom: 2rem; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
-    .dv-page-meta span { display: inline-flex; align-items: center; gap: .35rem; background: #f4f7f5; border: 1px solid #e6ece8; border-radius: 2rem; padding: .25rem .65rem; }
-    .dv-page-meta i { color: #00A868; font-size: .8rem; }
     .dv-page-intro { font-size: .95rem; color: #4a5a52; line-height: 1.8; margin-bottom: 1.75rem; }
     /* Actual file text — reads like a printed document page */
     .dv-page-text { font-family: Georgia, "Times New Roman", Times, serif; font-size: 1rem; line-height: 1.75; color: #202b24; text-align: justify; hyphens: auto; margin-bottom: 2rem; padding: 1.5rem 1.75rem; background: #fff; border: 1px solid #eef2ef; border-radius: 10px; }
@@ -98,13 +95,11 @@
     [data-theme="dark"] .dv-page h1, [data-theme="dark"] .dv-page h2, [data-theme="dark"] .dv-page h3 { color: #eaf2ec; }
     [data-theme="dark"] .dv-page h1 { border-color: #26362e; }
     [data-theme="dark"] .dv-page p, [data-theme="dark"] .dv-page ul, [data-theme="dark"] .dv-page ol { color: #b9c8be; }
-    [data-theme="dark"] .dv-page-meta span { background: #1a2620; border-color: #26362e; color: #8fa59a; }
-    [data-theme="dark"] .dv-page-meta i { color: #7fe0ac; }
     [data-theme="dark"] .dv-page table { border-color: #26362e; }
     [data-theme="dark"] .dv-page table th { background: #1d2b24; border-color: #26362e; color: #c3d0c8; }
     [data-theme="dark"] .dv-page table td { border-color: #26362e; }
     [data-theme="dark"] .dv-page table tbody tr:hover td { background: #1a2820; }
-    [data-theme="dark"] .dv-page-intro, [data-theme="dark"] .dv-page-meta { color: #8fa59a; }
+    [data-theme="dark"] .dv-page-intro { color: #8fa59a; }
     [data-theme="dark"] .dv-page-callout { background: #12291d; color: #7fe0ac; border-color: #2c5c3d; border-left-color: #00A868; }
     [data-theme="dark"] .dv-page-footer { border-color: #26362e; color: #4a5e54; }
     [data-theme="dark"] .dv-page-pagination button { background: #1d2b24; border-color: #2c3d34; color: #c3d0c8; }
@@ -269,9 +264,6 @@
 
                 {{-- Page header ── --}}
                 <h1>{{ $document->display_title }}</h1>
-                <div class="dv-page-meta">
-                    <span><i class="bi bi-clock-history"></i> Version {{ $document->version_number ?? '1' }}</span>
-                </div>
 
                 @if($document->content || $document->content_header || $document->content_footer)
                 {{-- Rich content ── --}}
