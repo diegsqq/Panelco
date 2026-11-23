@@ -710,7 +710,7 @@ class DocumentController extends Controller
         }
         $files = is_array($uploaded) ? $uploaded : [$uploaded];
 
-        $title = trim((string) $request->input('title', ''));
+        $title = app(UploadSuggester::class)->normalizeTitle(trim((string) $request->input('title', '')));
         $categoryId = $request->input('category_id') ?: null;
         $documentDate = $request->input('document_date') ?: null;
         $fileLastModified = $request->input('file_last_modified');

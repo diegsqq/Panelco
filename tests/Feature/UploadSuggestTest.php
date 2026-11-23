@@ -78,6 +78,19 @@ class UploadSuggestTest extends TestCase
             ->assertJsonPath('title', 'Quarterly Report');
     }
 
+    public function test_suggest_strips_repeated_filename_counter_from_title(): void
+    {
+        $this->seed();
+        $emp = User::where('email', 'employee@panelco3.local')->first();
+
+        $res = $this->actingAs($emp)->postJson(route('documents.suggest'), [
+            'file' => UploadedFile::fake()->create('quarterly_report (1).pdf', 10, 'application/pdf'),
+        ]);
+
+        $res->assertOk()
+            ->assertJsonPath('title', 'Quarterly Report');
+    }
+
     public function test_suggest_uses_file_date_when_text_has_no_date(): void
     {
         $this->seed();
@@ -140,6 +153,22 @@ class UploadSuggestTest extends TestCase
 
         $doc = Document::where('original_filename', 'plain2.txt')->first();
         $this->assertEquals('2024-01-15', substr((string) $doc->document_date, 0, 10));
+    }
+
+    public function test_store_strips_repeated_title_counter(): void
+    {
+        $this->seed();
+        Storage::fake('private');
+        Queue::fake();
+        $emp = User::where('email', 'employee@panelco3.local')->first();
+
+        $this->actingAs($emp)->post(route('documents.store'), [
+            'file' => UploadedFile::fake()->createWithContent('copy-title.txt', 'A repeated document copy.'),
+            'title' => 'Quarterly Report (1)',
+        ])->assertRedirect(route('documents.library'));
+
+        $doc = Document::where('original_filename', 'copy-title.txt')->firstOrFail();
+        $this->assertSame('Quarterly Report', $doc->title);
     }
 
     public function test_store_leaves_category_unassigned_when_none_was_selected(): void

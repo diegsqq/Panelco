@@ -75,9 +75,10 @@ class UploadSuggester
     {
         $text = trim($text);
         $categorySuggestion = $text !== '' ? $this->recommender->suggest($text) : null;
+        $titleFromText = $text !== '' ? $this->titleFromText($text) : null;
 
         return [
-            'title' => $text !== '' ? $this->titleFromText($text) : null,
+            'title' => $titleFromText !== null ? $this->normalizeTitle($titleFromText) : null,
             'category_id' => $categorySuggestion['category_id'] ?? null,
             'category_reason' => ! empty($categorySuggestion['matched_keywords'])
                 ? 'Matched extracted text keywords: ' . implode(', ', $categorySuggestion['matched_keywords'])
@@ -194,7 +195,17 @@ class UploadSuggester
         $base = pathinfo($filename, PATHINFO_FILENAME);
         $clean = trim(preg_replace('/[\-_]+/', ' ', $base) ?? $base);
 
-        return mb_substr($clean !== '' ? ucwords($clean) : $base, 0, 255);
+        return $this->normalizeTitle($clean !== '' ? ucwords($clean) : $base);
+    }
+
+    /**
+     * Drop the "(1)", "(2)" suffix Windows adds to repeated filenames.
+     */
+    public function normalizeTitle(string $title): string
+    {
+        $clean = trim(preg_replace('/\s*\(\d+\)\s*$/u', '', $title) ?? $title);
+
+        return mb_substr($clean, 0, 255);
     }
 
     /**
