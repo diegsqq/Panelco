@@ -186,7 +186,7 @@
                 </div>
             </div>
         </div>
-        <p class="up-details-hint" id="detailsHint">Pick a file first and SmartDocs will fill these in for you.</p>
+        <p class="up-details-hint" id="detailsHint">Pick a file first and P-ARCHIVE will fill these in for you.</p>
 
         <div class="row g-3">
             {{-- Title --}}
@@ -368,7 +368,7 @@
         analyzing.classList.add('d-none');
         progress.classList.remove('on');
         suggestNote.textContent = '';
-        detailsHint.textContent = 'Pick a file first and SmartDocs will fill these in for you.';
+        detailsHint.textContent = 'Pick a file first and P-ARCHIVE will fill these in for you.';
         setBadges(false);
         submitBtn.disabled = true;
     }

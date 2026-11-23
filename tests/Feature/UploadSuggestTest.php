@@ -29,7 +29,9 @@ class UploadSuggestTest extends TestCase
         $this->actingAs($emp)->get(route('documents.upload'))->assertOk()
             ->assertSee('suggestUrl')
             ->assertSee('id="dropZone"', false)
-            ->assertSee('id="badgeTitle"', false);
+            ->assertSee('id="badgeTitle"', false)
+            ->assertSee('Pick a file first and P-ARCHIVE will fill these in for you.', false)
+            ->assertDontSee('SmartDocs will fill', false);
     }
 
     public function test_suggest_rejects_missing_file(): void
