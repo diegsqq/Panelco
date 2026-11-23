@@ -242,7 +242,10 @@ class DocumentContentEditingTest extends TestCase
             ->assertSee('.dv-info { width: 300px; flex: 0 0 300px;', false)
             ->assertSee('scrollbar-gutter: stable;', false)
             ->assertSee('.dv-info-section { border: 1px solid #ebebeb; border-radius: .75rem; overflow: hidden; flex: 0 0 auto; }', false)
-            ->assertSee('@media (min-width: 768px) and (max-width: 991.98px)', false);
+            ->assertSee('@media (min-width: 768px) and (max-width: 991.98px)', false)
+            ->assertSee('.dv-page::before, .dv-page::after', false)
+            ->assertSee('class="dv-page-perf"', false)
+            ->assertSee('max-width: min(880px, calc(100% - 3rem))', false);
     }
 
     public function test_documents_without_content_do_not_show_the_content_section(): void

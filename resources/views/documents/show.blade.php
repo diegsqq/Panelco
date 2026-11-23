@@ -54,8 +54,14 @@
 
     /* ── Center document page ── */
     .dv-page-wrap { flex: 1 1 auto; min-width: 0; overflow-x: hidden; overflow-y: auto; padding: 2.25rem 1.5rem 3rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
-    .dv-page { width: 100%; max-width: 100%; box-sizing: border-box; background: linear-gradient(180deg, #fff 0%, #fcfdfc 100%); border: 1px solid #e4ebe6; border-top: 3px solid #00A868; border-radius: 14px; box-shadow: 0 18px 45px rgba(16,40,27,.09), 0 2px 8px rgba(16,40,27,.05); padding: 3rem 3.75rem 2.25rem; min-height: 420px; color: #2c3a33; }
+    .dv-page { position: relative; overflow: hidden; width: 100%; max-width: 100%; box-sizing: border-box; background: linear-gradient(180deg, #fff 0%, #fcfdfc 100%); border: 1px solid #e4ebe6; border-top: 4px solid #00A868; border-radius: 20px; box-shadow: 0 18px 45px rgba(16,40,27,.09), 0 2px 8px rgba(16,40,27,.05); padding: 2.5rem 3rem 2rem; min-height: 420px; color: #2c3a33; }
+    .dv-page::before, .dv-page::after { content: ""; position: absolute; top: 6.4rem; width: 24px; height: 24px; border-radius: 50%; background: #f5f5f5; z-index: 2; }
+    .dv-page::before { left: -12px; }
+    .dv-page::after { right: -12px; }
+    .dv-page-perf { position: absolute; top: 6.5rem; left: 1.25rem; right: 1.25rem; border-top: 1px dashed #cfe3d5; z-index: 1; }
     [data-theme="dark"] .dv-page { background: linear-gradient(180deg, #16211c 0%, #131d18 100%); border-color: #26362e; border-top-color: #00A868; box-shadow: none; color: #c3d0c8; }
+    [data-theme="dark"] .dv-page::before, [data-theme="dark"] .dv-page::after { background: #0e1512; }
+    [data-theme="dark"] .dv-page-perf { border-color: #2c5c3d; }
 
     .dv-page-org { display: inline-block; font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; color: #00743F; background: #e6f3ea; border-radius: 2rem; padding: .2rem .65rem; margin-bottom: .9rem; }
     .dv-page-category { font-size: .78rem; color: #8a978f; margin-bottom: .5rem; }
@@ -149,21 +155,22 @@
         .dv-info { display: none; }
     }
     @media screen and (min-width: 768px) {
-        #docViewer .dv-page { max-width: min(1120px, calc(100% - 3rem)); padding: 3rem clamp(1.5rem, 3.5vw, 4.5rem); }
-        #docViewer .dv-page h1 { font-size: clamp(2rem, 1.4rem + 1.5vw, 2.9rem); }
-        #docViewer .dv-page h2 { font-size: clamp(1.2rem, 1rem + .6vw, 1.6rem); }
-        #docViewer .dv-page h3 { font-size: clamp(1rem, .92rem + .35vw, 1.25rem); }
+        #docViewer .dv-page { max-width: min(880px, calc(100% - 3rem)); padding: 2.75rem clamp(1.5rem, 3vw, 3.25rem) 2rem; }
+        #docViewer .dv-page h1 { font-size: clamp(1.75rem, 1.25rem + 1.2vw, 2.5rem); }
+        #docViewer .dv-page h2 { font-size: clamp(1.1rem, .95rem + .45vw, 1.4rem); }
+        #docViewer .dv-page h3 { font-size: clamp(.95rem, .9rem + .25vw, 1.15rem); }
         #docViewer .dv-page p,
         #docViewer .dv-page ul,
         #docViewer .dv-page ol,
-        #docViewer .dv-page .doc-render { font-size: clamp(.95rem, .86rem + .45vw, 1.18rem); line-height: 1.8; }
-        #docViewer .dv-page .doc-render { font-size: clamp(.95rem, .86rem + .45vw, 1.18rem) !important; }
+        #docViewer .dv-page .doc-render { font-size: clamp(.9rem, .84rem + .35vw, 1.08rem); line-height: 1.8; }
+        #docViewer .dv-page .doc-render { font-size: clamp(.9rem, .84rem + .35vw, 1.08rem) !important; }
     }
     @media print {
         .dv-breadcrumb, .dv-outline, .dv-info { display: none !important; }
         .dv-body { overflow: visible; }
         .dv-page-wrap { overflow: visible; padding: 0; }
-        .dv-page { background: #fff !important; box-shadow: none; border: none; border-radius: 0; padding: 0; }
+        .dv-page { background: #fff !important; box-shadow: none; border: none; border-radius: 0; padding: 0; overflow: visible; }
+        .dv-page::before, .dv-page::after, .dv-page-perf { display: none !important; }
     }
 </style>
 
@@ -235,18 +242,19 @@
 
             {{-- Flash messages --}}
             @if(session('status'))
-            <div class="alert alert-success alert-dismissible fade show w-100" style="max-width:820px;border-radius:.75rem" role="alert">
+            <div class="alert alert-success alert-dismissible fade show w-100" style="max-width:880px;border-radius:.75rem" role="alert">
                 {{ session('status') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
             @endif
             @if($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show w-100" style="max-width:820px;border-radius:.75rem" role="alert">
+            <div class="alert alert-danger alert-dismissible fade show w-100" style="max-width:880px;border-radius:.75rem" role="alert">
                 <ul class="mb-0">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
             @endif
 
             <div class="dv-page">
+                <div class="dv-page-perf" aria-hidden="true"></div>
 
                 {{-- Page header ── --}}
                 <div class="dv-page-org">{{ strtoupper($document->department?->name ?? config('app.name', 'PANELCO III')) }}</div>
