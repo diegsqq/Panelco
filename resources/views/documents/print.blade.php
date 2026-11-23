@@ -180,7 +180,7 @@
         </div>
         <div class="d-flex flex-column" style="gap:.05rem">
             <div class="pp-title-row">
-                <span class="pp-title">{{ $document->title ?? $document->original_filename }}</span>
+                <span class="pp-title">{{ $document->display_title }}</span>
                 <span class="pp-badge">{{ $document->approval_status === 'approved' ? 'Published' : ucfirst($document->approval_status ?? 'Pending') }}</span>
             </div>
             <div class="pp-meta">{{ $document->reference_number ?? 'HR-DOC-001' }} · Version {{ $document->version_number ?? '1' }} · Owned by {{ $document->department?->name ?? 'Organization' }}</div>
@@ -328,7 +328,7 @@
                     <div class="pp-page {{ $p > 1 ? 'mt-4' : '' }}" style="page-break-after: always;">
                         <div class="pp-page-org">{{ strtoupper($document->department?->name ?? config('app.name', 'PANELCO III')) }}</div>
                         <div class="pp-page-topic">{{ strtoupper(($document->department?->name ?? 'GENERAL') . ' / ' . (count($sections) > 0 ? $sections[0]['label'] : 'DOCUMENT')) }}</div>
-                        <h1>{{ $document->title ?? $document->original_filename }}</h1>
+                        <h1>{{ $document->display_title }}</h1>
                         <div class="pp-page-meta">
                             Effective {{ $document->document_date?->format('F d, Y') ?? now()->format('F d, Y') }} &nbsp;·&nbsp; {{ $document->reference_number ?? 'HR-DOC-001' }} &nbsp;·&nbsp; Version {{ $document->version_number ?? '1' }}
                         </div>
@@ -375,7 +375,7 @@
     var currentPage  = 1;
     var totalPages   = {{ $pageCount }};
     var topics       = @json(array_values(array_map(fn($s) => $s['label'], $sections)));
-    var docTitle     = @json($document->title ?? $document->original_filename);
+    var docTitle     = @json($document->display_title);
 
     /* ── Scope switching ── */
     window.setScope = function(scope) {

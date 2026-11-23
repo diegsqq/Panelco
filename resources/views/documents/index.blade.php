@@ -327,7 +327,7 @@
                             $uploaderColor = '#00A868';
                         @endphp
                         <tr class="lib-doc-row" data-id="{{ $doc->id }}"
-                            data-title="{{ $doc->title ?? $doc->original_filename }}"
+                            data-title="{{ $doc->display_title }}"
                             data-sub="{{ $doc->category?->name ?? $doc->suggestedCategory?->name ?? 'Uncategorized' }} / {{ $doc->department?->name ?? $doc->suggestedDepartment?->name ?? '—' }}"
                             data-modified="{{ $doc->updated_at?->format('M d, Y') ?? '—' }}"
                             data-status="{{ ucfirst($doc->processing_status ?? 'pending') }}"
@@ -341,13 +341,13 @@
                             data-icon="{{ $fileType[1] }}"
                             data-iconcolor="{{ $fileType[2] }}"
                             data-initials="{{ $uploaderInitials }}">
-                            <td><input type="checkbox" class="form-check-input lib-row-check" aria-label="Select {{ $doc->title ?? $doc->original_filename }}"></td>
+                            <td><input type="checkbox" class="form-check-input lib-row-check" aria-label="Select {{ $doc->display_title }}"></td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="lib-file-icon {{ $fileType[1] }}" style="color:{{ $fileType[2] }};flex:0 0 auto" aria-hidden="true"></i>
                                     <div style="min-width:0">
-                                        <a href="{{ route('documents.show', $doc) }}" class="lib-doc-name text-decoration-none d-block text-truncate" title="{{ $doc->title ?? $doc->original_filename }}">
-                                            {{ $doc->title ?? $doc->original_filename }}
+                                        <a href="{{ route('documents.show', $doc) }}" class="lib-doc-name text-decoration-none d-block text-truncate" title="{{ $doc->display_title }}">
+                                            {{ $doc->display_title }}
                                         </a>
                                         <div style="font-size:.68rem;color:#5a9e7a">
                                             {{ $doc->category?->name ?? $doc->suggestedCategory?->name ?? 'Uncategorized' }} / {{ $doc->department?->name ?? $doc->suggestedDepartment?->name ?? '—' }}
@@ -371,7 +371,7 @@
                             <td class="text-end">
                                 @canany(['update','delete'], $doc)
                                 <div class="dropdown">
-                                    <button type="button" class="btn btn-sm p-1" style="background:none;border:none;color:#5a9e7a" title="Actions for {{ $doc->title ?? $doc->original_filename }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <button type="button" class="btn btn-sm p-1" style="background:none;border:none;color:#5a9e7a" title="Actions for {{ $doc->display_title }}" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="bi bi-three-dots"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end" style="border-radius:.75rem;border-color:#d5e8db">

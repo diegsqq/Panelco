@@ -11,7 +11,7 @@
     @forelse ($documents as $document)
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 border-bottom p-3">
             <div class="flex-grow-1" style="min-width:16rem">
-                <a href="{{ route('documents.show', $document) }}" class="fw-semibold text-decoration-none" style="color:#00743F">{{ $document->title ?? $document->original_filename }}</a>
+                <a href="{{ route('documents.show', $document) }}" class="fw-semibold text-decoration-none" style="color:#00743F">{{ $document->display_title }}</a>
                 <div class="small text-muted">{{ $document->original_filename }} · uploaded by {{ $document->uploader?->name ?? '—' }} · {{ $document->created_at->format('M d, Y') }}</div>
                 <div class="small text-muted">{{ $document->department?->name ?? 'No department' }}</div>
                 <div class="small mt-1">

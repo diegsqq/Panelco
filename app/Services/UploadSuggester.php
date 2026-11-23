@@ -203,7 +203,10 @@ class UploadSuggester
      */
     public function normalizeTitle(string $title): string
     {
-        $clean = trim(preg_replace('/\s*\(\d+\)\s*$/u', '', $title) ?? $title);
+        $clean = trim($title);
+        while (($stripped = trim(preg_replace('/\s*\(\d+\)\s*$/u', '', $clean) ?? $clean)) !== $clean && $stripped !== '') {
+            $clean = $stripped;
+        }
 
         return mb_substr($clean, 0, 255);
     }

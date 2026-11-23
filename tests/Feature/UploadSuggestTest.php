@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\UploadSuggester;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -169,6 +170,26 @@ class UploadSuggestTest extends TestCase
 
         $doc = Document::where('original_filename', 'copy-title.txt')->firstOrFail();
         $this->assertSame('Quarterly Report', $doc->title);
+    }
+
+    public function test_existing_stored_repeat_counters_are_hidden_on_display(): void
+    {
+        $this->seed();
+        Storage::fake('private');
+        Queue::fake();
+        $emp = User::where('email', 'employee@panelco3.local')->first();
+
+        $this->actingAs($emp)->post(route('documents.store'), [
+            'file' => UploadedFile::fake()->createWithContent('legacy-title.txt', 'Legacy repeated document.'),
+            'title' => 'Financial Ratios',
+        ])->assertRedirect(route('documents.library'));
+
+        $doc = Document::where('original_filename', 'legacy-title.txt')->firstOrFail();
+        DB::table('documents')->where('id', $doc->id)->update(['title' => 'Financial Ratios (1) (1)']);
+        $doc->refresh();
+
+        $this->assertSame('Financial Ratios', $doc->title);
+        $this->assertSame('Financial Ratios', $doc->display_title);
     }
 
     public function test_store_leaves_category_unassigned_when_none_was_selected(): void

@@ -200,8 +200,8 @@
                 @if($conversation->document)
                 <div class="lg-doc-banner mb-3">
                     <i class="bi bi-file-earmark-lock" style="color:#00A868;flex:0 0 auto"></i>
-                    <span>Scoped to <strong style="color:#173528">{{ $conversation->document->title ?? $conversation->document->original_filename }}</strong>
-                    @if($conversation->comparisonDocument) vs <strong style="color:#173528">{{ $conversation->comparisonDocument->title ?? $conversation->comparisonDocument->original_filename }}</strong>@endif
+                    <span>Scoped to <strong style="color:#173528">{{ $conversation->document->display_title }}</strong>
+                    @if($conversation->comparisonDocument) vs <strong style="color:#173528">{{ $conversation->comparisonDocument->display_title }}</strong>@endif
                     </span>
                     <a href="{{ route('documents.show', $conversation->document) }}" class="ms-auto">View</a>
                 </div>
@@ -232,7 +232,7 @@
                                 <a href="{{ route('documents.show', $src->document) }}?excerpt={{ urlencode(mb_substr($src->supporting_excerpt ?? '', 0, 120)) }}" class="lg-source-card">
                                     <div class="lg-source-title">
                                         <i class="bi bi-file-earmark-text"></i>
-                                        {{ $src->document->title ?? $src->document->original_filename }}
+                                        {{ $src->document->display_title }}
                                         @if($src->page_number) · p.{{ $src->page_number }}@endif
                                         <i class="bi bi-box-arrow-up-right ms-auto" style="font-size:.65rem;color:#5f6f66"></i>
                                     </div>

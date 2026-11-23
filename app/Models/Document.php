@@ -53,6 +53,37 @@ class Document extends Model
         ];
     }
 
+    public function getTitleAttribute(?string $value): ?string
+    {
+        return $value === null || $value === '' ? $value : self::stripRepeatCounter($value);
+    }
+
+    public function setTitleAttribute(?string $value): void
+    {
+        $this->attributes['title'] = $value === null
+            ? null
+            : self::stripRepeatCounter(trim($value));
+    }
+
+    public function getDisplayTitleAttribute(): string
+    {
+        if ($this->title !== null && $this->title !== '') {
+            return $this->title;
+        }
+
+        return self::stripRepeatCounter(pathinfo((string) $this->original_filename, PATHINFO_FILENAME));
+    }
+
+    private static function stripRepeatCounter(string $title): string
+    {
+        $clean = trim($title);
+        while (($stripped = trim(preg_replace('/\s*\(\d+\)\s*$/u', '', $clean) ?? $clean)) !== $clean && $stripped !== '') {
+            $clean = $stripped;
+        }
+
+        return $clean;
+    }
+
     public function suggestedCategory(): BelongsTo
     {
         return $this->belongsTo(DocumentCategory::class, 'suggested_category_id');

@@ -11,7 +11,7 @@
 {{ $failed ? 'Document processing failed' : 'Your document is ready' }}
 </div>
 <div style="font-size:14px;color:#4b5a52;line-height:1.6;margin-bottom:6px">
-<strong>{{ $document->title ?? $document->original_filename }}</strong>
+<strong>{{ $document->display_title }}</strong>
 </div>
 @if(! $failed)
 <div style="font-size:14px;color:#4b5a52;line-height:1.6;margin-bottom:16px">

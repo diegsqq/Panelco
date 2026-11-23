@@ -238,7 +238,7 @@
                     <a class="wd-recent" href="{{ route('documents.show', $file) }}">
                         <span class="wd-recent-ico"><i class="bi {{ $fileIcon[0] }}" style="color:{{ $fileIcon[1] }}"></i></span>
                         <span style="min-width:0">
-                            <span class="wd-recent-name d-block">{{ $file->title ?? $file->original_filename }}</span>
+                            <span class="wd-recent-name d-block">{{ $file->display_title }}</span>
                             <span class="wd-recent-meta">{{ $fileSize }} · {{ $file->updated_at?->format('M j, Y') ?? '—' }}</span>
                         </span>
                     </a>
@@ -270,7 +270,7 @@
                     <a class="wd-recent" href="{{ route('documents.show', $file) }}">
                         <span class="wd-recent-ico"><i class="bi {{ $fileIcon[0] }}" style="color:{{ $fileIcon[1] }}"></i></span>
                         <span style="min-width:0">
-                            <span class="wd-recent-name d-block">{{ $file->title ?? $file->original_filename }}</span>
+                            <span class="wd-recent-name d-block">{{ $file->display_title }}</span>
                             <span class="wd-recent-meta">{{ $fileSize }} · {{ $file->uploader?->name ?? 'Unknown' }}</span>
                         </span>
                     </a>
@@ -346,7 +346,7 @@
                                         <div class="wd-name-cell">
                                             <span class="wd-name-ico"><i class="bi {{ $rowIcon[0] }}" style="color:{{ $rowIcon[1] }}"></i></span>
                                             <span class="wd-name-text">
-                                                <a class="wd-name-link" href="{{ route('documents.show', $file) }}" title="{{ $file->title ?? $file->original_filename }}">{{ $file->title ?? $file->original_filename }}</a>
+                                                <a class="wd-name-link" href="{{ route('documents.show', $file) }}" title="{{ $file->display_title }}">{{ $file->display_title }}</a>
                                             </span>
                                         </div>
                                     </td>
@@ -362,7 +362,7 @@
                                         <span class="wd-size-cell">
                                             {{ $rowSize }}
                                             <span class="dropdown d-inline-block">
-                                                <button class="btn btn-link p-0 wd-dots" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions for {{ $file->title ?? $file->original_filename }}"><i class="bi bi-three-dots-vertical"></i></button>
+                                                <button class="btn btn-link p-0 wd-dots" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions for {{ $file->display_title }}"><i class="bi bi-three-dots-vertical"></i></button>
                                                 <ul class="dropdown-menu dropdown-menu-end" style="border-radius:.75rem;border-color:#d5e8db">
                                                     <li><a class="dropdown-item" href="{{ route('documents.show', $file) }}"><i class="bi bi-eye me-2"></i>View</a></li>
                                                     <li><a class="dropdown-item" href="{{ route('documents.show', $file) }}"><i class="bi bi-eye me-2"></i>View</a></li>

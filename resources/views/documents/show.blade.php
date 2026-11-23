@@ -196,7 +196,7 @@
         <a href="{{ route('documents.library', ['category_id' => $document->category->id]) }}">{{ $document->category->name }}</a>
         @endif
         <span class="sep">/</span>
-        <span class="bc-title">{{ \Illuminate\Support\Str::limit($document->title ?? $document->original_filename, 40) }}</span>
+        <span class="bc-title">{{ \Illuminate\Support\Str::limit($document->display_title, 40) }}</span>
         @if($document->uploader)
         <span class="dv-meta-small">· Owned by {{ $document->uploader->name }}</span>
         @endif
@@ -299,7 +299,7 @@
                     @if($document->department) / {{ $document->department->name }} @endif
                     @if($document->category) / Topic 1 @endif
                 </div>
-                <h1>{{ $document->title ?? $document->original_filename }}</h1>
+                <h1>{{ $document->display_title }}</h1>
                 <div class="dv-page-meta">
                     @if($document->document_date)<span><i class="bi bi-calendar3"></i> Effective {{ $document->document_date->format('F d, Y') }}</span>@endif
                     @if($document->reference_number)<span><i class="bi bi-hash"></i> {{ $document->reference_number }}</span>@endif

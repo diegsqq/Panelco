@@ -25,7 +25,7 @@
                 @forelse($documents as $document)
                     <tr>
                         <td>
-                            <div class="fw-semibold">{{ $document->title ?? $document->original_filename }}</div>
+                            <div class="fw-semibold">{{ $document->display_title }}</div>
                             <small class="text-muted">{{ $document->original_filename }}</small>
                         </td>
                         <td>{{ $document->department?->name ?? '—' }}</td>

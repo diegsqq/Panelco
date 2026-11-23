@@ -11,7 +11,7 @@
 {{ $approved ? 'Your document was approved' : 'Your document was rejected' }}
 </div>
 <div style="font-size:14px;color:#4b5a52;line-height:1.6;margin-bottom:6px">
-<strong>{{ $document->title ?? $document->original_filename }}</strong>
+<strong>{{ $document->display_title }}</strong>
 </div>
 <div style="font-size:14px;color:#4b5a52;line-height:1.6;margin-bottom:12px">
 Reviewed by {{ $reviewerName }}.

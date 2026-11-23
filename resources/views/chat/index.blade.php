@@ -116,7 +116,7 @@
                 @if($document)
                 <div style="background:#2a2a2a;border:1px solid #3a3a3a;border-radius:.75rem;padding:.55rem 1rem;font-size:.8rem;color:#aaa;max-width:680px;width:100%">
                     <i class="bi bi-file-earmark-lock me-1" style="color:#00A868"></i>
-                    Asking about: <strong style="color:#ececec">{{ $document->title ?? $document->original_filename }}</strong>
+                    Asking about: <strong style="color:#ececec">{{ $document->display_title }}</strong>
                     <a href="{{ route('documents.show', $document) }}" class="ms-2" style="color:#00A868;font-size:.75rem">View</a>
                 </div>
                 @endif
@@ -153,13 +153,13 @@
                             <select name="document_id" class="lg-doc-select" aria-label="Focus on a document (optional)">
                                 <option value="">All accessible documents</option>
                                 @foreach($availableDocuments as $item)
-                                <option value="{{ $item->id }}" @selected((string)old('document_id') === (string)$item->id)>{{ \Illuminate\Support\Str::limit($item->title ?? $item->original_filename, 55) }}</option>
+                                <option value="{{ $item->id }}" @selected((string)old('document_id') === (string)$item->id)>{{ \Illuminate\Support\Str::limit($item->display_title, 55) }}</option>
                                 @endforeach
                             </select>
                             <select name="comparison_document_id" class="lg-doc-select" aria-label="Compare with (optional)">
                                 <option value="">No comparison</option>
                                 @foreach($availableDocuments as $item)
-                                <option value="{{ $item->id }}" @selected((string)old('comparison_document_id') === (string)$item->id)>{{ \Illuminate\Support\Str::limit($item->title ?? $item->original_filename, 55) }}</option>
+                                <option value="{{ $item->id }}" @selected((string)old('comparison_document_id') === (string)$item->id)>{{ \Illuminate\Support\Str::limit($item->display_title, 55) }}</option>
                                 @endforeach
                             </select>
                         </div>
