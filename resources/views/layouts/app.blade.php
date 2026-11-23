@@ -4,24 +4,10 @@
 <head>
     <meta charset="utf-8">
     <script>
-    /* Theme swap delay: keep previous theme for a beat, then fade to the
-       new one so the CSS transition is visible instead of jumping. */
+    /* Keep localStorage in sync with the server-rendered theme. No delayed
+       swap: navigating should render the correct theme immediately. */
     (function () {
-        var h = document.documentElement;
-        var final = h.getAttribute('data-theme');
-        var last = null;
-        try { last = localStorage.getItem('p3-theme'); } catch (e) {}
-        if (last && last !== final) {
-            h.setAttribute('data-theme', last);
-            h.setAttribute('data-bs-theme', last);
-            setTimeout(function () {
-                h.setAttribute('data-theme', final);
-                h.setAttribute('data-bs-theme', final);
-                try { localStorage.setItem('p3-theme', final); } catch (e) {}
-            }, 550);
-        } else {
-            try { localStorage.setItem('p3-theme', final); } catch (e) {}
-        }
+        try { localStorage.setItem('p3-theme', document.documentElement.getAttribute('data-theme')); } catch (e) {}
     })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -85,8 +71,6 @@
         .p3-conv-card { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; }
         .p3-conv-card > div { flex-shrink: 0; }
         .p3-conv-foot { position: sticky; bottom: 0; z-index: 5; margin-top: auto; padding: .45rem 0 .35rem; background: inherit; }
-        main { animation: p3-fade .3s ease; }
-        @keyframes p3-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
         .form-control:focus, .form-select:focus, .btn:focus-visible, a:focus-visible { box-shadow: 0 0 0 .25rem rgba(0,168,104,.25); outline: none; }
         .p3-skip-link { position: fixed; top: -4rem; left: 1rem; z-index: 2000; padding: .6rem 1rem; background: #fff; color: #00743F; border: 2px solid #00743F; border-radius: .5rem; }
         .p3-skip-link:focus { top: 1rem; }
