@@ -11,6 +11,7 @@ use App\Models\DocumentAccessLog;
 use App\Models\DocumentCategory;
 use App\Models\DocumentComment;
 use App\Models\DocumentVersion;
+use App\Models\User;
 use App\Services\DocumentContentSanitizer;
 use App\Services\DocumentDocxExporter;
 use App\Services\DocumentPdfRenderer;
@@ -281,8 +282,9 @@ class DocumentController extends Controller
     public function create(): View
     {
         $categories = DocumentCategory::orderBy('name')->get();
+        $users = User::where('id', '!=', auth()->id())->orderBy('name')->get();
 
-        return view('documents.create', compact('categories'));
+        return view('documents.create', compact('categories', 'users'));
     }
 
     public function edit(Document $document): View
@@ -704,6 +706,14 @@ class DocumentController extends Controller
         $allowedMimes = config('smartdocs.upload.allowed_mimes', self::ALLOWED_MIMES);
         $maxKb = (int) config('smartdocs.upload.max_kb', self::MAX_KB);
 
+        $accessData = $request->validate([
+            'access_level' => ['sometimes', Rule::in(['private', 'link', 'all_employees'])],
+            'user_ids' => ['nullable', 'array'],
+            'user_ids.*' => ['integer', 'exists:users,id'],
+        ]);
+        $accessLevel = $accessData['access_level'] ?? 'private';
+        $sharedUserIds = array_values(array_unique(array_map('intval', $accessData['user_ids'] ?? [])));
+
         $uploaded = $request->file('file') ?? $request->file('files');
         if ($uploaded === null) {
             return back()->withErrors(['file' => 'Please choose at least one file.'])->withInput();
@@ -755,8 +765,12 @@ class DocumentController extends Controller
                 'document_date' => $documentDate
                     ?? ($single ? app(UploadSuggester::class)->creationDate($file, $fileLastModified) : null),
                 'processing_status' => 'pending',
-                'access_level' => $request->input('access_level', 'private'),
+                'access_level' => $accessLevel,
             ]);
+
+            if ($sharedUserIds !== []) {
+                $document->authorizedUsers()->sync($sharedUserIds);
+            }
 
             ProcessDocument::dispatch($document->id, $document->version_number);
 
@@ -765,7 +779,12 @@ class DocumentController extends Controller
                 'action' => 'document.uploaded',
                 'entity_type' => Document::class,
                 'entity_id' => $document->id,
-                'metadata' => ['filename' => $file->getClientOriginalName(), 'size' => $file->getSize()],
+                'metadata' => [
+                    'filename' => $file->getClientOriginalName(),
+                    'size' => $file->getSize(),
+                    'access_level' => $accessLevel,
+                    'shared_with' => $sharedUserIds,
+                ],
             ]);
 
             $count++;

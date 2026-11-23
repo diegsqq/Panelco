@@ -31,6 +31,9 @@ class UploadSuggestTest extends TestCase
             ->assertSee('id="dropZone"', false)
             ->assertSee('id="badgeTitle"', false)
             ->assertSee('Pick a file first and P-ARCHIVE will fill these in for you.', false)
+            ->assertSee('id="access_level" class="up-access-btn" data-bs-toggle="modal" data-bs-target="#shareAccessModal"', false)
+            ->assertSee('id="shareAccessModal"', false)
+            ->assertSee('Share access')
             ->assertDontSee('SmartDocs will fill', false);
     }
 
@@ -192,6 +195,25 @@ class UploadSuggestTest extends TestCase
 
         $this->assertSame('Financial Ratios', $doc->title);
         $this->assertSame('Financial Ratios', $doc->display_title);
+    }
+
+    public function test_store_applies_share_access_and_authorized_employees(): void
+    {
+        $this->seed();
+        Storage::fake('private');
+        Queue::fake();
+        $emp = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $other = User::where('email', 'admin@panelco3.local')->firstOrFail();
+
+        $this->actingAs($emp)->post(route('documents.store'), [
+            'file' => UploadedFile::fake()->createWithContent('shared-access.txt', 'Shared document.'),
+            'access_level' => 'link',
+            'user_ids' => [$other->id],
+        ])->assertRedirect(route('documents.library'));
+
+        $doc = Document::where('original_filename', 'shared-access.txt')->firstOrFail();
+        $this->assertSame('link', $doc->access_level);
+        $this->assertTrue($doc->authorizedUsers->contains($other->id));
     }
 
     public function test_store_leaves_category_unassigned_when_none_was_selected(): void
