@@ -54,7 +54,7 @@
 
     /* ── Center document page ── */
     .dv-page-wrap { flex: 1 1 auto; min-width: 0; overflow-x: hidden; overflow-y: auto; padding: 2.25rem 1.5rem 3rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
-    .dv-page { position: relative; overflow: hidden; width: 100%; max-width: 100%; box-sizing: border-box; background: linear-gradient(180deg, #fff 0%, #fcfdfc 100%); border: 1px solid #e4ebe6; border-top: 4px solid #00A868; border-radius: 20px; box-shadow: 0 18px 45px rgba(16,40,27,.09), 0 2px 8px rgba(16,40,27,.05); padding: 3rem 3rem 2.75rem; min-height: 620px; color: #2c3a33; }
+    .dv-page { position: relative; overflow: hidden; width: 100%; max-width: 100%; box-sizing: border-box; background: linear-gradient(180deg, #fff 0%, #fcfdfc 100%); border: 1px solid #e4ebe6; border-top: 4px solid #00A868; border-radius: 20px; box-shadow: 0 18px 45px rgba(16,40,27,.09), 0 2px 8px rgba(16,40,27,.05); padding: 3rem 3rem 2.75rem; min-height: 800px; color: #2c3a33; }
     .dv-page::before, .dv-page::after { content: ""; position: absolute; top: 7.4rem; width: 24px; height: 24px; border-radius: 50%; background: #f5f5f5; z-index: 2; }
     .dv-page::before { left: -12px; }
     .dv-page::after { right: -12px; }

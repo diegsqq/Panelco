@@ -246,7 +246,7 @@ class DocumentContentEditingTest extends TestCase
             ->assertSee('.dv-page::before, .dv-page::after', false)
             ->assertSee('class="dv-page-perf"', false)
             ->assertSee('max-width: min(880px, calc(100% - 3rem))', false)
-            ->assertSee('min-height: 620px', false);
+            ->assertSee('min-height: 800px', false);
     }
 
     public function test_documents_without_content_do_not_show_the_content_section(): void
