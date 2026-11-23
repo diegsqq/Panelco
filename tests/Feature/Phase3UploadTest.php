@@ -550,6 +550,8 @@ class Phase3UploadTest extends TestCase
             ->assertSeeText('Important Details')
             ->assertSeeText('Corrective Actions')
             ->assertSeeText('repaired the damaged transformer')
-            ->assertSee(str_replace('/', '\\/', route('documents.ask', $doc)), false);
+            ->assertSee(str_replace('/', '\\/', route('documents.ask', $doc)), false)
+            ->assertDontSee('class="dv-toolbar"', false)
+            ->assertDontSee('Auto-save', false);
     }
 }

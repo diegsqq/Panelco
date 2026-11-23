@@ -36,21 +36,6 @@
     [data-theme="dark"] .dv-btn { background: #1d2b24; border-color: #2c3d34; color: #c3d0c8; }
     [data-theme="dark"] .dv-btn:hover { background: #243324; color: #fff; }
 
-    /* ── Toolbar ── */
-    .dv-toolbar { flex: 0 0 auto; display: flex; align-items: center; gap: .2rem; padding: .35rem 1.25rem; border-bottom: 1px solid #e8e8e8; background: #fff; overflow-x: auto; }
-    .dv-toolbar-sep { width: 1px; height: 18px; background: #e0e0e0; margin: 0 .3rem; flex: 0 0 1px; }
-    .dv-tool { font-size: .75rem; padding: .28rem .5rem; border-radius: .4rem; border: none; background: transparent; color: #444; cursor: pointer; display: inline-flex; align-items: center; gap: .25rem; transition: background .1s ease; white-space: nowrap; }
-    .dv-tool:hover { background: #f0f0f0; }
-    .dv-tool.active { background: #e6f3ea; color: #00743F; }
-    .dv-tool i { font-size: .85rem; }
-    .dv-autosave { margin-left: auto; font-size: .72rem; color: #aaa; display: flex; align-items: center; gap: .4rem; white-space: nowrap; flex: 0 0 auto; }
-    .dv-autosave .dot { width: 7px; height: 7px; border-radius: 50%; background: #00A868; }
-    [data-theme="dark"] .dv-toolbar { background: #16211c; border-color: #26362e; }
-    [data-theme="dark"] .dv-tool { color: #c3d0c8; }
-    [data-theme="dark"] .dv-tool:hover { background: #1d2b24; }
-    [data-theme="dark"] .dv-toolbar-sep { background: #26362e; }
-    [data-theme="dark"] .dv-autosave { color: #4a5e54; }
-
     /* ── Body: outline + page + info ── */
     .dv-body { flex: 1 1 auto; display: flex; min-height: 0; overflow: hidden; }
 
@@ -175,7 +160,7 @@
         #docViewer .dv-page .doc-render { font-size: clamp(.95rem, .86rem + .45vw, 1.18rem) !important; }
     }
     @media print {
-        .dv-breadcrumb, .dv-toolbar, .dv-outline, .dv-info { display: none !important; }
+        .dv-breadcrumb, .dv-outline, .dv-info { display: none !important; }
         .dv-body { overflow: visible; }
         .dv-page-wrap { overflow: visible; padding: 0; }
         .dv-page { background: #fff !important; box-shadow: none; border: none; border-radius: 0; padding: 0; }
@@ -213,35 +198,6 @@
             @can('update', $document)
             <a href="{{ route('documents.edit-content', $document) }}" class="dv-btn dv-btn-green"><i class="bi bi-pencil"></i> Edit</a>
             @endcan
-        </div>
-    </div>
-
-    {{-- ── Toolbar ── --}}
-    <div class="dv-toolbar">
-        <span class="dv-tool" style="color:#888;font-size:.75rem">File</span>
-        <span class="dv-tool" style="color:#888;font-size:.75rem">Edit</span>
-        <span class="dv-tool" style="color:#888;font-size:.75rem">View</span>
-        <span class="dv-tool" style="color:#888;font-size:.75rem">Insert</span>
-        <span class="dv-tool" style="color:#888;font-size:.75rem">Format</span>
-        <div class="dv-toolbar-sep"></div>
-        <button class="dv-tool" title="Bold"><i class="bi bi-type-bold"></i></button>
-        <button class="dv-tool" title="Italic"><i class="bi bi-type-italic"></i></button>
-        <button class="dv-tool" title="Underline"><i class="bi bi-type-underline"></i></button>
-        <button class="dv-tool" title="Strikethrough"><i class="bi bi-type-strikethrough"></i></button>
-        <button class="dv-tool" title="Font color"><i class="bi bi-fonts"></i></button>
-        <div class="dv-toolbar-sep"></div>
-        <button class="dv-tool" title="Align left"><i class="bi bi-text-left"></i></button>
-        <button class="dv-tool" title="Align center"><i class="bi bi-text-center"></i></button>
-        <button class="dv-tool" title="Align right"><i class="bi bi-text-right"></i></button>
-        <div class="dv-toolbar-sep"></div>
-        <button class="dv-tool"><i class="bi bi-table"></i> Table</button>
-        <button class="dv-tool"><i class="bi bi-image"></i> Image</button>
-        <button class="dv-tool"><i class="bi bi-layout-text-window-reverse"></i> Header &amp; footer</button>
-        <div class="dv-autosave">
-            <span class="dot"></span>
-            Auto-save <strong style="color:#333">On</strong>
-            <span style="margin-left:.5rem;color:#aaa">|</span>
-            <span style="color:#00A868;font-weight:600">Editing</span>
         </div>
     </div>
 
