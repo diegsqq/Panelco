@@ -377,7 +377,7 @@
             <div class="dv-info-section">
                 <div class="dv-ask-box">
                     <div class="dv-ask-title">
-                        <i class="bi bi-lightning-charge-fill"></i> A little help with words
+                        <i class="bi bi-lightning-charge-fill"></i> Ask Lightning AI
                     </div>
                     <p style="font-size:.73rem;color:#888;margin-bottom:.5rem">Summarize a section or improve clarity without leaving your document.</p>
                     <div class="d-flex flex-wrap gap-1 mb-2">
