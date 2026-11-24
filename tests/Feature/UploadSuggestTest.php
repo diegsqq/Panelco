@@ -34,6 +34,7 @@ class UploadSuggestTest extends TestCase
             ->assertSee('id="access_level" class="up-access-btn" data-bs-toggle="modal" data-bs-target="#shareAccessModal"', false)
             ->assertSee('id="shareAccessModal"', false)
             ->assertSee('Share access')
+            ->assertSee('up to 1 GB.', false)
             ->assertDontSee('SmartDocs will fill', false);
     }
 

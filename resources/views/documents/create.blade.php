@@ -2,6 +2,10 @@
 @section('content')
 @php
     $folderMode = request('mode') === 'folder';
+    $maxKb = (int) config('smartdocs.upload.max_kb', 1048576);
+    $maxLabel = $maxKb >= 1048576
+        ? rtrim(rtrim(number_format($maxKb / 1048576, 2), '0'), '.') . ' GB'
+        : number_format($maxKb / 1024, 0) . ' MB';
     $selectedAccess = old('access_level', 'private');
     $selectedUsers = array_map('intval', (array) old('user_ids', []));
     $accessLabels = [
@@ -175,7 +179,7 @@
                 <div class="up-idle-icon"><i class="bi bi-cloud-arrow-up"></i></div>
                 <p class="up-zone-title">{{ $folderMode ? 'Choose a folder from your computer' : 'Drag & drop your files here' }}</p>
                 <p class="up-zone-sub">or <span style="color:#00743F;text-decoration:underline;cursor:pointer" onclick="document.getElementById('file').click()">{{ $folderMode ? 'browse for a folder' : 'browse from your computer' }}</span></p>
-                <p class="up-zone-limits" id="uploadInstructions">PDF · DOCX · TXT · PNG · JPEG — up to {{ number_format(config('smartdocs.upload.max_kb', 51200) / 1024, 0) }} MB. {{ $folderMode ? 'All supported files inside the folder will be queued.' : 'You can select multiple files.' }}</p>
+                <p class="up-zone-limits" id="uploadInstructions">PDF · DOCX · TXT · PNG · JPEG — up to {{ $maxLabel }}. {{ $folderMode ? 'All supported files inside the folder will be queued.' : 'You can select multiple files.' }}</p>
             </div>
             <div id="zoneFile" class="d-none w-100">
                 <div class="up-file-list" id="fileList"></div>
@@ -350,7 +354,7 @@
         jpg:  ['bi-file-earmark-image-fill', '#00A868', '#e6f3ea'],
         jpeg: ['bi-file-earmark-image-fill', '#00A868', '#e6f3ea']
     };
-    var MAX_BYTES = {{ (int) config('smartdocs.upload.max_kb', 51200) * 1024 }};
+    var MAX_BYTES = {{ $maxKb * 1024 }};
     var suggestUrl = @json(route('documents.suggest'));
     var csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     var req = null;

@@ -204,6 +204,35 @@ class SettingsFeaturesTest extends TestCase
         $this->actingAs($user)->post(route('settings.theme'), ['theme' => 'neon'])->assertSessionHasErrors('theme');
     }
 
+    public function test_preferences_accept_one_gigabyte_upload_limit(): void
+    {
+        $user = $this->user(['role' => 'admin']);
+
+        $this->actingAs($user)->put(route('settings.update'), [
+            'app_name' => 'P-ARCHIVE',
+            'support_email' => 'support@panelco3.local',
+            'ai_model' => 'gpt-4o-mini',
+            'ai_temperature' => 0.2,
+            'ai_max_tokens' => 2048,
+            'upload_max_kb' => 1048576,
+            'allowed_extensions' => 'pdf,docx,txt,png,jpg,jpeg',
+            'failed_cleanup_days' => 0,
+        ])->assertRedirect();
+
+        $this->assertSame('1048576', Setting::get('upload_max_kb'));
+
+        $this->actingAs($user)->put(route('settings.update'), [
+            'app_name' => 'P-ARCHIVE',
+            'support_email' => 'support@panelco3.local',
+            'ai_model' => 'gpt-4o-mini',
+            'ai_temperature' => 0.2,
+            'ai_max_tokens' => 2048,
+            'upload_max_kb' => 1048577,
+            'allowed_extensions' => 'pdf,docx,txt,png,jpg,jpeg',
+            'failed_cleanup_days' => 0,
+        ])->assertSessionHasErrors('upload_max_kb');
+    }
+
     public function test_two_factor_setup_confirm_then_login_requires_code(): void
     {
         Mail::fake();

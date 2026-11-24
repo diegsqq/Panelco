@@ -459,7 +459,7 @@ class SettingsController extends Controller
             'ai_autofill_enabled' => ['nullable', 'in:1'],
             'ai_suggest_enabled' => ['nullable', 'in:1'],
 
-            'upload_max_kb' => ['required', 'integer', 'min:1024', 'max:102400'],
+            'upload_max_kb' => ['required', 'integer', 'min:1024', 'max:1048576'],
             'allowed_extensions' => ['required', 'string', 'max:200'],
             'failed_cleanup_days' => ['required', 'integer', 'min:0', 'max:365'],
         ]);

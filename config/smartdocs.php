@@ -2,7 +2,7 @@
 
 return [
     'upload' => [
-        'max_kb' => 51200,
+        'max_kb' => 1048576,
         'allowed_mimes' => [
             'application/pdf',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

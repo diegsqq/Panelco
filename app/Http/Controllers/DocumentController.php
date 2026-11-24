@@ -40,7 +40,7 @@ class DocumentController extends Controller
         'image/jpeg',
     ];
 
-    public const MAX_KB = 20480;
+    public const MAX_KB = 1048576;
 
     private function uploadRules(): array
     {
