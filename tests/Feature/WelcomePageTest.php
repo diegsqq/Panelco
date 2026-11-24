@@ -10,6 +10,14 @@ class WelcomePageTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_welcome_skip_link_targets_main_content(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('class="skip-link" href="#main-content"', false)
+            ->assertSee('<main class="hero" id="main-content" tabindex="-1">', false);
+    }
+
     public function test_guest_sees_public_welcome_page_with_employee_login_links(): void
     {
         $this->get('/')

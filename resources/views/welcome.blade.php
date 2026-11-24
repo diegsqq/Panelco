@@ -61,7 +61,7 @@ a:focus-visible{outline:3px solid #087a4b;outline-offset:4px}
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to main content</a>
-<header class="hero" id="hero">
+<main class="hero" id="main-content" tabindex="-1">
     <nav class="hero-nav" aria-label="Main navigation">
         <a class="brand" href="/" aria-label="P-ARCHIVE home"></a>
     </nav>
@@ -76,7 +76,7 @@ a:focus-visible{outline:3px solid #087a4b;outline-offset:4px}
             <img src="{{ asset('images/logo.png') }}" alt="P-ARCHIVE" class="hero-logo slow-flip">
         </div>
     </div>
-</header>
+</main>
 
 <script>
 (function(){
