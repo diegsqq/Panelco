@@ -241,7 +241,7 @@ class DocumentContentEditingTest extends TestCase
             ->assertSee('body:has(#docViewer) > .container-fluid > .row > div.p-0.d-flex.flex-column { flex: 0 0 100%; max-width: 100%; width: 100%; }', false)
             ->assertSee('.dv-info { width: 300px; flex: 0 0 300px;', false)
             ->assertSee('scrollbar-gutter: stable;', false)
-            ->assertSee('.dv-info-section { border: 1px solid #ebebeb; border-radius: .75rem; overflow: hidden; flex: 0 0 auto; }', false)
+            ->assertSee('.dv-info-section { border: 1px solid #e8eceb; border-radius: .85rem; overflow: hidden; flex: 0 0 auto; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.04); }', false)
             ->assertSee('@media (min-width: 768px) and (max-width: 991.98px)', false)
             ->assertSee('.dv-page::before, .dv-page::after', false)
             ->assertSee('class="dv-page-perf"', false)
