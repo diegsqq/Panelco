@@ -14,7 +14,7 @@ class Document extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'uploaded_by', 'upload_batch_id', 'title', 'original_filename', 'storage_path', 'file_hash',
+        'uploaded_by', 'title', 'original_filename', 'storage_path', 'file_hash',
         'version_number', 'current_version_uploaded_by',
         'mime_type', 'file_size', 'document_type', 'department_id',
         'category_id', 'suggested_category_id', 'suggested_department_id',

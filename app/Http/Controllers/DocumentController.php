@@ -727,20 +727,8 @@ class DocumentController extends Controller
 
         $single = count($files) === 1;
 
-        $isFolderUpload = request('mode') === 'folder'
-            || collect($files)->contains(fn ($file) => $file->getClientOriginalPath() !== $file->getClientOriginalName());
-        $uploadBatchId = $isFolderUpload ? (string) \Illuminate\Support\Str::uuid() : null;
-        if ($isFolderUpload && $uploadBatchId !== null) {
-            \App\Models\FolderBatch::create([
-                'id' => $uploadBatchId,
-                'user_id' => $request->user()->id,
-                'total_files' => count($files),
-            ]);
-        }
-
         $count = 0;
         $duplicates = [];
-        $skipped = [];
         $duplicateDetector = app(DuplicateDocumentDetector::class);
         foreach ($files as $file) {
             $originalName = $file->getClientOriginalName();
@@ -752,20 +740,10 @@ class DocumentController extends Controller
             }
 
             if (! in_array($file->getMimeType(), $allowedMimes, true)) {
-                if ($isFolderUpload) {
-                    $skipped[] = $originalName;
-                    continue;
-                }
-
                 return back()->withErrors(['file' => 'Unsupported file type for ' . $originalName . '. Allowed: PDF, DOCX, TXT, PNG, JPEG.'])->withInput();
             }
 
             if ($file->getSize() > $maxKb * 1024) {
-                if ($isFolderUpload) {
-                    $skipped[] = $originalName;
-                    continue;
-                }
-
                 return back()->withErrors(['file' => $originalName . ' exceeds the ' . number_format($maxKb / 1024, 0) . ' MB limit.'])->withInput();
             }
 
@@ -782,7 +760,6 @@ class DocumentController extends Controller
 
             $document = Document::create([
                 'uploaded_by' => $request->user()->id,
-                'upload_batch_id' => $uploadBatchId,
                 'title' => $docTitle,
                 'original_filename' => $file->getClientOriginalName(),
                 'storage_path' => $path,
@@ -826,17 +803,9 @@ class DocumentController extends Controller
                 ? 'Document uploaded and queued for processing.'
                 : $count . ' documents uploaded and queued for processing.');
         }
-
-        $warnings = [];
         if ($duplicates !== []) {
-            $warnings[] = ($count === 0 ? 'No new documents were uploaded. ' : '')
-                . 'Skipped identical file(s): ' . implode(', ', $duplicates) . '.';
-        }
-        if ($skipped !== []) {
-            $warnings[] = 'Skipped temporary/unsupported file(s): ' . implode(', ', $skipped) . '.';
-        }
-        if ($warnings !== []) {
-            $response->with('warning', implode(' ', $warnings));
+            $response->with('warning', ($count === 0 ? 'No new documents were uploaded. ' : '')
+                . 'Skipped identical file(s): ' . implode(', ', $duplicates) . '.');
         }
 
         return $response;
