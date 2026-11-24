@@ -373,27 +373,6 @@
                 </div>
             </div>
 
-            {{-- Employee access ── --}}
-            <div class="dv-info-section">
-                <div class="dv-info-section-head">
-                    <span class="dv-info-section-title">Employee access</span>
-                </div>
-                <div class="dv-info-section-body">
-                    <p style="font-size:.75rem;color:#888;margin:0">All employees can view this document.</p>
-                    <div class="d-flex flex-wrap gap-1 mt-1">
-                        @foreach(($document->authorizedUsers ?? collect())->take(4) as $u)
-                        <div class="dv-avatar" title="{{ $u->name }}">{{ $u->initials() }}</div>
-                        @endforeach
-                        @if(($document->authorizedUsers ?? collect())->count() > 4)
-                        <span style="font-size:.72rem;color:#888;align-self:center">+{{ ($document->authorizedUsers ?? collect())->count() - 4 }} others</span>
-                        @endif
-                    </div>
-                    @can('update', $document)
-                    <a href="#" data-bs-toggle="modal" data-bs-target="#shareModal" style="font-size:.75rem;color:#00A868;text-decoration:none">Manage access →</a>
-                    @endcan
-                </div>
-            </div>
-
             {{-- Ask Lightning AI ── --}}
             <div class="dv-info-section">
                 <div class="dv-ask-box">
