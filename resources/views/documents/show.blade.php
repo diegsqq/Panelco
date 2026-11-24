@@ -51,14 +51,14 @@
     .dv-body { flex: 1 1 auto; display: flex; min-height: 0; overflow: hidden; }
 
     /* ── Left outline panel ── */
-    .dv-outline { width: 220px; flex: 0 0 220px; background: #fff; border-right: 1px solid #e8e8e8; overflow-y: auto; padding: 1rem .75rem; display: flex; flex-direction: column; gap: .15rem; }
-    .dv-outline-title { font-size: .7rem; font-weight: 800; color: #8a948e; text-transform: uppercase; letter-spacing: .6px; margin-bottom: .5rem; padding: 0 .45rem; }
-    .dv-outline-item { display: block; font-size: .78rem; color: #5a645c; padding: .32rem .55rem; border-radius: .5rem; text-decoration: none; transition: all .15s ease; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid transparent; }
+    .dv-outline { width: 220px; flex: 0 0 220px; min-height: 0; background: #fff; border-right: 1px solid #e8e8e8; overflow-y: auto; overscroll-behavior: contain; padding: 1rem .75rem; display: flex; flex-direction: column; gap: .15rem; }
+    .dv-outline-title { flex: 0 0 auto; font-size: .7rem; font-weight: 800; color: #8a948e; text-transform: uppercase; letter-spacing: .6px; margin-bottom: .5rem; padding: 0 .45rem; }
+    .dv-outline-item { flex: 0 0 auto; display: block; font-size: .78rem; color: #5a645c; padding: .32rem .55rem; border-radius: .5rem; text-decoration: none; transition: all .15s ease; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid transparent; }
     .dv-outline-item:hover { background: #f2f7f4; color: #111; border-color: #d9ecd5; }
     .dv-outline-item.active { background: #e8f6ee; color: #00A868; font-weight: 600; border-color: #c3e8d4; box-shadow: 0 1px 2px rgba(0,168,104,.08); }
     .dv-outline-item.h2 { padding-left: 1rem; font-size: .76rem; }
     .dv-outline-item.h3 { padding-left: 1.7rem; font-size: .73rem; color: #8a948e; }
-    .dv-outline-page { margin-top: auto; font-size: .72rem; color: #9aa79f; padding: .6rem .45rem 0; border-top: 1px solid #eef1ef; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dv-outline-page { flex: 0 0 auto; margin-top: auto; font-size: .72rem; color: #9aa79f; padding: .6rem .45rem 0; border-top: 1px solid #eef1ef; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     [data-theme="dark"] .dv-outline { background: #16211c; border-color: #26362e; }
     [data-theme="dark"] .dv-outline-page { color: #6c8276; border-color: #26362e; }
     [data-theme="dark"] .dv-outline-title { color: #4a5e54; }
