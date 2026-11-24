@@ -35,6 +35,8 @@ class UploadSuggestTest extends TestCase
             ->assertSee('id="shareAccessModal"', false)
             ->assertSee('Share access')
             ->assertSee('up to 1 GB.', false)
+            ->assertSee('AbortController', false)
+            ->assertDontSee('req.abort', false)
             ->assertDontSee('SmartDocs will fill', false);
     }
 

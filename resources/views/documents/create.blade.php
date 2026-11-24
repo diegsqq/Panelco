@@ -357,7 +357,7 @@
     var MAX_BYTES = {{ $maxKb * 1024 }};
     var suggestUrl = @json(route('documents.suggest'));
     var csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    var req = null;
+    var abortController = null;
     var seq = 0;
 
     // Track manual edits so re-analysis never stomps user input.
@@ -377,7 +377,10 @@
         }
         return (base !== '' ? base : originalBase) + suffix;
     }
-    function humanSize(bytes) { return bytes >= 1048576 ? (bytes / 1048576).toFixed(1) + ' MB' : (bytes / 1024).toFixed(1) + ' KB'; }
+    function humanSize(bytes) {
+        if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(1) + ' GB';
+        return bytes >= 1048576 ? (bytes / 1048576).toFixed(1) + ' MB' : (bytes / 1024).toFixed(1) + ' KB';
+    }
 
     function setBadges(on) {
         ['badgeTitle', 'badgeCategory', 'badgeDate'].forEach(function (id) {
@@ -441,7 +444,8 @@
     }
 
     function resetZone() {
-        if (req) { req.abort(); req = null; }
+        seq++;
+        if (abortController) { abortController.abort(); abortController = null; }
         input.value = '';
         document.getElementById('fileLastModified').value = '';
         fileList.textContent = '';
@@ -483,7 +487,9 @@
             suggestNote.innerHTML = '<span class="up-note error">File is larger than ' + humanSize(MAX_BYTES) + ' and will be rejected.</span>';
             return;
         }
-        if (req) req.abort();
+        if (abortController) abortController.abort();
+        abortController = new AbortController();
+        var signal = abortController.signal;
         var mySeq = ++seq;
         var fd = new FormData();
         fd.append('file', file);
@@ -493,7 +499,7 @@
         progress.classList.add('on');
         detailsHint.textContent = 'Reading document and suggesting details…';
 
-        req = fetch(suggestUrl, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' }, body: fd })
+        fetch(suggestUrl, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' }, body: fd, signal: signal })
             .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
             .then(function (res) {
                 if (mySeq !== seq) return;
@@ -514,7 +520,7 @@
                 if (mySeq !== seq) return;
                 analyzing.classList.add('d-none');
                 progress.classList.remove('on');
-                req = null;
+                abortController = null;
             });
     }
 
@@ -523,7 +529,7 @@
         if (!files.length) { resetZone(); return; }
 
         seq++;
-        if (req) { req.abort(); req = null; }
+        if (abortController) { abortController.abort(); abortController = null; }
         renderFiles(files);
         clearBadges();
         suggestNote.textContent = '';
