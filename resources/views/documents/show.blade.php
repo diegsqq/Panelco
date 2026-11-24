@@ -53,13 +53,14 @@
 
     /* ── Left outline panel ── */
     .dv-outline { position: sticky; top: 0; width: 220px; flex: 0 0 220px; min-height: 0; background: #fff; border-right: 1px solid #e8e8e8; overflow: hidden; overscroll-behavior: contain; padding: 1rem .75rem; display: flex; flex-direction: column; gap: .15rem; }
+    .dv-outline-list { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: .15rem; }
     .dv-outline-title { flex: 0 0 auto; font-size: .7rem; font-weight: 800; color: #8a948e; text-transform: uppercase; letter-spacing: .6px; margin-bottom: .5rem; padding: 0 .45rem; }
     .dv-outline-item { flex: 0 0 auto; display: block; font-size: .78rem; color: #5a645c; padding: .32rem .55rem; border-radius: .5rem; text-decoration: none; transition: all .15s ease; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid transparent; }
     .dv-outline-item:hover { background: #f2f7f4; color: #111; border-color: #d9ecd5; }
     .dv-outline-item.active { background: #e8f6ee; color: #00A868; font-weight: 600; border-color: #c3e8d4; box-shadow: 0 1px 2px rgba(0,168,104,.08); }
     .dv-outline-item.h2 { padding-left: 1rem; font-size: .76rem; }
     .dv-outline-item.h3 { padding-left: 1.7rem; font-size: .73rem; color: #8a948e; }
-    .dv-outline-page { flex: 0 0 auto; margin-top: auto; font-size: .72rem; color: #9aa79f; padding: .6rem .45rem 0; border-top: 1px solid #eef1ef; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dv-outline-page { flex: 0 0 auto; font-size: .72rem; color: #9aa79f; padding: .6rem .45rem 0; border-top: 1px solid #eef1ef; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     [data-theme="dark"] .dv-outline { background: #16211c; border-color: #26362e; }
     [data-theme="dark"] .dv-outline-page { color: #6c8276; border-color: #26362e; }
     [data-theme="dark"] .dv-outline-title { color: #4a5e54; }
@@ -228,26 +229,28 @@
 
         {{-- Left: Document outline ── --}}
         <aside class="dv-outline" id="dvOutline">
-            <div class="dv-outline-title">Document outline</div>
-            {{-- populated by JS from headings --}}
-            @if($document->content)
-            @php
-                preg_match_all('/<h([1-6])[^>]*>(.*?)<\/h\1>/is',
-                    app(\App\Services\DocumentContentSanitizer::class)->sanitize($document->content),
-                    $hMatches);
-            @endphp
-            @foreach($hMatches[1] as $i => $level)
-            @php $label = trim(strip_tags($hMatches[2][$i])); @endphp
-            @if($label)
-            <a href="#heading-{{ $i }}" class="dv-outline-item {{ $level == 2 ? 'h2' : ($level >= 3 ? 'h3' : '') }}">{{ $label }}</a>
-            @endif
-            @endforeach
-            @else
-            @if(trim((string) $document->extracted_text) !== '')
-            <a href="#doc-content" class="dv-outline-item active">Document text</a>
-            @endif
-            @if(count($tables)) <a href="#doc-tables" class="dv-outline-item h2">Tables</a> @endif
-            @endif
+            <div class="dv-outline-list">
+                <div class="dv-outline-title">Document outline</div>
+                {{-- populated by JS from headings --}}
+                @if($document->content)
+                @php
+                    preg_match_all('/<h([1-6])[^>]*>(.*?)<\/h\1>/is',
+                        app(\App\Services\DocumentContentSanitizer::class)->sanitize($document->content),
+                        $hMatches);
+                @endphp
+                @foreach($hMatches[1] as $i => $level)
+                @php $label = trim(strip_tags($hMatches[2][$i])); @endphp
+                @if($label)
+                <a href="#heading-{{ $i }}" class="dv-outline-item {{ $level == 2 ? 'h2' : ($level >= 3 ? 'h3' : '') }}">{{ $label }}</a>
+                @endif
+                @endforeach
+                @else
+                @if(trim((string) $document->extracted_text) !== '')
+                <a href="#doc-content" class="dv-outline-item active">Document text</a>
+                @endif
+                @if(count($tables)) <a href="#doc-tables" class="dv-outline-item h2">Tables</a> @endif
+                @endif
+            </div>
             <span class="dv-outline-page">Page 1 of 1 · {{ number_format(str_word_count(strip_tags($document->content ?? $document->extracted_text ?? ''))) }} words</span>
         </aside>
 
