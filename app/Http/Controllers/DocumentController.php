@@ -745,11 +745,9 @@ class DocumentController extends Controller
         foreach ($files as $file) {
             $originalName = $file->getClientOriginalName();
 
-            // Ignore Word/Office temporary lock files and skip unsupported or
-            // oversized files when a whole folder is uploaded, so one bad file
-            // does not abort the entire batch.
+            // Word/Office temporary lock files are never real documents; skip
+            // them silently so they do not abort or clutter the upload.
             if (str_starts_with($originalName, '~$')) {
-                $skipped[] = $originalName;
                 continue;
             }
 
