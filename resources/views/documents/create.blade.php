@@ -178,7 +178,7 @@
             <div id="zoneIdle">
                 <div class="up-idle-icon"><i class="bi bi-cloud-arrow-up"></i></div>
                 <p class="up-zone-title">{{ $folderMode ? 'Choose a folder from your computer' : 'Drag & drop your files here' }}</p>
-                <p class="up-zone-sub">or <span style="color:#00743F;text-decoration:underline;cursor:pointer" onclick="document.getElementById('file').click()">{{ $folderMode ? 'browse for a folder' : 'browse for files' }}</span>@if(! $folderMode) · <span style="color:#00743F;text-decoration:underline;cursor:pointer" onclick="document.getElementById('folderInput').click()">browse for a folder</span>@endif</p>
+                <p class="up-zone-sub">or <span style="color:#00743F;text-decoration:underline;cursor:pointer" onclick="event.stopPropagation(); document.getElementById('file').click()">{{ $folderMode ? 'browse for a folder' : 'browse for files' }}</span>@if(! $folderMode) · <span style="color:#00743F;text-decoration:underline;cursor:pointer" onclick="event.stopPropagation(); document.getElementById('folderInput').click()">browse for a folder</span>@endif</p>
                 <p class="up-zone-limits" id="uploadInstructions">PDF · DOCX · TXT · PNG · JPEG — up to {{ $maxLabel }}. {{ $folderMode ? 'All supported files inside the folder will be queued.' : 'Select multiple files, or switch to Folder mode above.' }}</p>
             </div>
             <div id="zoneFile" class="d-none w-100">
