@@ -58,7 +58,9 @@
     .dv-outline-item.active { background: #e8f6ee; color: #00A868; font-weight: 600; border-color: #c3e8d4; box-shadow: 0 1px 2px rgba(0,168,104,.08); }
     .dv-outline-item.h2 { padding-left: 1rem; font-size: .76rem; }
     .dv-outline-item.h3 { padding-left: 1.7rem; font-size: .73rem; color: #8a948e; }
+    .dv-outline-page { margin-top: auto; font-size: .72rem; color: #9aa79f; padding: .6rem .45rem 0; border-top: 1px solid #eef1ef; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     [data-theme="dark"] .dv-outline { background: #16211c; border-color: #26362e; }
+    [data-theme="dark"] .dv-outline-page { color: #6c8276; border-color: #26362e; }
     [data-theme="dark"] .dv-outline-title { color: #4a5e54; }
     [data-theme="dark"] .dv-outline-item { color: #8fa59a; border-color: transparent; }
     [data-theme="dark"] .dv-outline-item:hover { background: #1d2b24; color: #fff; border-color: #2c3d34; }
@@ -245,6 +247,7 @@
             @endif
             @if(count($tables)) <a href="#doc-tables" class="dv-outline-item h2">Tables</a> @endif
             @endif
+            <span class="dv-outline-page">Page 1 of 1 · {{ number_format(str_word_count(strip_tags($document->content ?? $document->extracted_text ?? ''))) }} words</span>
         </aside>
 
         {{-- Center: document page ── --}}
@@ -340,7 +343,6 @@
             {{-- Pagination ── --}}
             <div class="dv-page-pagination">
                 <button><i class="bi bi-chevron-left"></i></button>
-                <span>Page 1 of 1 · {{ number_format(str_word_count(strip_tags($document->content ?? $document->extracted_text ?? ''))) }} words</span>
                 <button><i class="bi bi-chevron-right"></i></button>
             </div>
 
