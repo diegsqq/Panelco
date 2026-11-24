@@ -8,7 +8,8 @@
     $pageHeightPx = (int) round($pageSize['height_mm'] * 96 / 25.4);
 @endphp
 <style>
-    body:has(#docViewer) main { padding: 0 !important; }
+    body:has(#docViewer) { overflow: hidden; }
+    body:has(#docViewer) main { padding: 0 !important; overflow: hidden; }
     @media (min-width: 768px) {
         body:has(#docViewer) #p3Sidebar { display: none !important; }
         body:has(#docViewer) > .container-fluid > .row > div.p-0.d-flex.flex-column { flex: 0 0 100%; max-width: 100%; width: 100%; }
@@ -51,7 +52,7 @@
     .dv-body { flex: 1 1 auto; display: flex; min-height: 0; overflow: hidden; }
 
     /* ── Left outline panel ── */
-    .dv-outline { width: 220px; flex: 0 0 220px; min-height: 0; background: #fff; border-right: 1px solid #e8e8e8; overflow: hidden; padding: 1rem .75rem; display: flex; flex-direction: column; gap: .15rem; }
+    .dv-outline { position: sticky; top: 0; width: 220px; flex: 0 0 220px; min-height: 0; background: #fff; border-right: 1px solid #e8e8e8; overflow: hidden; overscroll-behavior: contain; padding: 1rem .75rem; display: flex; flex-direction: column; gap: .15rem; }
     .dv-outline-title { flex: 0 0 auto; font-size: .7rem; font-weight: 800; color: #8a948e; text-transform: uppercase; letter-spacing: .6px; margin-bottom: .5rem; padding: 0 .45rem; }
     .dv-outline-item { flex: 0 0 auto; display: block; font-size: .78rem; color: #5a645c; padding: .32rem .55rem; border-radius: .5rem; text-decoration: none; transition: all .15s ease; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid transparent; }
     .dv-outline-item:hover { background: #f2f7f4; color: #111; border-color: #d9ecd5; }
