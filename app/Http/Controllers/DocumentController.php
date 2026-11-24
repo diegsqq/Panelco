@@ -738,22 +738,42 @@ class DocumentController extends Controller
             ]);
         }
 
-        foreach ($files as $file) {
-            if (! in_array($file->getMimeType(), $allowedMimes, true)) {
-                return back()->withErrors(['file' => 'Unsupported file type for ' . $file->getClientOriginalName() . '. Allowed: PDF, DOCX, TXT, PNG, JPEG.'])->withInput();
-            }
-            if ($file->getSize() > $maxKb * 1024) {
-                return back()->withErrors(['file' => $file->getClientOriginalName() . ' exceeds the ' . number_format($maxKb / 1024, 0) . ' MB limit.'])->withInput();
-            }
-        }
-
         $count = 0;
         $duplicates = [];
+        $skipped = [];
         $duplicateDetector = app(DuplicateDocumentDetector::class);
         foreach ($files as $file) {
+            $originalName = $file->getClientOriginalName();
+
+            // Ignore Word/Office temporary lock files and skip unsupported or
+            // oversized files when a whole folder is uploaded, so one bad file
+            // does not abort the entire batch.
+            if (str_starts_with($originalName, '~$')) {
+                $skipped[] = $originalName;
+                continue;
+            }
+
+            if (! in_array($file->getMimeType(), $allowedMimes, true)) {
+                if ($isFolderUpload) {
+                    $skipped[] = $originalName;
+                    continue;
+                }
+
+                return back()->withErrors(['file' => 'Unsupported file type for ' . $originalName . '. Allowed: PDF, DOCX, TXT, PNG, JPEG.'])->withInput();
+            }
+
+            if ($file->getSize() > $maxKb * 1024) {
+                if ($isFolderUpload) {
+                    $skipped[] = $originalName;
+                    continue;
+                }
+
+                return back()->withErrors(['file' => $originalName . ' exceeds the ' . number_format($maxKb / 1024, 0) . ' MB limit.'])->withInput();
+            }
+
             $fileHash = $duplicateDetector->hash($file);
             if ($duplicateDetector->exists($fileHash, $file->getSize(), $request->user())) {
-                $duplicates[] = $file->getClientOriginalName();
+                $duplicates[] = $originalName;
 
                 continue;
             }
@@ -808,9 +828,17 @@ class DocumentController extends Controller
                 ? 'Document uploaded and queued for processing.'
                 : $count . ' documents uploaded and queued for processing.');
         }
+
+        $warnings = [];
         if ($duplicates !== []) {
-            $response->with('warning', ($count === 0 ? 'No new documents were uploaded. ' : '')
-                . 'Skipped identical file(s): ' . implode(', ', $duplicates) . '.');
+            $warnings[] = ($count === 0 ? 'No new documents were uploaded. ' : '')
+                . 'Skipped identical file(s): ' . implode(', ', $duplicates) . '.';
+        }
+        if ($skipped !== []) {
+            $warnings[] = 'Skipped temporary/unsupported file(s): ' . implode(', ', $skipped) . '.';
+        }
+        if ($warnings !== []) {
+            $response->with('warning', implode(' ', $warnings));
         }
 
         return $response;
