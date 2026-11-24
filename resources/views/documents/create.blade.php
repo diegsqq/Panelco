@@ -189,7 +189,7 @@
             <div id="zoneIdle">
                 <div class="up-idle-icon"><i class="bi bi-cloud-arrow-up"></i></div>
                 <p class="up-zone-title">{{ $folderMode ? 'Choose a folder from your computer' : 'Drag & drop your files here' }}</p>
-                <p class="up-zone-sub">or <span style="color:#00743F;text-decoration:underline;cursor:pointer" onclick="document.getElementById('file').click()">{{ $folderMode ? 'browse for a folder' : 'browse from your computer' }}</span></p>
+                <p class="up-zone-sub">or <span style="color:#00743F;text-decoration:underline;cursor:pointer" onclick="document.getElementById('file').click()">{{ $folderMode ? 'browse for a folder' : 'browse for files' }}</span>@if(! $folderMode) · <span style="color:#00743F;text-decoration:underline;cursor:pointer" onclick="document.getElementById('folderInput').click()">browse for a folder</span>@endif</p>
                 <p class="up-zone-limits" id="uploadInstructions">PDF · DOCX · TXT · PNG · JPEG — up to {{ $maxLabel }}. {{ $folderMode ? 'All supported files inside the folder will be queued.' : 'Select multiple files, or switch to Folder mode above.' }}</p>
             </div>
             <div id="zoneFile" class="d-none w-100">
@@ -216,6 +216,7 @@
         <div class="up-progress mt-3" id="upProgress"><div class="up-progress-bar"></div></div>
 
         <input id="file" name="file[]" type="file" class="d-none @error('file') is-invalid @enderror" accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" multiple required @if($folderMode) webkitdirectory directory @endif>
+        <input id="folderInput" name="file[]" type="file" class="d-none" accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" multiple webkitdirectory directory>
         <input type="hidden" name="file_last_modified" id="fileLastModified" value="">
         @error('file')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
         <div class="form-text mt-3" id="suggestNote" role="status" aria-live="polite" aria-atomic="true"></div>
@@ -332,6 +333,7 @@
 (function () {
     var zone = document.getElementById('dropZone');
     var input = document.getElementById('file');
+    var folderInput = document.getElementById('folderInput');
     var idle = document.getElementById('zoneIdle');
     var fileBox = document.getElementById('zoneFile');
     var fileList = document.getElementById('fileList');
@@ -566,6 +568,16 @@
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }
     });
     input.addEventListener('change', syncFiles);
+    if (folderInput) {
+        folderInput.addEventListener('change', function () {
+            if (!folderInput.files.length) return;
+            var dt = new DataTransfer();
+            Array.prototype.slice.call(folderInput.files).forEach(function (f) { dt.items.add(f); });
+            input.files = dt.files;
+            folderInput.value = '';
+            input.dispatchEvent(new Event('change'));
+        });
+    }
 
     ['dragenter', 'dragover'].forEach(function (ev) {
         zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.add('dragging'); });
@@ -608,7 +620,7 @@
 
     var form = document.getElementById('uploadForm');
     if (form) form.addEventListener('submit', function (e) {
-        if (!input.files.length) { e.preventDefault(); return; }
+        if (!input.files.length && !(folderInput && folderInput.files.length)) { e.preventDefault(); return; }
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Uploading…';
     });

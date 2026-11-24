@@ -29,6 +29,7 @@ class UploadSuggestTest extends TestCase
         $this->actingAs($emp)->get(route('documents.upload'))->assertOk()
             ->assertSee('suggestUrl')
             ->assertSee('id="dropZone"', false)
+            ->assertSee('id="folderInput"', false)
             ->assertSee('id="badgeTitle"', false)
             ->assertSee('Pick a file first and P-ARCHIVE will fill these in for you.', false)
             ->assertSee('id="access_level" class="up-access-btn" data-bs-toggle="modal" data-bs-target="#shareAccessModal"', false)
