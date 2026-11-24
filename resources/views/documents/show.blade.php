@@ -234,9 +234,6 @@
             @if(trim((string) $document->extracted_text) !== '')
             <a href="#doc-content" class="dv-outline-item active">Document text</a>
             @endif
-            <a href="#doc-summary" class="dv-outline-item">Document Summary</a>
-            <a href="#doc-details" class="dv-outline-item h2">Important Details</a>
-            <a href="#doc-actions" class="dv-outline-item h2">Corrective Actions</a>
             @if(count($tables)) <a href="#doc-tables" class="dv-outline-item h2">Tables</a> @endif
             @endif
         </aside>
