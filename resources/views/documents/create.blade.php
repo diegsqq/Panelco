@@ -32,13 +32,6 @@
     [data-theme="dark"] .up-head-title { color: #fff; }
     .up-head-sub { color: #5a9e7a; font-size: .875rem; margin: .22rem 0 0; line-height: 1.45; }
     [data-theme="dark"] .up-head-sub { color: #8fa59a; }
-    .up-mode-switch { display: inline-flex; gap: .25rem; margin-top: .55rem; padding: .2rem; border: 1px solid #dcebe1; border-radius: .6rem; background: #f7fbf8; }
-    [data-theme="dark"] .up-mode-switch { background: #16211c; border-color: #26362e; }
-    .up-mode-btn { padding: .28rem .75rem; border-radius: .4rem; font-size: .78rem; font-weight: 700; color: #5a9e7a; text-decoration: none; }
-    .up-mode-btn:hover { color: #00743F; background: #e6f3ea; }
-    .up-mode-btn.active { background: #00A868; color: #fff; }
-    [data-theme="dark"] .up-mode-btn { color: #8fa59a; }
-    [data-theme="dark"] .up-mode-btn:hover { color: #7fe0ac; background: #1d2b24; }
 
     /* ── Action row ── */
     .up-actions { display: flex; align-items: center; gap: .75rem; margin-top: .25rem; width: 100%; }
@@ -168,10 +161,6 @@
             <div>
                 <h1 class="up-head-title">Upload documents</h1>
                 <p class="up-head-sub">Upload files or a whole folder — details are suggested for single files; edit anything before uploading.</p>
-                <div class="up-mode-switch" role="group" aria-label="Upload mode">
-                    <a class="up-mode-btn {{ $folderMode ? '' : 'active' }}" href="{{ route('documents.upload') }}" @if(! $folderMode) aria-current="page" @endif>Files</a>
-                    <a class="up-mode-btn {{ $folderMode ? 'active' : '' }}" href="{{ route('documents.upload', ['mode' => 'folder']) }}" @if($folderMode) aria-current="page" @endif>Folder</a>
-                </div>
             </div>
         </div>
         <button class="up-btn-upload" id="submitBtn" type="submit" form="uploadForm" disabled>

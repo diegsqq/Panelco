@@ -37,8 +37,6 @@ class UploadSuggestTest extends TestCase
             ->assertSee('Share access')
             ->assertSee('up to 1 GB.', false)
             ->assertSee('Upload files or a whole folder', false)
-            ->assertSee('href="'.route('documents.upload').'"', false)
-            ->assertSee('href="'.route('documents.upload', ['mode' => 'folder']).'"', false)
             ->assertSee('AbortController', false)
             ->assertDontSee('req.abort', false)
             ->assertDontSee('SmartDocs will fill', false);
@@ -52,8 +50,7 @@ class UploadSuggestTest extends TestCase
         $this->actingAs($emp)->get(route('documents.upload', ['mode' => 'folder']))->assertOk()
             ->assertSee('Choose a folder from your computer', false)
             ->assertSee('All supported files inside the folder will be queued.', false)
-            ->assertSee('webkitdirectory directory', false)
-            ->assertSee('class="up-mode-btn active" href="'.route('documents.upload', ['mode' => 'folder']).'"', false);
+            ->assertSee('webkitdirectory directory', false);
     }
 
     public function test_suggest_rejects_missing_file(): void
