@@ -32,6 +32,13 @@
     [data-theme="dark"] .up-head-title { color: #fff; }
     .up-head-sub { color: #5a9e7a; font-size: .875rem; margin: .22rem 0 0; line-height: 1.45; }
     [data-theme="dark"] .up-head-sub { color: #8fa59a; }
+    .up-mode-switch { display: inline-flex; gap: .25rem; margin-top: .55rem; padding: .2rem; border: 1px solid #dcebe1; border-radius: .6rem; background: #f7fbf8; }
+    [data-theme="dark"] .up-mode-switch { background: #16211c; border-color: #26362e; }
+    .up-mode-btn { padding: .28rem .75rem; border-radius: .4rem; font-size: .78rem; font-weight: 700; color: #5a9e7a; text-decoration: none; }
+    .up-mode-btn:hover { color: #00743F; background: #e6f3ea; }
+    .up-mode-btn.active { background: #00A868; color: #fff; }
+    [data-theme="dark"] .up-mode-btn { color: #8fa59a; }
+    [data-theme="dark"] .up-mode-btn:hover { color: #7fe0ac; background: #1d2b24; }
 
     /* ── Action row ── */
     .up-actions { display: flex; align-items: center; gap: .75rem; margin-top: .25rem; width: 100%; }
@@ -160,7 +167,11 @@
             <span class="up-head-ico"><i class="bi bi-cloud-arrow-up-fill"></i></span>
             <div>
                 <h1 class="up-head-title">Upload documents</h1>
-                <p class="up-head-sub">Select one or more files — details are suggested for single files; edit anything before uploading.</p>
+                <p class="up-head-sub">Upload files or a whole folder — details are suggested for single files; edit anything before uploading.</p>
+                <div class="up-mode-switch" role="group" aria-label="Upload mode">
+                    <a class="up-mode-btn {{ $folderMode ? '' : 'active' }}" href="{{ route('documents.upload') }}" @if(! $folderMode) aria-current="page" @endif>Files</a>
+                    <a class="up-mode-btn {{ $folderMode ? 'active' : '' }}" href="{{ route('documents.upload', ['mode' => 'folder']) }}" @if($folderMode) aria-current="page" @endif>Folder</a>
+                </div>
             </div>
         </div>
         <button class="up-btn-upload" id="submitBtn" type="submit" form="uploadForm" disabled>
@@ -179,7 +190,7 @@
                 <div class="up-idle-icon"><i class="bi bi-cloud-arrow-up"></i></div>
                 <p class="up-zone-title">{{ $folderMode ? 'Choose a folder from your computer' : 'Drag & drop your files here' }}</p>
                 <p class="up-zone-sub">or <span style="color:#00743F;text-decoration:underline;cursor:pointer" onclick="document.getElementById('file').click()">{{ $folderMode ? 'browse for a folder' : 'browse from your computer' }}</span></p>
-                <p class="up-zone-limits" id="uploadInstructions">PDF · DOCX · TXT · PNG · JPEG — up to {{ $maxLabel }}. {{ $folderMode ? 'All supported files inside the folder will be queued.' : 'You can select multiple files.' }}</p>
+                <p class="up-zone-limits" id="uploadInstructions">PDF · DOCX · TXT · PNG · JPEG — up to {{ $maxLabel }}. {{ $folderMode ? 'All supported files inside the folder will be queued.' : 'Select multiple files, or switch to Folder mode above.' }}</p>
             </div>
             <div id="zoneFile" class="d-none w-100">
                 <div class="up-file-list" id="fileList"></div>
