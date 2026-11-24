@@ -727,6 +727,17 @@ class DocumentController extends Controller
 
         $single = count($files) === 1;
 
+        $isFolderUpload = request('mode') === 'folder'
+            || collect($files)->contains(fn ($file) => $file->getClientOriginalPath() !== $file->getClientOriginalName());
+        $uploadBatchId = $isFolderUpload ? (string) \Illuminate\Support\Str::uuid() : null;
+        if ($isFolderUpload && $uploadBatchId !== null) {
+            \App\Models\FolderBatch::create([
+                'id' => $uploadBatchId,
+                'user_id' => $request->user()->id,
+                'total_files' => count($files),
+            ]);
+        }
+
         foreach ($files as $file) {
             if (! in_array($file->getMimeType(), $allowedMimes, true)) {
                 return back()->withErrors(['file' => 'Unsupported file type for ' . $file->getClientOriginalName() . '. Allowed: PDF, DOCX, TXT, PNG, JPEG.'])->withInput();
@@ -753,6 +764,7 @@ class DocumentController extends Controller
 
             $document = Document::create([
                 'uploaded_by' => $request->user()->id,
+                'upload_batch_id' => $uploadBatchId,
                 'title' => $docTitle,
                 'original_filename' => $file->getClientOriginalName(),
                 'storage_path' => $path,

@@ -48,7 +48,12 @@ class ProcessDocument implements ShouldQueue
             $failedDocument = $this->failIfCurrentVersion($processingVersionNumber, $e->getMessage());
             if ($failedDocument) {
                 $this->audit($failedDocument, 'document.processing_failed', ['error' => $e->getMessage()]);
-                $this->notifyUploader($failedDocument, true);
+                if ($document->upload_batch_id === null) {
+                    $this->notifyUploader($failedDocument, true);
+                }
+            }
+            if ($document->upload_batch_id !== null) {
+                $this->maybeNotifyFolderBatch($document);
             }
 
             return;
@@ -59,7 +64,12 @@ class ProcessDocument implements ShouldQueue
             );
             if ($failedDocument) {
                 $this->audit($failedDocument, 'document.processing_failed', []);
-                $this->notifyUploader($failedDocument, true);
+                if ($document->upload_batch_id === null) {
+                    $this->notifyUploader($failedDocument, true);
+                }
+            }
+            if ($document->upload_batch_id !== null) {
+                $this->maybeNotifyFolderBatch($document);
             }
 
             return;
@@ -136,6 +146,20 @@ class ProcessDocument implements ShouldQueue
             $updates['keywords'] = $this->fallbackKeywords($result['text']);
         }
 
+        // Folder uploads are organized automatically: apply the final suggested
+        // category and department instead of waiting for manual review.
+        if ($document->upload_batch_id !== null) {
+            if (! empty($updates['suggested_category_id'])) {
+                $updates['category_id'] = $updates['suggested_category_id'];
+            }
+            if (! empty($updates['suggested_department_id'])) {
+                $updates['department_id'] = $updates['suggested_department_id'];
+            }
+            $updates['classification_review_status'] = 'approved';
+            $updates['classification_reviewed_at'] = now();
+            $updates['classification_reviewed_by'] = null;
+        }
+
         $document = DB::transaction(function () use ($chunker, $document, $processingVersionNumber, $result, $updates) {
             $currentDocument = Document::query()->lockForUpdate()->find($document->id);
             if (! $currentDocument || (int) $currentDocument->version_number !== $processingVersionNumber) {
@@ -152,7 +176,11 @@ class ProcessDocument implements ShouldQueue
         }
 
         $this->audit($document, 'document.processed', ['chunks' => $document->chunks()->count()]);
-        $this->notifyUploader($document, false);
+        $document->loadMissing('uploader');
+        if ($document->upload_batch_id === null) {
+            $this->notifyUploader($document, false);
+        }
+        $this->maybeNotifyFolderBatch($document);
     }
 
     private function failIfCurrentVersion(int $versionNumber, string $message): ?Document
@@ -193,6 +221,64 @@ class ProcessDocument implements ShouldQueue
         } catch (\Throwable $e) {
             report($e);
         }
+    }
+
+    private function maybeNotifyFolderBatch(Document $document): void
+    {
+        $batchId = $document->upload_batch_id;
+        if ($batchId === null) {
+            return;
+        }
+
+        $shouldNotify = DB::transaction(function () use ($batchId): bool {
+            $batch = \App\Models\FolderBatch::lockForUpdate()->find($batchId);
+            if (! $batch || $batch->notified_at !== null) {
+                return false;
+            }
+
+            $remaining = Document::where('upload_batch_id', $batchId)
+                ->whereNotIn('processing_status', ['completed', 'failed'])
+                ->count();
+
+            if ($remaining > 0) {
+                return false;
+            }
+
+            $batch->update(['notified_at' => now()]);
+
+            return true;
+        });
+
+        if (! $shouldNotify) {
+            return;
+        }
+
+        $document->loadMissing('uploader');
+        $uploader = $document->uploader;
+        if (! $uploader) {
+            return;
+        }
+
+        $processed = Document::where('upload_batch_id', $batchId)
+            ->where('processing_status', 'completed')
+            ->count();
+        $failed = Document::where('upload_batch_id', $batchId)
+            ->where('processing_status', 'failed')
+            ->count();
+
+        \App\Models\Notification::create([
+            'user_id' => $uploader->id,
+            'type' => 'folder_organization_completed',
+            'title' => 'Folder organization complete',
+            'message' => $failed > 0
+                ? "Processed {$processed} document(s); {$failed} failed."
+                : "Processed and organized {$processed} document(s).",
+            'metadata' => [
+                'upload_batch_id' => $batchId,
+                'processed' => $processed,
+                'failed' => $failed,
+            ],
+        ]);
     }
 
     private function guessType(Document $document): ?string
