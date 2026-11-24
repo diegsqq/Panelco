@@ -217,30 +217,28 @@
         {{-- Left: Document outline ── --}}
         <aside class="dv-outline" id="dvOutline">
             <div class="dv-outline-title">Document outline</div>
-            <div id="dvOutlineItems">
-                {{-- populated by JS from headings --}}
-                @if($document->content)
-                @php
-                    preg_match_all('/<h([1-6])[^>]*>(.*?)<\/h\1>/is',
-                        app(\App\Services\DocumentContentSanitizer::class)->sanitize($document->content),
-                        $hMatches);
-                @endphp
-                @foreach($hMatches[1] as $i => $level)
-                @php $label = trim(strip_tags($hMatches[2][$i])); @endphp
-                @if($label)
-                <a href="#heading-{{ $i }}" class="dv-outline-item {{ $level == 2 ? 'h2' : ($level >= 3 ? 'h3' : '') }}">{{ $label }}</a>
-                @endif
-                @endforeach
-                @else
-                @if(trim((string) $document->extracted_text) !== '')
-                <a href="#doc-content" class="dv-outline-item active">Document text</a>
-                @endif
-                <a href="#doc-summary" class="dv-outline-item">Document Summary</a>
-                <a href="#doc-details" class="dv-outline-item h2">Important Details</a>
-                <a href="#doc-actions" class="dv-outline-item h2">Corrective Actions</a>
-                @if(count($tables)) <a href="#doc-tables" class="dv-outline-item h2">Tables</a> @endif
-                @endif
-            </div>
+            {{-- populated by JS from headings --}}
+            @if($document->content)
+            @php
+                preg_match_all('/<h([1-6])[^>]*>(.*?)<\/h\1>/is',
+                    app(\App\Services\DocumentContentSanitizer::class)->sanitize($document->content),
+                    $hMatches);
+            @endphp
+            @foreach($hMatches[1] as $i => $level)
+            @php $label = trim(strip_tags($hMatches[2][$i])); @endphp
+            @if($label)
+            <a href="#heading-{{ $i }}" class="dv-outline-item {{ $level == 2 ? 'h2' : ($level >= 3 ? 'h3' : '') }}">{{ $label }}</a>
+            @endif
+            @endforeach
+            @else
+            @if(trim((string) $document->extracted_text) !== '')
+            <a href="#doc-content" class="dv-outline-item active">Document text</a>
+            @endif
+            <a href="#doc-summary" class="dv-outline-item">Document Summary</a>
+            <a href="#doc-details" class="dv-outline-item h2">Important Details</a>
+            <a href="#doc-actions" class="dv-outline-item h2">Corrective Actions</a>
+            @if(count($tables)) <a href="#doc-tables" class="dv-outline-item h2">Tables</a> @endif
+            @endif
         </aside>
 
         {{-- Center: document page ── --}}
