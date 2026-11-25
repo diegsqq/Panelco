@@ -283,10 +283,13 @@
                 transition-duration: .01ms !important;
             }
         }
+        @hasSection('full-screen')
+            body.p3-full-screen-body { overflow: hidden; }
+        @endif
     </style>
 </head>
-<body class="{{ trim(\Illuminate\Support\Facades\View::yieldContent('body-class')) ?: '' }}">
-<div class="container-fluid">
+<body class="{{ trim(\Illuminate\Support\Facades\View::yieldContent('body-class')) ?: '' }}{{ View::hasSection('full-screen') ? ' p3-full-screen-body' : '' }}">
+<div class="container-fluid @hasSection('full-screen') p-0 @endif">
     <div class="row g-0" style="min-height:100vh;align-items:stretch;">
         @auth
         <a class="p3-skip-link" href="#main-content">Skip to main content</a>
@@ -328,7 +331,7 @@
                 </div>
             </div>
         </div>
-        <div class="p-0 d-flex flex-column @hasSection('full-screen') @yield('full-screen-col') @else col-md-9 col-lg-10 @endif" style="height:100vh;overflow-y:auto;overflow-x:hidden;">
+        <div class="p-0 d-flex flex-column @hasSection('full-screen') @yield('full-screen-col') @else col-md-9 col-lg-10 @endif" style="@hasSection('full-screen') width:100vw;height:100vh;overflow:hidden; @else height:100vh;overflow-y:auto;overflow-x:hidden; @endif">
             @hasSection('full-screen')
             @yield('content')
             @else
