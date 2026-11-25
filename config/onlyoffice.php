@@ -5,7 +5,7 @@ return [
     'enabled' => env('ONLYOFFICE_ENABLED', false),
 
     // Browser-facing Document Server URL (used to load docsapi.js).
-    'url' => rtrim((string) env('ONLYOFFICE_URL', 'http://127.0.0.1:8080'), '/'),
+    'url' => rtrim((string) env('ONLYOFFICE_URL', 'http://127.0.0.1:8081'), '/'),
 
     // URL the Document Server container uses to reach this Laravel app.
     // On Docker Desktop use host.docker.internal.

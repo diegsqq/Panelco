@@ -4,7 +4,7 @@ Free, self-hosted Word-style editor for `/library/{id}/content/edit`.
 
 ## 1. Install Docker Desktop
 
-Docker CLI is not currently installed on this machine. Install Docker Desktop, then confirm:
+Docker Desktop is installed on this machine. If Windows virtualization features were just enabled, restart Windows before continuing. Then confirm:
 
 ```powershell
 docker --version
@@ -21,7 +21,7 @@ php -r "echo bin2hex(random_bytes(32));"
 
 ```dotenv
 ONLYOFFICE_ENABLED=true
-ONLYOFFICE_URL=http://127.0.0.1:8080
+ONLYOFFICE_URL=http://127.0.0.1:8081
 ONLYOFFICE_INTERNAL_URL=http://host.docker.internal:8000
 ONLYOFFICE_JWT_SECRET=<the secret from step 2>
 ```
@@ -57,6 +57,7 @@ Click **OnlyOffice** in the title bar. Saves are converted back into the P-ARCHI
 
 - No AI API key is involved. This is document editing only.
 - The Document Server callback is protected by a signed token.
-- Browser must be able to reach `http://127.0.0.1:8080`.
+- Port 8080 is occupied by Windows, so Document Server uses 8081.
+- Browser must be able to reach `http://127.0.0.1:8081`.
 - Container must be able to reach `http://host.docker.internal:8000`.
 - Stop with `docker compose -f docker-compose.onlyoffice.yml down`.
