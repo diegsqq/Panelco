@@ -229,7 +229,12 @@ class ChatController extends Controller
             return ['content' => $reply, 'chunks' => []];
         }
 
-        $result = app(DocumentRetrievalService::class)->retrieve($user, $searchQuestion, documentId: $document?->id);
+        $retrieval = app(DocumentRetrievalService::class);
+        // In-editor and document-scoped chat must see the whole document, not
+        // just the first five indexed chunks or keyword-matched excerpts.
+        $result = $document !== null
+            ? $retrieval->fullDocument($user, $document)
+            : $retrieval->retrieve($user, $searchQuestion);
 
         if ($result['status'] !== DocumentRetrievalService::STATUS_OK) {
             $message = $result['status'] === DocumentRetrievalService::STATUS_NO_MATCH

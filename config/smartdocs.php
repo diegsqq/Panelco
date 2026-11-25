@@ -34,6 +34,8 @@ return [
         'min_score' => 2,
         // Characters of supporting excerpt shown per citation.
         'excerpt_chars' => 300,
+        // Full text handed to the AI for document-scoped questions.
+        'full_document_chars' => (int) env('SMARTDOCS_FULL_DOCUMENT_CHARS', 24000),
     ],
 
     // Phase 5: AI provider settings (no keys committed; approval required).

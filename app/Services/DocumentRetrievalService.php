@@ -103,9 +103,93 @@ class DocumentRetrievalService
         }
     }
 
+    /**
+     * Full current text for a document-scoped question. Unlike retrieve(),
+     * this does not keyword-filter or take only the first few chunks: the AI
+     * sees the whole visible document, bounded by the configured char budget.
+     *
+     * @return array{status: string, chunks: list<array{chunk: DocumentChunk, document: Document, score: int, excerpt: string}>}
+     */
+    public function fullDocument(User $user, Document $document): array
+    {
+        try {
+            $visible = $this->visibleDocuments($user, $document->id)->whereKey($document->id);
+
+            if (! $visible->exists()) {
+                return ['status' => self::STATUS_NO_DOCUMENTS, 'chunks' => []];
+            }
+
+            $text = $this->fullDocumentText($document);
+            if ($text === '') {
+                return ['status' => self::STATUS_NO_MATCH, 'chunks' => []];
+            }
+
+            $limit = max(1000, (int) config('smartdocs.retrieval.full_document_chars', 24000));
+            if (mb_strlen($text) > $limit) {
+                $text = mb_substr($text, 0, $limit)
+                    . "\n\n[Document continues beyond the AI context budget.]";
+            }
+
+            // Synthetic chunk keeps the existing passage/citation shape without
+            // writing a generated row into the search index.
+            $chunk = new DocumentChunk(['chunk_index' => 0, 'page_number' => null]);
+            $chunk->setRelation('document', $document);
+
+            return [
+                'status' => self::STATUS_OK,
+                'chunks' => [[
+                    'chunk' => $chunk,
+                    'document' => $document,
+                    'score' => 1,
+                    'excerpt' => $text,
+                ]],
+            ];
+        } catch (\Throwable $e) {
+            Log::error('Full document retrieval failed', ['error' => $e->getMessage()]);
+
+            return ['status' => self::STATUS_DB_ERROR, 'chunks' => []];
+        }
+    }
+
     public function accessibleDocuments(User $user)
     {
         return $this->visibleDocuments($user);
+    }
+
+    private function fullDocumentText(Document $document): string
+    {
+        // Edited content wins: OnlyOffice and the in-app editor both persist
+        // the current document here, while chunks can lag behind a save.
+        $content = trim((string) $document->content);
+        if ($content !== '') {
+            return $this->htmlToText($content);
+        }
+
+        $extracted = trim((string) $document->extracted_text);
+        if ($extracted !== '') {
+            return $extracted;
+        }
+
+        return $document->chunks()
+            ->orderBy('chunk_index')
+            ->pluck('content')
+            ->implode("\n\n");
+    }
+
+    private function htmlToText(string $html): string
+    {
+        $withBreaks = preg_replace(
+            '/<\s*br\s*\/?>|<\/\s*(?:p|div|li|tr|h[1-6]|blockquote|pre)\s*>/i',
+            "\n",
+            $html
+        ) ?? $html;
+
+        $text = html_entity_decode(strip_tags($withBreaks), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = preg_replace('/[ \t\x{00A0}]+/u', ' ', $text) ?? $text;
+        $text = preg_replace('/\n[ \t]+/', "\n", $text) ?? $text;
+        $text = preg_replace('/\n{3,}/', "\n\n", $text) ?? $text;
+
+        return trim($text);
     }
 
     private function visibleDocuments(User $user, ?int $documentId = null)

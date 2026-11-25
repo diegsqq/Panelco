@@ -228,4 +228,77 @@ class OnlyOfficeIntegrationTest extends TestCase
             ->assertHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:8080')
             ->assertSee('Lightning', false);
     }
+
+    public function test_ai_chat_reads_the_full_current_edited_document(): void
+    {
+        $this->configureOnlyOffice();
+        $document = $this->makeDocument();
+        $tailMarker = 'TAIL_MARKER_7731';
+
+        $document->update([
+            'content' => '<p>' . str_repeat('alpha beta gamma ', 1200) . '</p>'
+                . '<p>' . $tailMarker . '</p>',
+        ]);
+
+        $token = Jwt::sign([
+            'purpose' => 'ask',
+            'doc' => $document->id,
+            'uid' => $document->uploaded_by,
+            'exp' => now()->addDay()->timestamp,
+        ], self::SECRET);
+
+        $this->post(route('onlyoffice.ask', $document) . '?token=' . urlencode($token), [
+            'question' => 'Summarize the whole document',
+        ])
+            ->assertOk()
+            ->assertSee($tailMarker, false);
+    }
+
+    public function test_ai_chat_reads_all_indexed_chunks_when_content_is_not_edited(): void
+    {
+        $this->configureOnlyOffice();
+        $document = $this->makeDocument();
+        $tailMarker = 'CHUNK_SEVEN_MARKER';
+
+        foreach (range(1, 8) as $index) {
+            $document->chunks()->create([
+                'chunk_index' => $index,
+                'content' => $index === 7
+                    ? $tailMarker . ' ' . str_repeat('delta ', 100)
+                    : str_repeat('filler ', 100),
+                'page_number' => $index,
+            ]);
+        }
+
+        $token = Jwt::sign([
+            'purpose' => 'ask',
+            'doc' => $document->id,
+            'uid' => $document->uploaded_by,
+            'exp' => now()->addDay()->timestamp,
+        ], self::SECRET);
+
+        $this->post(route('onlyoffice.ask', $document) . '?token=' . urlencode($token), [
+            'question' => 'What is in this document',
+        ])
+            ->assertOk()
+            ->assertSee($tailMarker, false);
+    }
+
+    public function test_ai_chat_rejects_a_token_for_a_user_without_document_access(): void
+    {
+        $this->configureOnlyOffice();
+        $document = $this->makeDocument();
+        $outsider = User::factory()->create(['role' => User::ROLE_EMPLOYEE]);
+
+        $token = Jwt::sign([
+            'purpose' => 'ask',
+            'doc' => $document->id,
+            'uid' => $outsider->id,
+            'exp' => now()->addDay()->timestamp,
+        ], self::SECRET);
+
+        $this->post(route('onlyoffice.ask', $document) . '?token=' . urlencode($token), [
+            'question' => 'Summarize the document',
+        ])->assertForbidden();
+    }
 }
