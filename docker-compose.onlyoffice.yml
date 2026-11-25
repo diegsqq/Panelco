@@ -12,6 +12,7 @@ services:
       - onlyoffice_data:/var/www/onlyoffice/Data
       - onlyoffice_logs:/var/log/onlyoffice
       - onlyoffice_db:/var/lib/postgresql
+      - ./docker/onlyoffice/locale-en.json:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/main/locale/en.json:ro
 
 volumes:
   onlyoffice_data:
