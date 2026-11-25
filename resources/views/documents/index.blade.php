@@ -337,7 +337,7 @@
                             data-uploader="{{ $doc->uploader?->name ?? 'Unknown' }}"
                             data-filetype="{{ $fileType[0] }}"
                             data-size="{{ $doc->file_size >= 1048576 ? number_format($doc->file_size/1048576,1).' MB' : number_format($doc->file_size/1024,0).' KB' }}"
-                            data-url="{{ route('documents.show', $doc) }}"
+                            data-url="{{ route('documents.edit-content', $doc) }}"
                             data-icon="{{ $fileType[1] }}"
                             data-iconcolor="{{ $fileType[2] }}"
                             data-initials="{{ $uploaderInitials }}">
