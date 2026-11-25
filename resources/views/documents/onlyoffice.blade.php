@@ -10,8 +10,6 @@
         <a href="{{ route('documents.edit-content', $document) }}" class="btn btn-sm btn-outline-success">
             <i class="bi bi-arrow-left me-1"></i>Back to editor
         </a>
-        <span class="text-muted small text-truncate">{{ $document->display_title }}</span>
-        <span class="badge text-bg-success ms-auto">OnlyOffice</span>
     </div>
     <div style="flex:1 1 auto;min-height:0;width:100%">
         <div id="onlyofficeEditor"></div>
