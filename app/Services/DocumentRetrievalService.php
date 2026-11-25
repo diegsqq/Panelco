@@ -253,6 +253,46 @@ class DocumentRetrievalService
         return array_values(array_unique($terms));
     }
 
+    /**
+     * Short excerpts around the question terms. Used when the model reports
+     * that the document has no direct answer, so the user still sees the
+     * closest supporting text instead of a bare refusal.
+     *
+     * @return list<string>
+     */
+    public function snippets(string $text, string $query, int $max = 3, int $chars = 260): array
+    {
+        $terms = $this->terms($query);
+        $lower = mb_strtolower($text);
+        $snippets = [];
+
+        foreach ($terms as $term) {
+            $pos = mb_strpos($lower, $term);
+            if ($pos === false) {
+                continue;
+            }
+
+            $start = max(0, $pos - 80);
+            $snippet = ($start > 0 ? '…' : '')
+                . mb_substr($text, $start, $chars)
+                . (mb_strlen($text) > $start + $chars ? '…' : '');
+
+            if (! in_array($snippet, $snippets, true)) {
+                $snippets[] = $snippet;
+            }
+            if (count($snippets) >= $max) {
+                break;
+            }
+        }
+
+        if ($snippets === [] && trim($text) !== '') {
+            $snippets[] = mb_substr(trim($text), 0, $chars)
+                . (mb_strlen(trim($text)) > $chars ? '…' : '');
+        }
+
+        return $snippets;
+    }
+
     private function score(DocumentChunk $chunk, array $terms): int
     {
         $haystack = mb_strtolower($chunk->content);

@@ -33,7 +33,9 @@ class OpenAiCompatibleProviderTest extends TestCase
                 && str_contains($system, 'Never invent replacement facts')
                 && str_contains($system, 'responsible person and deadline')
                 && str_contains($system, 'compare only details present in the passages')
-                && str_contains($system, 'translate the supported source content into the requested language');
+                && str_contains($system, 'translate the supported source content into the requested language')
+                && str_contains($system, 'does not state it')
+                && ! str_contains($system, 'reply exactly');
         });
     }
 }

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Document;
 use App\Models\User;
+use App\Services\Ai\AiProvider;
 use App\Services\OnlyOffice\Jwt;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -24,6 +25,22 @@ class OnlyOfficeIntegrationTest extends TestCase
             'onlyoffice.jwt_secret' => self::SECRET,
             'onlyoffice.jwt_header' => 'Authorization',
         ]);
+    }
+
+    private function useEchoAiProvider(): void
+    {
+        $this->app->bind(AiProvider::class, fn () => new class implements AiProvider
+        {
+            public function available(): bool { return true; }
+            public function name(): string { return 'echo'; }
+            public function analyze(string $text): ?array { return null; }
+            public function classify(string $text, array $categoryNames): ?array { return null; }
+
+            public function answer(string $question, array $passages): ?string
+            {
+                return implode("\n", array_column($passages, 'excerpt'));
+            }
+        });
     }
 
     private function makeDocument(?User $user = null): Document
@@ -232,6 +249,7 @@ class OnlyOfficeIntegrationTest extends TestCase
     public function test_ai_chat_reads_the_full_current_edited_document(): void
     {
         $this->configureOnlyOffice();
+        $this->useEchoAiProvider();
         $document = $this->makeDocument();
         $tailMarker = 'TAIL_MARKER_7731';
 
@@ -257,6 +275,7 @@ class OnlyOfficeIntegrationTest extends TestCase
     public function test_ai_chat_reads_all_indexed_chunks_when_content_is_not_edited(): void
     {
         $this->configureOnlyOffice();
+        $this->useEchoAiProvider();
         $document = $this->makeDocument();
         $tailMarker = 'CHUNK_SEVEN_MARKER';
 
@@ -300,5 +319,46 @@ class OnlyOfficeIntegrationTest extends TestCase
         $this->post(route('onlyoffice.ask', $document) . '?token=' . urlencode($token), [
             'question' => 'Summarize the document',
         ])->assertForbidden();
+    }
+
+    public function test_ai_chat_replaces_a_bare_refusal_with_closest_document_text(): void
+    {
+        $this->configureOnlyOffice();
+        $document = $this->makeDocument();
+        $marker = 'CLOSEST_TEXT_MARKER_42';
+
+        $document->update([
+            'content' => '<p>Opening paragraph about daily activities.</p>'
+                . '<p>' . $marker . ' is recorded in the final section.</p>',
+        ]);
+
+        $this->app->bind(AiProvider::class, fn () => new class implements AiProvider
+        {
+            public function available(): bool { return true; }
+            public function name(): string { return 'fake'; }
+            public function analyze(string $text): ?array { return null; }
+            public function classify(string $text, array $categoryNames): ?array { return null; }
+
+            public function answer(string $question, array $passages): ?string
+            {
+                return "I couldn't verify that information from the available documents.";
+            }
+        });
+
+        $token = Jwt::sign([
+            'purpose' => 'ask',
+            'doc' => $document->id,
+            'uid' => $document->uploaded_by,
+            'exp' => now()->addDay()->timestamp,
+        ], self::SECRET);
+
+        $response = $this->post(route('onlyoffice.ask', $document) . '?token=' . urlencode($token), [
+            'question' => 'What does it say about ' . $marker,
+        ]);
+
+        $response->assertOk()
+            ->assertDontSee("I couldn't verify that information", false)
+            ->assertSee('closest relevant text', false)
+            ->assertSee($marker, false);
     }
 }

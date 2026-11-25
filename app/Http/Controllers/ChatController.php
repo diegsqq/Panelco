@@ -254,8 +254,12 @@ class ChatController extends Controller
 
         $generated = $ai->available() ? $ai->answer($question, $passages) : null;
 
-        if ($generated !== null) {
+        if ($generated !== null && ! $this->isBareRefusal($generated)) {
             $content = $generated;
+        } elseif ($generated !== null) {
+            // Legacy models were told to refuse with one fixed sentence. Show
+            // the closest document text instead of a dead-end answer.
+            $content = $this->closestPassagesReply($retrieval, $result['chunks'], $question);
         } else {
             $lines = [];
             foreach ($result['chunks'] as $i => $hit) {
@@ -270,6 +274,47 @@ class ChatController extends Controller
         }
 
         return ['content' => $content, 'chunks' => $result['chunks']];
+    }
+
+    private function isBareRefusal(string $reply): bool
+    {
+        $normalized = mb_strtolower(trim(strip_tags($reply)));
+
+        return str_contains($normalized, "couldn't verify that information from the available documents")
+            || str_contains($normalized, 'could not verify that information from the available documents');
+    }
+
+    /**
+     * @param  list<array{chunk: \App\Models\DocumentChunk, document: Document, score: int, excerpt: string}>  $chunks
+     */
+    private function closestPassagesReply(
+        DocumentRetrievalService $retrieval,
+        array $chunks,
+        string $question
+    ): string {
+        $lines = [];
+
+        foreach ($chunks as $hit) {
+            $doc = $hit['document'];
+            $title = $doc->title ?? $doc->original_filename;
+            $page = $hit['chunk']->page_number !== null ? " (p. {$hit['chunk']->page_number})" : '';
+
+            foreach ($retrieval->snippets($hit['excerpt'], $question, 2) as $snippet) {
+                $lines[] = "**{$title}**{$page}: \"{$snippet}\"";
+            }
+
+            if (count($lines) >= 3) {
+                break;
+            }
+        }
+
+        if ($lines === []) {
+            $lines[] = 'No matching text was found in the available document.';
+        }
+
+        return "The document does not state a direct answer. Here is the closest relevant text:\n\n"
+            . implode("\n\n", array_slice($lines, 0, 3))
+            . "\n\n_No unsupported answer was added._";
     }
 
     /**

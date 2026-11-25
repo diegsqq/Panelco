@@ -102,7 +102,8 @@ class OpenAiCompatibleProvider implements AiProvider
             'When asked to summarize, use the vertical headings Document Summary, Important Details, and Corrective Actions; ' .
             'write "Not identified in the document" for a section without supporting evidence. ' .
             'For document search, identify only matching passages and cite their source labels. ' .
-            'If the passages do not support an answer, reply exactly: "I couldn\'t verify that information from the available documents." ' .
+            'If the passages do not support a direct answer, say plainly that the document does not state it, ' .
+            'then quote up to three short passages that are closest to the question. Never invent missing facts. ' .
             'Reply with strict JSON: {"answer": string}. Keep the answer concise, and use headings and bullets rather than tables.',
             "Question: {$question}\n\nPassages:\n{$context}"
         );
