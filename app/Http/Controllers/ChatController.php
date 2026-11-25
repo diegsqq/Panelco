@@ -293,6 +293,17 @@ class ChatController extends Controller
         ]);
     }
 
+    /**
+     * Shared answer generation for trusted server-side callers such as the
+     * signed OnlyOffice chat endpoint.
+     *
+     * @return array{content: string, chunks: list<array<string, mixed>>}
+     */
+    public function answerForDocument(User $user, Document $document, string $question): array
+    {
+        return $this->generateAnswer($user, $question, $document, $question);
+    }
+
     private function smallTalk(string $question): ?string
     {
         $q = mb_strtolower(trim($question));

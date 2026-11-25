@@ -13,6 +13,16 @@ services:
       - onlyoffice_logs:/var/log/onlyoffice
       - onlyoffice_db:/var/lib/postgresql
       - ./docker/onlyoffice/locale-en.json:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/main/locale/en.json:ro
+      - ./docker/onlyoffice/Main.js:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/main/app/controller/Main.js:ro
+      - ./docker/onlyoffice/Main.js.gz:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/main/app/controller/Main.js.gz:ro
+      - ./docker/onlyoffice/ChatController.js:/var/www/onlyoffice/documentserver/web-apps/apps/common/main/lib/controller/Chat.js:ro
+      - ./docker/onlyoffice/ChatController.js.gz:/var/www/onlyoffice/documentserver/web-apps/apps/common/main/lib/controller/Chat.js.gz:ro
+      - ./docker/onlyoffice/ChatView.js:/var/www/onlyoffice/documentserver/web-apps/apps/common/main/lib/view/Chat.js:ro
+      - ./docker/onlyoffice/ChatView.js.gz:/var/www/onlyoffice/documentserver/web-apps/apps/common/main/lib/view/Chat.js.gz:ro
+      - ./docker/onlyoffice/LeftMenuController.js:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/main/app/controller/LeftMenu.js:ro
+      - ./docker/onlyoffice/LeftMenuController.js.gz:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/main/app/controller/LeftMenu.js.gz:ro
+      - ./docker/onlyoffice/LeftMenuView.js:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/main/app/view/LeftMenu.js:ro
+      - ./docker/onlyoffice/LeftMenuView.js.gz:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/main/app/view/LeftMenu.js.gz:ro
 
 volumes:
   onlyoffice_data:

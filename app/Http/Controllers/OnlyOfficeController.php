@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
 use App\Models\Document;
+use App\Models\User;
 use App\Services\DocumentContentSanitizer;
 use App\Services\DocumentDocxExporter;
 use App\Services\OnlyOffice\Jwt;
+use App\Support\MarkdownLite;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -62,6 +65,7 @@ class OnlyOfficeController extends Controller
                 'title' => $document->display_title . '.docx',
                 'url' => $fileUrl,
                 'permissions' => [
+                    'chat' => true,
                     'comment' => ! $readOnly,
                     'commentGroups' => [
                         'edit' => [''],
@@ -87,6 +91,18 @@ class OnlyOfficeController extends Controller
                 'user' => [
                     'id' => (string) $user->id,
                     'name' => (string) $user->name,
+                ],
+                'customData' => [
+                    'lightningAi' => [
+                        'endpoint' => url('/onlyoffice/ask/' . $document->id),
+                        'token' => Jwt::sign([
+                            'purpose' => 'ask',
+                            'doc' => (int) $document->id,
+                            'uid' => (int) $user->id,
+                            'exp' => now()->addDay()->timestamp,
+                        ], $secret),
+                        'color' => '#00A868',
+                    ],
                 ],
                 'customization' => [
                     'autosave' => ! $readOnly,
@@ -127,6 +143,47 @@ class OnlyOfficeController extends Controller
             'Content-Disposition' => 'attachment; filename="' . $filename . '.docx"',
             'Cache-Control' => 'no-store',
         ]);
+    }
+
+    /**
+     * Answer a question asked from the OnlyOffice chat. The browser runs on the
+     * Document Server origin, so this endpoint uses a signed token instead of
+     * the Laravel session cookie.
+     */
+    public function ask(Request $request, Document $document): JsonResponse
+    {
+        $this->abortUnlessConfigured();
+
+        $secret = (string) config('onlyoffice.jwt_secret');
+        $payload = Jwt::verify((string) $request->query('token', ''), $secret);
+
+        abort_unless(
+            $payload !== null
+                && ($payload['purpose'] ?? null) === 'ask'
+                && (int) ($payload['doc'] ?? 0) === (int) $document->id
+                && (int) ($payload['uid'] ?? 0) > 0
+                && (int) ($payload['exp'] ?? 0) >= now()->timestamp,
+            403
+        );
+
+        $user = User::findOrFail((int) $payload['uid']);
+        Gate::forUser($user)->authorize('view', $document);
+
+        $data = $request->validate([
+            'question' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $answer = app(ChatController::class)->answerForDocument(
+            $user,
+            $document,
+            trim($data['question'])
+        );
+
+        return response()->json([
+            'answer' => MarkdownLite::render($answer['content'])->toHtml(),
+        ])
+            ->header('Access-Control-Allow-Origin', (string) config('onlyoffice.url'))
+            ->header('Vary', 'Origin');
     }
 
     /**

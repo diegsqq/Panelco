@@ -133,4 +133,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 // OnlyOffice Document Server talks to these without a browser session.
 // Access is protected by short-lived signed tokens / JWT payloads.
 Route::get('/onlyoffice/file/{document}', [OnlyOfficeController::class, 'file'])->name('onlyoffice.file');
+Route::options('/onlyoffice/ask/{document}', function () {
+    return response('', 204)
+        ->header('Access-Control-Allow-Origin', (string) config('onlyoffice.url'))
+        ->header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        ->header('Access-Control-Allow-Headers', 'Content-Type')
+        ->header('Vary', 'Origin');
+});
+Route::post('/onlyoffice/ask/{document}', [OnlyOfficeController::class, 'ask'])->name('onlyoffice.ask');
 Route::post('/onlyoffice/callback/{document}', [OnlyOfficeController::class, 'callback'])->name('onlyoffice.callback');

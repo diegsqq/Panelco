@@ -67,6 +67,7 @@ class OnlyOfficeIntegrationTest extends TestCase
             ->assertSee('DocsAPI.DocEditor', false)
             ->assertSee('"documentType":"word"', false)
             ->assertSee('"mode":"edit"', false)
+            ->assertSee('"chat":true', false)
             ->assertSee('"uiTheme":"theme-white"', false);
     }
 
@@ -172,5 +173,59 @@ class OnlyOfficeIntegrationTest extends TestCase
             'status' => 4,
             'key' => 'test-key',
         ])->assertOk()->assertJson(['error' => 0]);
+    }
+
+    public function test_editor_config_exposes_signed_lightning_ai_chat_settings(): void
+    {
+        $this->configureOnlyOffice();
+        $document = $this->makeDocument();
+
+        $this->actingAs(User::findOrFail($document->uploaded_by))
+            ->get(route('documents.onlyoffice', $document))
+            ->assertOk()
+            ->assertSee('"lightningAi"', false)
+            ->assertSee('"color":"#00A868"', false)
+            ->assertSee('onlyoffice\\/ask', false);
+    }
+
+    public function test_ai_chat_endpoint_rejects_a_missing_token(): void
+    {
+        $this->configureOnlyOffice();
+        $document = $this->makeDocument();
+
+        $this->post(route('onlyoffice.ask', $document), [
+            'question' => 'hello',
+        ])->assertForbidden();
+    }
+
+    public function test_ai_chat_preflight_returns_cors_headers(): void
+    {
+        $this->configureOnlyOffice();
+        $document = $this->makeDocument();
+
+        $this->options(route('onlyoffice.ask', $document))
+            ->assertNoContent()
+            ->assertHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:8080')
+            ->assertHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+            ->assertHeader('Access-Control-Allow-Headers', 'Content-Type');
+    }
+
+    public function test_ai_chat_endpoint_answers_with_a_valid_token(): void
+    {
+        $this->configureOnlyOffice();
+        $document = $this->makeDocument();
+        $token = Jwt::sign([
+            'purpose' => 'ask',
+            'doc' => $document->id,
+            'uid' => $document->uploaded_by,
+            'exp' => now()->addDay()->timestamp,
+        ], self::SECRET);
+
+        $this->post(route('onlyoffice.ask', $document) . '?token=' . urlencode($token), [
+            'question' => 'hello',
+        ])
+            ->assertOk()
+            ->assertHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:8080')
+            ->assertSee('Lightning', false);
     }
 }

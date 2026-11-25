@@ -19,9 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => CheckRole::class,
         ]);
-        // OnlyOffice Document Server POSTs save callbacks without a session/CSRF token.
+        // OnlyOffice Document Server POSTs callbacks and chat questions without a session/CSRF token.
         $middleware->validateCsrfTokens(except: [
             'onlyoffice/callback/*',
+            'onlyoffice/ask/*',
         ]);
         // After session start → picks the signed-in user's language.
         $middleware->web(append: [

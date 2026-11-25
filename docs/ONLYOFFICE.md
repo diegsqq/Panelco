@@ -59,7 +59,10 @@ This route opens OnlyOffice directly. Saves are converted back into the P-ARCHIV
 
 - The editor theme follows the P-ARCHIVE user theme: light uses `theme-white`, dark uses `theme-night`.
 - The built-in **Chat** button is relabeled **Ask Lightning AI** via `docker/onlyoffice/locale-en.json`. Recreate the container after changing that file.
-- No AI API key is involved. This is document editing only.
+- **Lightning AI** appears in the built-in chat user list (`#chat-users`). Messages sent there are answered in the same chat thread.
+- The AI chat uses the signed `/onlyoffice/ask/{document}` endpoint. The token is document- and user-scoped; no browser session cookie is required across origins.
+- Document Server JS patches live in `docker/onlyoffice/` and are mounted read-only. Recreate the container after changing them.
+- Document editing needs no AI key. The Lightning AI chat uses the app's existing AI env settings.
 - The Document Server callback is protected by a signed token.
 - Port 8080 is occupied by Windows, so Document Server uses 8081.
 - Browser must be able to reach `http://127.0.0.1:8081`.
