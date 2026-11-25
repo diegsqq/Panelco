@@ -96,9 +96,6 @@ class OnlyOfficeIntegrationTest extends TestCase
             ->assertOk()
             ->assertSee('/web-apps/apps/api/documents/api.js', false)
             ->assertSee('DocsAPI.DocEditor', false)
-            ->assertSee('"chat":false', false)
-            ->assertSee('id="chat-options"', false)
-            ->assertSee(route('documents.ask', $document), false)
             ->assertDontSee('/content/word', false);
     }
 

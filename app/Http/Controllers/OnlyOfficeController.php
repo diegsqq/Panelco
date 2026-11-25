@@ -68,7 +68,6 @@ class OnlyOfficeController extends Controller
                         'remove' => [''],
                         'view' => '',
                     ],
-                    'chat' => false,
                     'copy' => true,
                     'deleteCommentAuthorOnly' => $readOnly,
                     'download' => true,
