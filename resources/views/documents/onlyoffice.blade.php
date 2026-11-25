@@ -6,13 +6,11 @@
 
 @section('content')
 <div style="display:flex;flex-direction:column;height:100vh;overflow:hidden;background:#f5f5f5">
-    <div style="flex:0 0 auto;display:flex;align-items:center;gap:.75rem;padding:.5rem 1rem;background:#fff;border-bottom:1px solid #e8e8e8">
-        <a href="{{ route('documents.edit-content', $document) }}" class="btn btn-sm btn-outline-success">
+    <div style="position:relative;flex:1 1 auto;min-height:0;width:100%">
+        <div id="onlyofficeEditor"></div>
+        <a href="{{ route('documents.edit-content', $document) }}" class="btn btn-sm btn-outline-success" style="position:absolute;top:.75rem;left:1rem;z-index:20;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.18)">
             <i class="bi bi-arrow-left me-1"></i>Back to editor
         </a>
-    </div>
-    <div style="flex:1 1 auto;min-height:0;width:100%">
-        <div id="onlyofficeEditor"></div>
     </div>
 </div>
 
