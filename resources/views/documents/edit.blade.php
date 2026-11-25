@@ -15,7 +15,7 @@
             </div>
             <div class="d-flex gap-2">
                 <a href="{{ route('documents.edit-content', $document) }}" class="btn btn-sm btn-outline-success text-nowrap"><i class="bi bi-file-earmark-text me-1"></i>Edit content</a>
-                <a href="{{ route('documents.show', $document) }}" class="btn btn-sm btn-outline-secondary text-nowrap"><i class="bi bi-arrow-left me-1"></i>Back</a>
+                <a href="{{ route('documents.edit-content', $document) }}" class="btn btn-sm btn-outline-secondary text-nowrap"><i class="bi bi-arrow-left me-1"></i>Back</a>
             </div>
         </div>
 
@@ -92,7 +92,7 @@
 
             <div class="d-flex flex-wrap gap-2 mt-4">
                 <button class="btn px-4" style="background:#ffffff;color:#00A868;border:1px solid #00A868;font-weight:700"><i class="bi bi-check-lg me-1"></i>Save changes</button>
-                <a href="{{ route('documents.show', $document) }}" class="btn btn-link">Cancel</a>
+                <a href="{{ route('documents.edit-content', $document) }}" class="btn btn-link">Cancel</a>
             </div>
         </form>
     </div>

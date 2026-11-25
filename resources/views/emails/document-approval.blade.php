@@ -21,7 +21,7 @@ Reviewed by {{ $reviewerName }}.
 Reviewer note: {{ $reviewNote }}
 </div>
 @endif
-<a href="{{ route('documents.show', $document) }}" style="display:inline-block;background:#ffffff;color:#00A868;text-decoration:none;font-weight:600;padding:10px 18px;border-radius:8px;border:1px solid #00A868">Open document</a>
+<a href="{{ route('documents.edit-content', $document) }}" style="display:inline-block;background:#ffffff;color:#00A868;text-decoration:none;font-weight:600;padding:10px 18px;border-radius:8px;border:1px solid #00A868">Open document</a>
 </td></tr>
 </table>
 </td></tr>

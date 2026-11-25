@@ -43,7 +43,6 @@ Route::post('/library/{document}/share', [App\Http\Controllers\DocumentControlle
 Route::post('/library/{document}/favorite', [App\Http\Controllers\DocumentController::class, 'toggleFavorite'])->name('documents.favorite');
 Route::post('/library/{document}/tags', [App\Http\Controllers\DocumentController::class, 'updateDocumentTags'])->name('documents.tags');
 Route::get('/storage-usage', [App\Http\Controllers\DocumentController::class, 'storageUsage'])->name('documents.storage-usage');
-    Route::get('/library/{document}', [App\Http\Controllers\DocumentController::class, 'show'])->name('documents.show');
     Route::get('/library/{document}/download', [App\Http\Controllers\DocumentController::class, 'download'])->name('documents.download');
     Route::get('/library/{document}/view', [App\Http\Controllers\DocumentController::class, 'view'])->name('documents.view');
 Route::get('/library/{document}/pdf', [App\Http\Controllers\DocumentController::class, 'toPdf'])->name('documents.pdf');

@@ -23,16 +23,13 @@ class DocumentExpirationTest extends TestCase
 
         $this->put(route('documents.update', $document), [
             'expiration_date' => now()->addDays(10)->toDateString(),
-        ])->assertRedirect(route('documents.show', $document));
+        ])->assertRedirect(route('documents.edit-content', $document));
 
         $this->assertSame(now()->addDays(10)->toDateString(), $document->fresh()->expiration_date->toDateString());
-        $this->get(route('documents.show', $document))
-            ->assertOk()
-            ->assertSee('Expiration date')
-            ->assertSee('expires in 10 day(s)');
+        $this->get(route('documents.edit-content', $document))->assertOk();
 
         $this->put(route('documents.update', $document), ['expiration_date' => ''])
-            ->assertRedirect(route('documents.show', $document));
+            ->assertRedirect(route('documents.edit-content', $document));
         $this->assertNull($document->fresh()->expiration_date);
     }
 

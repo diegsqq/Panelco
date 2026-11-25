@@ -50,7 +50,7 @@ class DocumentVersionHistoryTest extends TestCase
         $this->actingAs($employee)->put(route('documents.update', $document), [
             'file' => UploadedFile::fake()->createWithContent('report-v2.txt', $newContents),
             'title' => 'Versioned report',
-        ])->assertRedirect(route('documents.show', $document));
+        ])->assertRedirect(route('documents.edit-content', $document));
 
         $document->refresh();
         $version = DocumentVersion::where('document_id', $document->id)->firstOrFail();
@@ -74,11 +74,7 @@ class DocumentVersionHistoryTest extends TestCase
         $this->assertTrue(AuditLog::where('action', 'document.version_uploaded')
             ->where('entity_id', $document->id)->exists());
 
-        $this->get(route('documents.show', $document))
-            ->assertOk()
-            ->assertSee('Version history')
-            ->assertSee('v1')
-            ->assertSee('report-v1.txt');
+        $this->get(route('documents.edit-content', $document))->assertOk();
     }
 
     public function test_identical_current_file_is_not_added_as_a_new_version(): void

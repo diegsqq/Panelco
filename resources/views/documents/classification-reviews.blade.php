@@ -11,7 +11,7 @@
     @forelse ($documents as $document)
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 border-bottom p-3">
             <div class="flex-grow-1" style="min-width:16rem">
-                <a href="{{ route('documents.show', $document) }}" class="fw-semibold text-decoration-none" style="color:#00743F">{{ $document->display_title }}</a>
+                <a href="{{ route('documents.edit-content', $document) }}" class="fw-semibold text-decoration-none" style="color:#00743F">{{ $document->display_title }}</a>
                 <div class="small text-muted">{{ $document->original_filename }} · uploaded by {{ $document->uploader?->name ?? '—' }} · {{ $document->created_at->format('M d, Y') }}</div>
                 <div class="small text-muted">{{ $document->department?->name ?? 'No department' }}</div>
                 <div class="small mt-1">
@@ -20,7 +20,7 @@
                 </div>
             </div>
             <span class="badge text-bg-warning">Pending classification review</span>
-            <a href="{{ route('documents.show', $document) }}" class="btn btn-sm btn-outline-success">Review suggestions</a>
+            <a href="{{ route('documents.edit-content', $document) }}" class="btn btn-sm btn-outline-success">Review suggestions</a>
         </div>
     @empty
         <div class="p-5 text-center text-muted">

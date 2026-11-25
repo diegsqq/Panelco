@@ -434,34 +434,37 @@ class DocumentController extends Controller
             ]);
         }
 
-        return redirect()->route('documents.show', $document)->with('status', 'Document updated.');
+        return redirect()->route('documents.edit-content', $document)->with('status', 'Document updated.');
     }
 
     /**
      * In-app rich text editor: lets an authorized user edit the document's
      * content (body, page header and page footer) directly in SmartDocs.
      */
-    public function editContent(Document $document, OnlyOfficeController $onlyOffice): View
+    public function editContent(Request $request, Document $document, OnlyOfficeController $onlyOffice): View
     {
+        $readOnly = $request->boolean('view');
+
         if (config('onlyoffice.enabled')) {
-            return $onlyOffice->edit($document);
+            return $onlyOffice->edit($document, $readOnly);
         }
 
-        return $this->editWord($document);
+        return $this->editWord($document, $readOnly);
     }
 
     /**
      * In-app Word-style editor, kept available when OnlyOffice is disabled.
      */
-    public function editWord(Document $document): View
+    public function editWord(Document $document, bool $readOnly = false): View
     {
-        $this->authorize('update', $document);
+        $this->authorize($readOnly ? 'view' : 'update', $document);
 
         $document->load('contentEditor');
 
         return view('documents.edit-content', [
             'document' => $document,
             'templates' => DocumentTemplates::all(),
+            'readOnly' => $readOnly,
         ]);
     }
 
@@ -823,65 +826,6 @@ class DocumentController extends Controller
         return $response;
     }
 
-    public function show(Document $document): View
-    {
-        $this->authorize('view', $document);
-        $document->increment('view_count');
-        $document->update(['last_opened_at' => now()]);
-        DocumentAccessLog::create([
-            'document_id' => $document->id,
-            'user_id' => auth()->id(),
-            'action' => 'view',
-        ]);
-        $document->load(['category', 'suggestedCategory', 'department', 'suggestedDepartment', 'uploader', 'currentVersionUploader', 'approver', 'approvalReviewer', 'classificationReviewer', 'contentEditor', 'chunks', 'versions.uploader', 'assignedTo', 'reviewedBy', 'comments.user', 'accessLogs.user', 'favoritedBy']);
-        $similarCandidates = $this->visibleToUser(request())
-            ->where('processing_status', 'completed')
-            ->whereNotNull('extracted_text')
-            ->where('id', '!=', $document->id)
-            ->orderByDesc('created_at')
-            ->limit(250)
-            ->get(['id', 'title', 'original_filename', 'document_date', 'extracted_text']);
-        $similarDocuments = app(\App\Services\SimilarDocumentDetector::class)
-            ->findSimilar((string) $document->extracted_text, $similarCandidates, (int) $document->id);
-        $categories = DocumentCategory::orderBy('name')->get();
-        $departmentQuery = Department::orderBy('name');
-        if (! auth()->user()->isAdmin()) {
-            $allowedDepartmentIds = auth()->user()->departments()->pluck('departments.id')
-                ->push(auth()->user()->department_id)->filter()->unique()->values();
-            $departmentQuery->whereIn('id', $allowedDepartmentIds);
-        }
-        $departments = $departmentQuery->get();
-
-        $highlightedHtml = null;
-        if ($document->extracted_text) {
-            $visible = (string) $document->extracted_text;
-            $safe = e($visible);
-            $snippet = trim((string) request('excerpt', ''));
-            if ($snippet !== '') {
-                $needle = e(mb_substr($snippet, 0, 120));
-                if ($needle !== '' && str_contains($safe, $needle)) {
-                    $safe = str_replace($needle, '<mark>' . $needle . '</mark>', $safe);
-                }
-            }
-            $highlightedHtml = nl2br($safe);
-        }
-
-        $detailExtractor = app(\App\Services\DetailExtractor::class);
-        $details = $document->extracted_text ? $detailExtractor->extract($document->extracted_text) : [];
-        $correctiveActions = $document->extracted_text ? $detailExtractor->extractCorrectiveActions($document->extracted_text) : [];
-        $details = array_values(array_diff($details, $correctiveActions));
-
-        $tables = app(\App\Services\StructuredTableExtractor::class)->extract($document->extracted_text);
-
-        $summaryCheck = null;
-        if ($document->summary !== null && $document->extracted_text) {
-            $summaryCheck = app(\App\Services\SummaryVerifier::class)
-                ->verify($document->summary, $document->extracted_text);
-        }
-
-        return view('documents.show', compact('document', 'categories', 'departments', 'highlightedHtml', 'details', 'correctiveActions', 'tables', 'summaryCheck', 'similarDocuments'));
-    }
-
     public function downloadVersion(Document $document, DocumentVersion $version): StreamedResponse
     {
         $this->authorize('download', $document);
@@ -1143,7 +1087,7 @@ class DocumentController extends Controller
 
         $disk = Storage::disk('private');
         if (! $disk->exists($document->storage_path)) {
-            return redirect()->route('documents.show', $document)
+            return redirect()->route('documents.edit-content', $document)
                 ->withErrors(['file' => 'Source file is missing; cannot copy.']);
         }
 

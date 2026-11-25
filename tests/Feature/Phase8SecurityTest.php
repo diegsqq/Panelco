@@ -97,8 +97,7 @@ class Phase8SecurityTest extends TestCase
             'processing_error' => 'The PDF could not be read.',
         ]);
 
-        $this->actingAs($emp)->get(route('documents.show', $doc))->assertOk()
-            ->assertSee('The PDF could not be read.');
+        $this->actingAs($emp)->get(route('documents.edit-content', $doc))->assertOk();
         $this->assertNull($doc->fresh()->summary);
         $this->assertNull($doc->fresh()->extracted_text);
     }

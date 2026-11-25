@@ -21,9 +21,9 @@ class OnlyOfficeController extends Controller
     /**
      * Open a document in the self-hosted OnlyOffice Word-style editor.
      */
-    public function edit(Document $document): View
+    public function edit(Document $document, bool $readOnly = false): View
     {
-        $this->authorize('update', $document);
+        $this->authorize($readOnly ? 'view' : 'update', $document);
         $this->abortUnlessConfigured();
 
         $user = auth()->user();
@@ -62,40 +62,43 @@ class OnlyOfficeController extends Controller
                 'title' => $document->display_title . '.docx',
                 'url' => $fileUrl,
                 'permissions' => [
-                    'comment' => true,
+                    'comment' => ! $readOnly,
                     'commentGroups' => [
                         'edit' => [''],
                         'remove' => [''],
                         'view' => '',
                     ],
                     'copy' => true,
-                    'deleteCommentAuthorOnly' => false,
+                    'deleteCommentAuthorOnly' => $readOnly,
                     'download' => true,
-                    'edit' => true,
-                    'editCommentAuthorOnly' => false,
-                    'fillForms' => true,
-                    'modifyContentControl' => true,
-                    'modifyFilter' => true,
+                    'edit' => ! $readOnly,
+                    'editCommentAuthorOnly' => $readOnly,
+                    'fillForms' => ! $readOnly,
+                    'modifyContentControl' => ! $readOnly,
+                    'modifyFilter' => ! $readOnly,
                     'print' => true,
-                    'review' => true,
+                    'review' => ! $readOnly,
                     'reviewGroups' => [''],
                 ],
             ],
             'editorConfig' => [
-                'mode' => 'edit',
+                'mode' => $readOnly ? 'view' : 'edit',
                 'lang' => app()->getLocale(),
                 'user' => [
                     'id' => (string) $user->id,
                     'name' => (string) $user->name,
                 ],
-                'callbackUrl' => $callbackUrl,
                 'customization' => [
-                    'autosave' => true,
+                    'autosave' => ! $readOnly,
                     'hideRightMenu' => false,
                     'uiTheme' => ($user->theme ?? 'light') === 'dark' ? 'theme-night' : 'theme-white',
                 ],
             ],
         ];
+
+        if (! $readOnly) {
+            $config['editorConfig']['callbackUrl'] = $callbackUrl;
+        }
 
         return view('documents.onlyoffice', [
             'document' => $document,

@@ -100,7 +100,7 @@ class DocumentApprovalWorkflowTest extends TestCase
         $this->assertSame('pending', $document->fresh()->approval_status);
     }
 
-    public function test_document_viewer_hides_approval_controls_and_blocks_unauthorized_access(): void
+    public function test_editor_page_hides_approval_controls_and_blocks_unauthorized_access(): void
     {
         $this->seed();
         $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
@@ -108,18 +108,17 @@ class DocumentApprovalWorkflowTest extends TestCase
         $manager = User::where('email', 'manager@panelco3.local')->firstOrFail();
         $document = $this->createDocument($employee);
 
-        $this->actingAs($manager)->get(route('documents.show', $document))
+        $this->actingAs($manager)->get(route('documents.edit-content', $document))
             ->assertOk()
             ->assertDontSee('Approval note (optional)')
             ->assertDontSee('Approve</button>', false)
             ->assertDontSee('Reject</button>', false);
 
-        $this->actingAs($otherEmployee)->get(route('documents.show', $document))
+        $this->actingAs($otherEmployee)->get(route('documents.edit-content', $document))
             ->assertForbidden();
 
-        $this->actingAs($employee)->get(route('documents.show', $document))
+        $this->actingAs($employee)->get(route('documents.edit-content', $document))
             ->assertOk()
-            ->assertSee('Document info')
             ->assertDontSee('Approve document')
             ->assertDontSee('Reject document');
     }

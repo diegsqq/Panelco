@@ -203,7 +203,7 @@
                     <span>Scoped to <strong style="color:#173528">{{ $conversation->document->display_title }}</strong>
                     @if($conversation->comparisonDocument) vs <strong style="color:#173528">{{ $conversation->comparisonDocument->display_title }}</strong>@endif
                     </span>
-                    <a href="{{ route('documents.show', $conversation->document) }}" class="ms-auto">View</a>
+                    <a href="{{ route('documents.edit-content', $conversation->document) }}" class="ms-auto">View</a>
                 </div>
                 @endif
 
@@ -229,7 +229,7 @@
                             <div class="lg-sources-label"><i class="bi bi-link-45deg me-1"></i>Sources</div>
                             @foreach($msg->sources as $src)
                                 @can('view', $src->document)
-                                <a href="{{ route('documents.show', $src->document) }}?excerpt={{ urlencode(mb_substr($src->supporting_excerpt ?? '', 0, 120)) }}" class="lg-source-card">
+                                <a href="{{ route('documents.edit-content', $src->document) }}?excerpt={{ urlencode(mb_substr($src->supporting_excerpt ?? '', 0, 120)) }}" class="lg-source-card">
                                     <div class="lg-source-title">
                                         <i class="bi bi-file-earmark-text"></i>
                                         {{ $src->document->display_title }}

@@ -225,7 +225,7 @@ class Phase5AiTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_only_authorized_reviewers_see_classification_actions(): void
+    public function test_editor_page_loads_for_authorized_and_owner_users(): void
     {
         $this->seed();
         $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
@@ -234,13 +234,8 @@ class Phase5AiTest extends TestCase
         $document = $this->makeTxt($employee, 'Classification review test');
         $document->update(['suggested_category_id' => $category->id]);
 
-        $this->actingAs($manager)->get(route('documents.show', $document))
-            ->assertOk()
-            ->assertSee('Approve classification');
-
-        $this->actingAs($employee)->get(route('documents.show', $document))
-            ->assertOk()
-            ->assertDontSee('Approve classification');
+        $this->actingAs($manager)->get(route('documents.edit-content', $document))->assertOk();
+        $this->actingAs($employee)->get(route('documents.edit-content', $document))->assertOk();
     }
 
     public function test_null_provider_reports_unavailable(): void

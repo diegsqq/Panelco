@@ -148,7 +148,7 @@
                 <div class="lg-doc-banner">
                     <i class="bi bi-file-earmark-lock me-1"></i>
                     Asking about: <strong>{{ $document->display_title }}</strong>
-                    <a href="{{ route('documents.show', $document) }}" class="ms-2">View</a>
+                    <a href="{{ route('documents.edit-content', $document) }}" class="ms-2">View</a>
                 </div>
                 @endif
                 <div class="lg-welcome">Where should we begin?</div>

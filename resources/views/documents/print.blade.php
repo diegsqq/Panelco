@@ -172,7 +172,7 @@
 
     {{-- ── Top bar ── --}}
     <div class="pp-topbar">
-        <a href="{{ route('documents.show', $document) }}" class="pp-back"><i class="bi bi-arrow-left"></i></a>
+        <a href="{{ route('documents.edit-content', $document) }}" class="pp-back"><i class="bi bi-arrow-left"></i></a>
         <div class="pp-breadcrumb">
             <a href="{{ route('documents.library') }}">Documents</a>
             @if($document->department)<span>/</span><span>{{ $document->department->name }}</span>@endif

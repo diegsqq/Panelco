@@ -99,6 +99,20 @@ class OnlyOfficeIntegrationTest extends TestCase
             ->assertDontSee('/content/word', false);
     }
 
+    public function test_view_query_opens_onlyoffice_in_read_only_mode(): void
+    {
+        $this->configureOnlyOffice();
+        $document = $this->makeDocument();
+
+        $this->actingAs(User::findOrFail($document->uploaded_by))
+            ->get(route('documents.edit-content', $document) . '?view=1')
+            ->assertOk()
+            ->assertSee('"mode":"view"', false)
+            ->assertSee('"edit":false', false)
+            ->assertSee('"autosave":false', false)
+            ->assertDontSee('"callbackUrl"', false);
+    }
+
     public function test_word_editor_route_is_removed(): void
     {
         $this->assertFalse(\Illuminate\Support\Facades\Route::has('documents.edit-word'));

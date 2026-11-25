@@ -524,34 +524,7 @@ class Phase3UploadTest extends TestCase
             ->assertOk()
             ->assertSeeText('My private report')
             ->assertDontSeeText('Department shared report');
-        $this->get(route('documents.show', $own))->assertOk();
-        $this->get(route('documents.show', $shared))->assertForbidden();
-    }
-
-    public function test_document_page_shows_vertical_summary_details_and_actions(): void
-    {
-        $this->seed();
-        $employee = User::where('email', 'employee@panelco3.local')->first();
-        $doc = Document::create([
-            'uploaded_by' => $employee->id,
-            'title' => 'Transformer Repair Report',
-            'original_filename' => 'repair.txt',
-            'storage_path' => 'documents/repair.txt',
-            'mime_type' => 'text/plain',
-            'file_size' => 80,
-            'processing_status' => 'completed',
-            'summary' => 'The crew repaired the damaged transformer.',
-            'extracted_text' => 'The crew repaired the damaged transformer. A work order was filed.',
-        ]);
-
-        $this->actingAs($employee)->get(route('documents.show', $doc))
-            ->assertOk()
-            ->assertSeeText('Document Summary')
-            ->assertSeeText('Important Details')
-            ->assertSeeText('Corrective Actions')
-            ->assertSeeText('repaired the damaged transformer')
-            ->assertSee(str_replace('/', '\\/', route('documents.ask', $doc)), false)
-            ->assertDontSee('class="dv-toolbar"', false)
-            ->assertDontSee('Auto-save', false);
+        $this->get(route('documents.edit-content', $own))->assertOk();
+        $this->get(route('documents.edit-content', $shared))->assertForbidden();
     }
 }

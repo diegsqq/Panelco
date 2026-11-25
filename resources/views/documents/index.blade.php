@@ -346,7 +346,7 @@
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="lib-file-icon {{ $fileType[1] }}" style="color:{{ $fileType[2] }};flex:0 0 auto" aria-hidden="true"></i>
                                     <div style="min-width:0">
-                                        <a href="{{ route('documents.show', $doc) }}" class="lib-doc-name text-decoration-none d-block text-truncate" title="{{ $doc->display_title }}">
+                                        <a href="{{ route('documents.edit-content', $doc) }}" class="lib-doc-name text-decoration-none d-block text-truncate" title="{{ $doc->display_title }}">
                                             {{ $doc->display_title }}
                                         </a>
                                         <div style="font-size:.68rem;color:#5a9e7a">
@@ -369,17 +369,14 @@
                                 </div>
                             </td>
                             <td class="text-end">
-                                @canany(['update','delete'], $doc)
                                 <div class="dropdown">
                                     <button type="button" class="btn btn-sm p-1" style="background:none;border:none;color:#5a9e7a" title="Actions for {{ $doc->display_title }}" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="bi bi-three-dots"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end" style="border-radius:.75rem;border-color:#d5e8db">
+                                        <li><a class="dropdown-item" href="{{ route('documents.edit-content', $doc) }}?view=1"><i class="bi bi-eye me-2" style="color:#00A868"></i>View</a></li>
                                         @can('update', $doc)
                                         <li><a class="dropdown-item" href="{{ route('documents.edit-content', $doc) }}"><i class="bi bi-pencil-square me-2" style="color:#00A868"></i>Open in editor</a></li>
-                                        @endcan
-                                        <li><a class="dropdown-item" href="{{ route('documents.show', $doc) }}"><i class="bi bi-eye me-2" style="color:#00A868"></i>View</a></li>
-                                        @can('update', $doc)
                                         <li><a class="dropdown-item" href="{{ route('documents.edit', $doc) }}"><i class="bi bi-pencil me-2" style="color:#00A868"></i>Edit details</a></li>
                                         @endcan
                                         @can('delete', $doc)
@@ -388,7 +385,6 @@
                                         @endcan
                                     </ul>
                                 </div>
-                                @endcanany
                             </td>
                         </tr>
                         @empty

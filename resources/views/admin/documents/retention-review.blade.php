@@ -34,7 +34,7 @@
                             </span>
                         </td>
                         <td class="text-end">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('documents.show', $document) }}">Review</a>
+                            <a class="btn btn-sm btn-outline-success" href="{{ route('documents.edit-content', $document) }}">Review</a>
                         </td>
                     </tr>
                 @empty

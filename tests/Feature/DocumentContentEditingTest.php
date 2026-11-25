@@ -205,7 +205,7 @@ class DocumentContentEditingTest extends TestCase
             ->assertStatus(422);
     }
 
-    public function test_saved_content_is_rendered_on_the_document_page(): void
+    public function test_saved_content_is_rendered_in_the_content_editor(): void
     {
         $this->seed();
         $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
@@ -219,87 +219,12 @@ class DocumentContentEditingTest extends TestCase
         ]);
 
         $this->actingAs($employee)
-            ->get(route('documents.show', $document))
+            ->get(route('documents.edit-content', $document))
             ->assertOk()
             ->assertSee('Quarterly')
             ->assertSee('operational')
             ->assertSee('PANELCO III')
-            ->assertSee('Confidential')
-            ->assertSee(route('documents.edit-content', $document), false);
-    }
-
-    public function test_document_viewer_expands_content_to_full_width(): void
-    {
-        $this->seed();
-        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
-        $document = $this->makeDocument($employee);
-
-        $this->actingAs($employee)
-            ->get(route('documents.show', $document))
-            ->assertOk()
-            ->assertSee('body:has(#docViewer) #p3Sidebar { display: none !important; }', false)
-            ->assertSee('body:has(#docViewer) > .container-fluid > .row > div.p-0.d-flex.flex-column { flex: 0 0 100%; max-width: 100%; width: 100%; }', false)
-            ->assertSee('.dv-info { width: 300px; flex: 0 0 300px;', false)
-            ->assertSee('scrollbar-gutter: stable;', false)
-            ->assertSee('.dv-info-section { border: 1px solid #e8eceb; border-radius: .85rem; overflow: hidden; flex: 0 0 auto; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.04); }', false)
-            ->assertSee('@media (min-width: 768px) and (max-width: 991.98px)', false)
-            ->assertSee('.dv-page::before, .dv-page::after', false)
-            ->assertSee('class="dv-page-perf"', false)
-            ->assertSee('max-width: min(var(--dv-page-w, 794px), calc(100% - 3rem))', false)
-            ->assertSee('min-height: var(--dv-page-h, 1123px)', false)
-            ->assertSee('--dv-page-w: 794px; --dv-page-h: 1123px;', false)
-            ->assertDontSee('class="dv-page-org"', false)
-            ->assertDontSee('class="dv-page-category"', false);
-    }
-
-    public function test_viewer_shows_actual_extracted_file_text(): void
-    {
-        $this->seed();
-        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
-        $document = $this->makeDocument($employee);
-        $document->update([
-            'extracted_text' => "MEMORANDUM\n\nThis is the actual file text.",
-            'document_date' => '2026-11-23',
-            'reference_number' => 'REF-001',
-        ]);
-
-        $this->actingAs($employee)
-            ->get(route('documents.show', $document))
-            ->assertOk()
-            ->assertSee('class="dv-page-text" id="doc-content"', false)
-            ->assertSee('This is the actual file text.', false)
-            ->assertSee('font-family: Georgia, "Times New Roman", Times, serif', false)
-            ->assertDontSee('class="dv-page-meta"', false)
-            ->assertDontSee('bi-clock-history"></i> Version', false)
-            ->assertDontSee('bi-calendar3', false)
-            ->assertDontSee('bi-hash', false)
-            ->assertDontSee('REF-001', false)
-            ->assertDontSee('Effective November 23, 2026', false);
-    }
-
-    public function test_viewer_page_size_uses_document_page_layout(): void
-    {
-        $this->seed();
-        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
-        $document = $this->makeDocument($employee);
-        $document->update(['page_paper' => 'legal', 'page_orientation' => 'portrait']);
-
-        $this->actingAs($employee)
-            ->get(route('documents.show', $document))
-            ->assertOk()
-            ->assertSee('--dv-page-w: 816px; --dv-page-h: 1344px;', false);
-    }
-
-    public function test_documents_without_content_do_not_show_the_content_section(): void
-    {
-        $this->seed();
-        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
-        $document = $this->makeDocument($employee);
-
-        $this->actingAs($employee)
-            ->get(route('documents.show', $document))
-            ->assertOk()
-            ->assertDontSee('id="document-content"', false);
+            ->assertSee('Confidential');
     }
 
     public function test_guests_are_redirected_from_the_editor(): void

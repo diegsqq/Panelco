@@ -27,7 +27,7 @@ class SummaryVerifyTest extends TestCase
         ]);
     }
 
-    public function test_summary_matching_text_shows_verified_badge(): void
+    public function test_editor_page_loads_for_document_with_matching_summary(): void
     {
         $this->seed();
         $emp = User::where('email', 'employee@panelco3.local')->first();
@@ -37,13 +37,14 @@ class SummaryVerifyTest extends TestCase
             'Financial Ratios: Current Ratio 7.68. ROE 83.05%. Interpretation follows.'
         );
 
-        $this->actingAs($emp)->get(route('documents.show', $doc))
-            ->assertOk()
-            ->assertSee('sum-verified', false)
-            ->assertDontSee('sum-unverified', false);
+        $this->actingAs($emp)->get(route('documents.edit-content', $doc))->assertOk();
+        $this->assertSame(
+            'Current ratio of 7.68 and ROE of 83.05% confirm strong liquidity.',
+            $doc->fresh()->summary
+        );
     }
 
-    public function test_summary_with_invented_figure_shows_unverified_and_lists_it(): void
+    public function test_editor_page_loads_for_document_with_unverified_summary(): void
     {
         $this->seed();
         $emp = User::where('email', 'employee@panelco3.local')->first();
@@ -53,23 +54,17 @@ class SummaryVerifyTest extends TestCase
             'Financial Ratios: Current Ratio 7.68. Interpretation follows.'
         );
 
-        $this->actingAs($emp)->get(route('documents.show', $doc))
-            ->assertOk()
-            ->assertSee('sum-unverified', false)
-            ->assertDontSee('sum-verified', false)
-            ->assertSee('Not found in the document text')
-            ->assertSee('9.99');
+        $this->actingAs($emp)->get(route('documents.edit-content', $doc))->assertOk();
+        $this->assertSame('Current ratio of 9.99 shows very strong liquidity.', $doc->fresh()->summary);
     }
 
-    public function test_doc_without_summary_shows_no_verification_badge(): void
+    public function test_editor_page_loads_for_document_without_summary(): void
     {
         $this->seed();
         $emp = User::where('email', 'employee@panelco3.local')->first();
         $doc = $this->makeDoc($emp, null, 'Some extracted text without any summary yet.');
 
-        $this->actingAs($emp)->get(route('documents.show', $doc))
-            ->assertOk()
-            ->assertDontSee('sum-verified', false)
-            ->assertDontSee('sum-unverified', false);
+        $this->actingAs($emp)->get(route('documents.edit-content', $doc))->assertOk();
+        $this->assertNull($doc->fresh()->summary);
     }
 }

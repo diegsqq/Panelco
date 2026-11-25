@@ -338,7 +338,7 @@
             <div class="p3-topbar px-3 px-md-4 py-2 d-flex justify-content-between align-items-center sticky-top">
                 <div class="d-flex align-items-center gap-2">
                     <button type="button" class="btn btn-sm d-md-none" id="sidebarToggle" aria-label="Open menu" aria-controls="p3Sidebar" aria-expanded="false" style="border:1px solid #d5e8db"><i class="bi bi-list" aria-hidden="true"></i></button>
-                    @if(request()->routeIs('documents.show'))
+                    @if(request()->routeIs('documents.edit-content'))
                     <a href="{{ route('documents.library') }}" class="small text-decoration-none fw-semibold" style="color:#00A868"><i class="bi bi-arrow-left me-1"></i>Back to library</a>
                     @endif
                     <span id="p3DateTime" class="small fw-semibold text-muted d-none d-sm-inline" style="white-space:nowrap"></span>

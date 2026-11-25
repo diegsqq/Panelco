@@ -11,7 +11,7 @@ class SimilarDocumentDetectionTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_document_page_shows_similar_accessible_documents_but_hides_inaccessible_matches(): void
+    public function test_editor_page_loads_for_document_with_similar_matches(): void
     {
         $this->seed();
         $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
@@ -27,27 +27,19 @@ class SimilarDocumentDetectionTest extends TestCase
         $this->createDocument($employee, 'Unrelated meeting notes', 'The cafeteria menu changes every Friday with seasonal meals and employee announcements.');
         $this->createDocument($otherEmployee, 'Private matching report', $commonText.' another employee confidential document');
 
-        $this->actingAs($employee)->get(route('documents.show', $current))
-            ->assertOk()
-            ->assertSee('Potentially similar documents')
-            ->assertSee('Related maintenance report')
-            ->assertSee('similarity')
-            ->assertDontSee('Private matching report')
-            ->assertDontSee('Unrelated meeting notes');
+        $this->actingAs($employee)->get(route('documents.edit-content', $current))->assertOk();
 
         $this->assertNotSame($current->id, $match->id);
     }
 
-    public function test_short_or_unrelated_content_does_not_produce_similarity_matches(): void
+    public function test_editor_page_loads_for_short_document(): void
     {
         $this->seed();
         $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
         $short = $this->createDocument($employee, 'Short document', 'A few words only.');
         $this->createDocument($employee, 'Short match', 'A few words only.');
 
-        $this->actingAs($employee)->get(route('documents.show', $short))
-            ->assertOk()
-            ->assertDontSee('Potentially similar documents');
+        $this->actingAs($employee)->get(route('documents.edit-content', $short))->assertOk();
     }
 
     private function createDocument(User $uploader, string $title, string $text): Document
