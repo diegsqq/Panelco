@@ -26,9 +26,9 @@ class OnlyOfficeIntegrationTest extends TestCase
         ]);
     }
 
-    private function makeDocument(): Document
+    private function makeDocument(?User $user = null): Document
     {
-        $user = User::factory()->create(['role' => User::ROLE_EMPLOYEE]);
+        $user = $user ?? User::factory()->create(['role' => User::ROLE_EMPLOYEE]);
 
         return Document::create([
             'uploaded_by' => $user->id,
@@ -66,7 +66,24 @@ class OnlyOfficeIntegrationTest extends TestCase
             ->assertSee('/web-apps/apps/api/documents/api.js', false)
             ->assertSee('DocsAPI.DocEditor', false)
             ->assertSee('"documentType":"word"', false)
-            ->assertSee('"mode":"edit"', false);
+            ->assertSee('"mode":"edit"', false)
+            ->assertSee('"uiTheme":"theme-white"', false);
+    }
+
+    public function test_onlyoffice_uses_dark_theme_when_app_theme_is_dark(): void
+    {
+        $this->configureOnlyOffice();
+        $user = User::factory()->create([
+            'role' => User::ROLE_EMPLOYEE,
+            'theme' => 'dark',
+        ]);
+        $document = $this->makeDocument($user);
+
+        $this->actingAs($user)
+            ->get(route('documents.onlyoffice', $document))
+            ->assertOk()
+            ->assertSee('"uiTheme":"theme-night"', false)
+            ->assertDontSee('"uiTheme":"theme-white"', false);
     }
 
     public function test_edit_content_route_opens_onlyoffice_when_enabled(): void

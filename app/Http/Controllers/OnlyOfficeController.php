@@ -92,6 +92,7 @@ class OnlyOfficeController extends Controller
                 'customization' => [
                     'autosave' => true,
                     'hideRightMenu' => false,
+                    'uiTheme' => ($user->theme ?? 'light') === 'dark' ? 'theme-night' : 'theme-white',
                 ],
             ],
         ];

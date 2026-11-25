@@ -57,6 +57,7 @@ This route opens OnlyOffice directly. Saves are converted back into the P-ARCHIV
 
 ## Notes
 
+- The editor theme follows the P-ARCHIVE user theme: light uses `theme-white`, dark uses `theme-night`.
 - No AI API key is involved. This is document editing only.
 - The Document Server callback is protected by a signed token.
 - Port 8080 is occupied by Windows, so Document Server uses 8081.
