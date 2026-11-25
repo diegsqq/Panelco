@@ -141,7 +141,7 @@
         <div class="lg-sidebar-top">
             <div class="lg-brand">
                 <div class="lg-brand-ico"><i class="bi bi-lightning-charge-fill"></i></div>
-                <span class="lg-brand-name">Lightning AI</span>
+                <span class="lg-brand-name">Ask Lightning AI</span>
             </div>
             <a href="{{ route('chat.index') }}" class="lg-new-btn">
                 <i class="bi bi-plus-lg"></i> New chat
