@@ -53,12 +53,13 @@ http://127.0.0.1:8000/library/71/content/edit
 
 This route opens OnlyOffice directly. Saves are converted back into the P-ARCHIVE content fields. The original `.docx` is opened directly when the document has no edited content yet.
 
+The **Ask Lightning AI** button opens a P-ARCHIVE AI panel inside the editor. It calls the document ask endpoint and cites authorized sources. OnlyOffice's own collaboration chat is disabled.
+
 **Open in editor** in the library detail panel uses this same route. The library row dropdown **View** action uses `/library/{id}/content/edit?view=1`, which opens OnlyOffice in read-only mode.
 
 ## Notes
 
 - The editor theme follows the P-ARCHIVE user theme: light uses `theme-white`, dark uses `theme-night`.
-- The built-in **Chat** button is relabeled **Ask Lightning AI** via `docker/onlyoffice/locale-en.json`. Recreate the container after changing that file.
 - No AI API key is involved. This is document editing only.
 - The Document Server callback is protected by a signed token.
 - Port 8080 is occupied by Windows, so Document Server uses 8081.
