@@ -79,18 +79,12 @@ class OnlyOfficeIntegrationTest extends TestCase
             ->assertOk()
             ->assertSee('/web-apps/apps/api/documents/api.js', false)
             ->assertSee('DocsAPI.DocEditor', false)
-            ->assertSee(route('documents.edit-word', $document), false);
+            ->assertDontSee('/content/word', false);
     }
 
-    public function test_content_editor_links_to_onlyoffice_when_enabled(): void
+    public function test_word_editor_route_is_removed(): void
     {
-        $this->configureOnlyOffice();
-        $document = $this->makeDocument();
-
-        $this->actingAs(User::findOrFail($document->uploaded_by))
-            ->get(route('documents.edit-word', $document))
-            ->assertOk()
-            ->assertSee(route('documents.onlyoffice', $document), false);
+        $this->assertFalse(\Illuminate\Support\Facades\Route::has('documents.edit-word'));
     }
 
     public function test_file_endpoint_serves_the_original_docx_with_a_valid_token(): void

@@ -51,15 +51,9 @@ Open:
 http://127.0.0.1:8000/library/71/content/edit
 ```
 
-This route now opens OnlyOffice directly. Saves are converted back into the P-ARCHIVE content fields. The original `.docx` is opened directly when the document has no edited content yet.
+This route opens OnlyOffice directly. Saves are converted back into the P-ARCHIVE content fields. The original `.docx` is opened directly when the document has no edited content yet.
 
-The previous Word-style editor stays available at:
-
-```text
-http://127.0.0.1:8000/library/71/content/word
-```
-
-Use **Back to editor** in OnlyOffice to return there.
+**Open in editor** in the library detail panel uses this same route.
 
 ## Notes
 
