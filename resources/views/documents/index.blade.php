@@ -375,9 +375,12 @@
                                         <i class="bi bi-three-dots"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end" style="border-radius:.75rem;border-color:#d5e8db">
+                                        @can('update', $doc)
+                                        <li><a class="dropdown-item" href="{{ route('documents.edit-content', $doc) }}"><i class="bi bi-pencil-square me-2" style="color:#00A868"></i>Open in editor</a></li>
+                                        @endcan
                                         <li><a class="dropdown-item" href="{{ route('documents.show', $doc) }}"><i class="bi bi-eye me-2" style="color:#00A868"></i>View</a></li>
                                         @can('update', $doc)
-                                        <li><a class="dropdown-item" href="{{ route('documents.edit', $doc) }}"><i class="bi bi-pencil me-2" style="color:#00A868"></i>Edit</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('documents.edit', $doc) }}"><i class="bi bi-pencil me-2" style="color:#00A868"></i>Edit details</a></li>
                                         @endcan
                                         @can('delete', $doc)
                                         <li><hr class="dropdown-divider"></li>
