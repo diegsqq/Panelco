@@ -28,6 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/library/export', [App\Http\Controllers\DocumentController::class, 'export'])->name('documents.export');
     Route::get('/library/{document}/edit', [App\Http\Controllers\DocumentController::class, 'edit'])->name('documents.edit');
     Route::get('/library/{document}/content/edit', [App\Http\Controllers\DocumentController::class, 'editContent'])->name('documents.edit-content');
+    Route::get('/library/{document}/content/word', [App\Http\Controllers\DocumentController::class, 'editWord'])->name('documents.edit-word');
     Route::get('/library/{document}/content/onlyoffice', [OnlyOfficeController::class, 'edit'])->name('documents.onlyoffice');
     Route::put('/library/{document}/content', [App\Http\Controllers\DocumentController::class, 'updateContent'])->name('documents.update-content');
     Route::post('/library/{document}/content/images', [App\Http\Controllers\DocumentController::class, 'storeContentImage'])->name('documents.content-images');

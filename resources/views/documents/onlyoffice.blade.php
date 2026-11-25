@@ -7,7 +7,7 @@
 @section('content')
 <div style="display:flex;flex-direction:column;height:100vh;overflow:hidden;background:#f5f5f5">
     <div style="flex:0 0 auto;display:flex;align-items:center;gap:.75rem;padding:.5rem 1rem;background:#fff;border-bottom:1px solid #e8e8e8">
-        <a href="{{ route('documents.edit-content', $document) }}" class="btn btn-sm btn-outline-success">
+        <a href="{{ route('documents.edit-word', $document) }}" class="btn btn-sm btn-outline-success">
             <i class="bi bi-arrow-left me-1"></i>Back to editor
         </a>
     </div>

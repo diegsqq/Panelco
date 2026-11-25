@@ -69,13 +69,26 @@ class OnlyOfficeIntegrationTest extends TestCase
             ->assertSee('"mode":"edit"', false);
     }
 
-    public function test_content_editor_links_to_onlyoffice_when_enabled(): void
+    public function test_edit_content_route_opens_onlyoffice_when_enabled(): void
     {
         $this->configureOnlyOffice();
         $document = $this->makeDocument();
 
         $this->actingAs(User::findOrFail($document->uploaded_by))
             ->get(route('documents.edit-content', $document))
+            ->assertOk()
+            ->assertSee('/web-apps/apps/api/documents/api.js', false)
+            ->assertSee('DocsAPI.DocEditor', false)
+            ->assertSee(route('documents.edit-word', $document), false);
+    }
+
+    public function test_content_editor_links_to_onlyoffice_when_enabled(): void
+    {
+        $this->configureOnlyOffice();
+        $document = $this->makeDocument();
+
+        $this->actingAs(User::findOrFail($document->uploaded_by))
+            ->get(route('documents.edit-word', $document))
             ->assertOk()
             ->assertSee(route('documents.onlyoffice', $document), false);
     }

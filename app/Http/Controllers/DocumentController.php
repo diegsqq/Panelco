@@ -441,7 +441,19 @@ class DocumentController extends Controller
      * In-app rich text editor: lets an authorized user edit the document's
      * content (body, page header and page footer) directly in SmartDocs.
      */
-    public function editContent(Document $document): View
+    public function editContent(Document $document, OnlyOfficeController $onlyOffice): View
+    {
+        if (config('onlyoffice.enabled')) {
+            return $onlyOffice->edit($document);
+        }
+
+        return $this->editWord($document);
+    }
+
+    /**
+     * In-app Word-style editor, kept available when OnlyOffice is disabled.
+     */
+    public function editWord(Document $document): View
     {
         $this->authorize('update', $document);
 
