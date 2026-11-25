@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\DocumentCategoryController;
 use App\Http\Controllers\Admin\DocumentRetentionController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\OnlyOfficeController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/library/export', [App\Http\Controllers\DocumentController::class, 'export'])->name('documents.export');
     Route::get('/library/{document}/edit', [App\Http\Controllers\DocumentController::class, 'edit'])->name('documents.edit');
     Route::get('/library/{document}/content/edit', [App\Http\Controllers\DocumentController::class, 'editContent'])->name('documents.edit-content');
+    Route::get('/library/{document}/content/onlyoffice', [OnlyOfficeController::class, 'edit'])->name('documents.onlyoffice');
     Route::put('/library/{document}/content', [App\Http\Controllers\DocumentController::class, 'updateContent'])->name('documents.update-content');
     Route::post('/library/{document}/content/images', [App\Http\Controllers\DocumentController::class, 'storeContentImage'])->name('documents.content-images');
     Route::get('/library/{document}/content/images/{filename}', [App\Http\Controllers\DocumentController::class, 'contentImage'])->where('filename', '[A-Za-z0-9._-]+')->name('documents.content-image');
@@ -128,3 +130,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
     Route::get('system-health', [SystemHealthController::class, 'index'])->name('system-health.index');
 });
+
+// OnlyOffice Document Server talks to these without a browser session.
+// Access is protected by short-lived signed tokens / JWT payloads.
+Route::get('/onlyoffice/file/{document}', [OnlyOfficeController::class, 'file'])->name('onlyoffice.file');
+Route::post('/onlyoffice/callback/{document}', [OnlyOfficeController::class, 'callback'])->name('onlyoffice.callback');

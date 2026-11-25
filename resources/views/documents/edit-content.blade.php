@@ -33,6 +33,11 @@
             <input type="text" id="tellMeInput" class="p3-tellme-input form-control form-control-sm" placeholder="Search commands…">
         </div>
         <div class="p3-word-actions d-flex align-items-center gap-1">
+            @if(config('onlyoffice.enabled'))
+                <a href="{{ route('documents.onlyoffice', $document) }}" class="p3-word-btn-sm p3-word-text-btn" title="Open in OnlyOffice">
+                    <i class="bi bi-file-earmark-word me-1"></i>OnlyOffice
+                </a>
+            @endif
             <button type="button" class="p3-word-btn-sm p3-word-text-btn" title="Sign in"><i class="bi bi-person-circle me-1"></i>Sign in</button>
             <button type="button" class="p3-word-btn-sm p3-word-share-btn" id="shareBtn" title="Share"><i class="bi bi-share me-1"></i>Share</button>
         </div>
