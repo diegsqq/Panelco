@@ -38,7 +38,7 @@
                     <i class="bi bi-file-earmark-word me-1"></i>OnlyOffice
                 </a>
             @endif
-            <button type="button" class="p3-word-btn-sm p3-word-text-btn" title="Sign in"><i class="bi bi-person-circle me-1"></i>Sign in</button>
+            <button type="button" class="p3-word-btn-sm p3-word-text-btn" id="signInBtnWord" title="Sign in"><i class="bi bi-person-circle me-1"></i>Sign in</button>
             <button type="button" class="p3-word-btn-sm p3-word-share-btn" id="shareBtn" title="Share"><i class="bi bi-share me-1"></i>Share</button>
         </div>
     </div>
@@ -1192,7 +1192,7 @@
     document.querySelector('.p3-word-file-btn').addEventListener('click', function () {
         alert('File — Save, Open, Print, Export (coming soon).');
     });
-    document.querySelector('.p3-word-actions .p3-word-text-btn:not(#shareBtn)').addEventListener('click', function () {
+    document.getElementById('signInBtnWord').addEventListener('click', function () {
         alert('Sign in — enter your PANELCO III account (coming soon).');
     });
 
