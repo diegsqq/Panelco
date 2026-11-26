@@ -32,9 +32,9 @@ class FolderNavigationTest extends TestCase
             ->assertSeeText('Engineering')
             ->assertSeeText('Assigned memo')
             ->assertSeeText('Suggested memo')
-            ->assertDontSeeText('Finance memo');
+            ->assertDontSeeText('Finance memo')
+            ->assertDontSee('id="libFolderBanner"', false);
 
-        $response->assertViewHas('folder', fn ($folder) => $folder->is($engineering));
         $this->assertSame(2, $response->viewData('documents')->total());
     }
 

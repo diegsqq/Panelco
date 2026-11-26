@@ -85,10 +85,10 @@ class DocumentController extends Controller
     {
         $request->merge(['category_id' => $category->id]);
 
-        return $this->renderLibrary($request, $category);
+        return $this->renderLibrary($request);
     }
 
-    private function renderLibrary(Request $request, ?DocumentCategory $folder = null): View
+    private function renderLibrary(Request $request): View
     {
         $validated = $this->validatedLibraryFilters($request);
         $query = $this->filteredLibraryQuery($request, $validated);
@@ -133,7 +133,7 @@ class DocumentController extends Controller
 
         return view('documents.index', compact(
             'documents', 'search', 'categories', 'departments', 'uploaders', 'validated', 'sort',
-            'deptDocCounts', 'catDocCounts', 'folder'
+            'deptDocCounts', 'catDocCounts'
         ));
     }
 
