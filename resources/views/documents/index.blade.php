@@ -16,6 +16,16 @@
     [data-theme="dark"] .lib-hero-title { color: #7fe0ac; }
     [data-theme="dark"] .lib-hero-sub   { color: #8fa59a; }
 
+    /* ── Folder breadcrumb ── */
+    .lib-folder-banner { display: flex; align-items: center; gap: .55rem; background: #e6f3ea; border: 1px solid #d5e8db; border-radius: .75rem; padding: .4rem .8rem; font-size: .82rem; color: #00743F; }
+    .lib-folder-banner a { color: #00743F; font-weight: 600; text-decoration: none; }
+    .lib-folder-banner a:hover { text-decoration: underline; }
+    .lib-folder-name { font-weight: 800; }
+    .lib-folder-count { margin-left: auto; color: #5a9e7a; font-size: .74rem; font-weight: 600; }
+    [data-theme="dark"] .lib-folder-banner { background: #12291d; border-color: #2f6b4f; color: #7fe0ac; }
+    [data-theme="dark"] .lib-folder-banner a { color: #7fe0ac; }
+    [data-theme="dark"] .lib-folder-count { color: #8fa59a; }
+
     /* ── Stat bar ── */
     .lib-stat-bar { display: flex; align-items: center; gap: 0; background: #fff; border: 1px solid #ebebeb; border-radius: 1rem; overflow: hidden; flex-wrap: wrap; }
     [data-theme="dark"] .lib-stat-bar { background: #16211c; border-color: #26362e; }
@@ -171,6 +181,15 @@
         </div>
     </div>
 
+    @if(! empty($folder))
+    <div class="lib-folder-banner" id="libFolderBanner">
+        <a href="{{ route('documents.library') }}"><i class="bi bi-arrow-left me-1"></i>All files</a>
+        <span aria-hidden="true">/</span>
+        <span class="lib-folder-name"><i class="bi bi-folder-fill me-1"></i>{{ $folder->name }}</span>
+        <span class="lib-folder-count">{{ number_format($documents->total()) }} file{{ $documents->total() === 1 ? '' : 's' }}</span>
+    </div>
+    @endif
+
     {{-- ── Stat bar ── --}}
     @php
         $updatedThisWeek = $documents->getCollection()->filter(fn($d) => $d->updated_at?->gte(now()->startOfWeek()))->count();
@@ -226,8 +245,8 @@
             @php
                 $catDocCount = (int) ($catDocCounts->get($cat->id, 0));
             @endphp
-            <a href="{{ route('documents.library', ['category_id' => $cat->id]) }}"
-               class="lib-dept-card {{ request('category_id') == $cat->id ? 'active' : '' }}">
+            <a href="{{ route('folders.show', $cat) }}"
+               class="lib-dept-card {{ (int) request('category_id') === (int) $cat->id ? 'active' : '' }}">
                 <div class="lib-dept-ico"><i class="bi bi-folder-fill"></i></div>
                 <div style="min-width:0;flex:1 1 auto">
                     <div class="lib-dept-name">{{ $cat->name }}</div>
@@ -293,7 +312,7 @@
                             @if(collect($validated)->filter(fn($v) => $v !== null && $v !== '' && $v !== 'newest')->isNotEmpty())
                                 <a href="{{ route('documents.library') }}" class="btn btn-sm" style="border:1px solid #d5e8db;color:#5a9e7a;border-radius:.55rem">Clear</a>
                             @endif
-                            <a href="{{ route('documents.export', request()->query()) }}" class="btn btn-sm" style="border:1px solid #d5e8db;color:#5a9e7a;border-radius:.55rem" title="Export CSV">
+                            <a href="{{ route('documents.export', request()->except(['page'])) }}" class="btn btn-sm" style="border:1px solid #d5e8db;color:#5a9e7a;border-radius:.55rem" title="Export CSV">
                                 <i class="bi bi-download"></i>
                             </a>
                         </div>

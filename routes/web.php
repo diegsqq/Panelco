@@ -25,6 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/upload/suggest', [App\Http\Controllers\DocumentController::class, 'suggest'])->name('documents.suggest');
     Route::post('/upload', [App\Http\Controllers\DocumentController::class, 'store'])->name('documents.store');
     Route::get('/library', [App\Http\Controllers\DocumentController::class, 'index'])->name('documents.library');
+    Route::get('/folders/{category}', [App\Http\Controllers\DocumentController::class, 'folder'])->name('folders.show');
     Route::get('/library/export', [App\Http\Controllers\DocumentController::class, 'export'])->name('documents.export');
     Route::get('/library/{document}/edit', [App\Http\Controllers\DocumentController::class, 'edit'])->name('documents.edit');
     Route::get('/library/{document}/preview', [App\Http\Controllers\DocumentController::class, 'preview'])->name('documents.preview');

@@ -78,6 +78,18 @@ class DocumentController extends Controller
 
     public function index(Request $request): View
     {
+        return $this->renderLibrary($request);
+    }
+
+    public function folder(Request $request, DocumentCategory $category): View
+    {
+        $request->merge(['category_id' => $category->id]);
+
+        return $this->renderLibrary($request, $category);
+    }
+
+    private function renderLibrary(Request $request, ?DocumentCategory $folder = null): View
+    {
         $validated = $this->validatedLibraryFilters($request);
         $query = $this->filteredLibraryQuery($request, $validated);
         $search = trim((string) ($validated['q'] ?? ''));
@@ -117,11 +129,11 @@ class DocumentController extends Controller
         $uploaders = \App\Models\User::whereIn('id', $uploaderIds)->orderBy('name')->get();
 
         $sort = $validated['sort'] ?? 'newest';
-        $documents = $query->paginate(15)->withQueryString();
+        $documents = $query->paginate(15)->appends($request->except(['page']));
 
         return view('documents.index', compact(
             'documents', 'search', 'categories', 'departments', 'uploaders', 'validated', 'sort',
-            'deptDocCounts', 'catDocCounts'
+            'deptDocCounts', 'catDocCounts', 'folder'
         ));
     }
 

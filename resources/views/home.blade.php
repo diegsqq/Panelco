@@ -201,7 +201,7 @@
                     @endphp
                     @foreach($categories as $folder)
                         <?php $catCount = $folderCounts[$folder->id] ?? 0; ?>
-                        <a class="wd-folder" href="{{ route('documents.library', ['category_id' => $folder->id]) }}">
+                        <a class="wd-folder" href="{{ route('folders.show', $folder) }}" aria-label="Open {{ $folder->name }} folder">
                             <span class="wd-folder-ico"><i class="bi bi-folder-fill"></i></span>
                             <span style="min-width:0">
                                 <span class="wd-folder-name d-block">{{ $folder->name }}</span>
