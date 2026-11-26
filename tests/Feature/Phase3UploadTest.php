@@ -136,6 +136,31 @@ class Phase3UploadTest extends TestCase
         Queue::assertPushed(ProcessDocument::class, 2);
     }
 
+    public function test_admin_is_not_blocked_by_another_users_private_duplicate(): void
+    {
+        $this->seed();
+        Storage::fake('private');
+        Queue::fake();
+        $admin = User::where('email', 'admin@panelco3.local')->firstOrFail();
+        $employee = User::where('email', 'employee@panelco3.local')->firstOrFail();
+        $contents = "Private employee file the admin must still be able to upload.\n";
+
+        $this->actingAs($employee)->post(route('documents.store'), [
+            'file' => UploadedFile::fake()->createWithContent('application_LIBUNAO.pdf', $contents),
+            'access_level' => 'private',
+        ])->assertRedirect(route('documents.library'));
+
+        $this->actingAs($admin)->post(route('documents.store'), [
+            'file' => UploadedFile::fake()->createWithContent('application_LIBUNAO.pdf', $contents),
+            'access_level' => 'private',
+        ])->assertRedirect(route('documents.library'))
+            ->assertSessionHas('status', 'Document uploaded and queued for processing.')
+            ->assertSessionMissing('warning');
+
+        $this->assertSame(2, Document::count());
+        Queue::assertPushed(ProcessDocument::class, 2);
+    }
+
     public function test_duplicate_visible_to_user_is_still_skipped(): void
     {
         $this->seed();

@@ -70,6 +70,15 @@ class DuplicateDocumentDetector
             return true;
         }
 
+        // Administrative view access is not ownership. Another user's private
+        // copy must not block this upload unless it was explicitly shared.
+        if ($document->access_level === 'private'
+            && (int) $document->uploaded_by !== (int) $user->id
+            && ! $document->authorizedUsers()->where('users.id', $user->id)->exists()
+        ) {
+            return false;
+        }
+
         return $user->can('view', $document);
     }
 }
