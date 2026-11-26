@@ -317,11 +317,13 @@
                     <tbody>
                         @forelse($documents as $doc)
                         @php
-                            $mime = $doc->mime_type ?? '';
-                            $fileType = str_contains($mime, 'pdf')   ? ['PDF',   'bi-file-earmark-pdf-fill',  '#dc3545']
-                                      : (str_contains($mime, 'word') ? ['Word',  'bi-file-earmark-word-fill', '#0d6efd']
+                            $mime = strtolower((string) $doc->mime_type);
+                            $filename = strtolower((string) $doc->original_filename);
+                            $isWord = str_ends_with($filename, '.docx') || str_ends_with($filename, '.doc') || str_contains($mime, 'word');
+                            $fileType = str_contains($mime, 'pdf') || str_ends_with($filename, '.pdf') ? ['PDF', 'bi-file-earmark-pdf-fill', '#dc3545']
+                                      : ($isWord ? ['Word', 'bi-file-earmark-word-fill', '#0d6efd']
                                       : (str_starts_with($mime, 'image/') ? ['Image','bi-file-earmark-image-fill','#00A868']
-                                      : (str_contains($mime, 'text')  ? ['Text',  'bi-file-earmark-text-fill','#6c757d']
+                                      : (str_contains($mime, 'text') || str_ends_with($filename, '.txt') ? ['Text',  'bi-file-earmark-text-fill','#6c757d']
                                       : ['File', 'bi-file-earmark-fill', '#6c757d'])));
                             $uploaderInitials = $doc->uploader?->initials() ?? '?';
                             $uploaderColor = '#00A868';
@@ -337,7 +339,7 @@
                             data-uploader="{{ $doc->uploader?->name ?? 'Unknown' }}"
                             data-filetype="{{ $fileType[0] }}"
                             data-size="{{ $doc->file_size >= 1048576 ? number_format($doc->file_size/1048576,1).' MB' : number_format($doc->file_size/1024,0).' KB' }}"
-                            data-url="{{ route('documents.edit-content', $doc) }}"
+                            data-url="{{ route('documents.preview', $doc) }}"
                             data-icon="{{ $fileType[1] }}"
                             data-iconcolor="{{ $fileType[2] }}"
                             data-initials="{{ $uploaderInitials }}">
@@ -346,7 +348,7 @@
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="lib-file-icon {{ $fileType[1] }}" style="color:{{ $fileType[2] }};flex:0 0 auto" aria-hidden="true"></i>
                                     <div style="min-width:0">
-                                        <a href="{{ route('documents.edit-content', $doc) }}" class="lib-doc-name text-decoration-none d-block text-truncate" title="{{ $doc->display_title }}">
+                                        <a href="{{ route('documents.preview', $doc) }}" class="lib-doc-name text-decoration-none d-block text-truncate" title="{{ $doc->display_title }}">
                                             {{ $doc->display_title }}
                                         </a>
                                         <div style="font-size:.68rem;color:#5a9e7a">
@@ -374,9 +376,11 @@
                                         <i class="bi bi-three-dots"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end" style="border-radius:.75rem;border-color:#d5e8db">
-                                        <li><a class="dropdown-item" href="{{ route('documents.edit-content', $doc) }}?view=1"><i class="bi bi-eye me-2" style="color:#00A868"></i>View</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('documents.preview', $doc) }}"><i class="bi bi-eye me-2" style="color:#00A868"></i>View</a></li>
                                         @can('update', $doc)
+                                        @if($isWord)
                                         <li><a class="dropdown-item" href="{{ route('documents.edit-content', $doc) }}"><i class="bi bi-pencil-square me-2" style="color:#00A868"></i>Open in editor</a></li>
+                                        @endif
                                         <li><a class="dropdown-item" href="{{ route('documents.edit', $doc) }}"><i class="bi bi-pencil me-2" style="color:#00A868"></i>Edit details</a></li>
                                         @endcan
                                         @can('delete', $doc)
@@ -450,7 +454,7 @@
                     <span class="lib-cat-badge" id="libDetailStatus">—</span>
                 </div>
                 <a href="#" class="lib-detail-open-btn" id="libDetailOpenBtn">
-                    <i class="bi bi-box-arrow-up-right me-1"></i> Open in editor
+                    <i class="bi bi-box-arrow-up-right me-1"></i> Open preview
                 </a>
                 <hr class="lib-detail-divider">
                 <div class="lib-detail-meta">

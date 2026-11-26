@@ -868,6 +868,75 @@ class DocumentController extends Controller
         return Storage::disk('private')->download($document->storage_path, $document->original_filename);
     }
 
+    /**
+     * In-system preview. Uses the original file from centralized private
+     * storage for PDFs/images, OnlyOffice for Word files, and extracted text
+     * as a readable fallback.
+     */
+    public function preview(Document $document): View
+    {
+        $this->authorize('view', $document);
+
+        $mime = strtolower((string) $document->mime_type);
+        $filename = strtolower((string) $document->original_filename);
+        $disk = Storage::disk('private');
+        $fileExists = $disk->exists($document->storage_path);
+
+        $previewType = 'error';
+        $previewSource = null;
+        $previewText = null;
+        $previewError = null;
+
+        if (! $fileExists) {
+            $previewError = 'The original file is not available in centralized storage. It may have been moved or removed.';
+        } elseif (str_contains($mime, 'pdf') || str_ends_with($filename, '.pdf')) {
+            $previewType = 'pdf';
+            $previewSource = route('documents.view', $document);
+        } elseif (str_starts_with($mime, 'image/') || preg_match('/\.(png|jpe?g|gif|webp|bmp)$/', $filename) === 1) {
+            $previewType = 'image';
+            $previewSource = route('documents.view', $document);
+        } elseif (str_contains($mime, 'word') || str_contains($mime, 'wordprocessingml') || str_ends_with($filename, '.docx')) {
+            if (config('onlyoffice.enabled')) {
+                $previewType = 'onlyoffice';
+                $previewSource = route('documents.edit-content', $document) . '?view=1';
+            } else {
+                $previewText = trim((string) $document->extracted_text);
+                $previewType = $previewText !== '' ? 'text' : 'error';
+                if ($previewText === '') {
+                    $previewError = 'Word preview needs OnlyOffice, and no extracted text is available for this document.';
+                }
+            }
+        } elseif (str_contains($mime, 'text/') || str_ends_with($filename, '.txt')) {
+            $raw = $disk->get($document->storage_path);
+            $previewText = trim($raw !== null ? $raw : (string) $document->extracted_text);
+            $previewType = $previewText !== '' ? 'text' : 'error';
+            if ($previewText === '') {
+                $previewError = 'This text file is empty or could not be read.';
+            }
+        } else {
+            $previewError = 'This file type cannot be previewed in SmartDocs AI. Download the file to view it.';
+        }
+
+        AuditLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'document.previewed',
+            'entity_type' => Document::class,
+            'entity_id' => $document->id,
+            'metadata' => [
+                'filename' => $document->original_filename,
+                'preview_type' => $previewType,
+            ],
+        ]);
+
+        return view('documents.preview', compact(
+            'document',
+            'previewType',
+            'previewSource',
+            'previewText',
+            'previewError'
+        ));
+    }
+
     public function view(Document $document): StreamedResponse
     {
         $this->authorize('download', $document);

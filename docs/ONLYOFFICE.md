@@ -56,6 +56,7 @@ This route opens OnlyOffice directly. Saves are converted back into the P-ARCHIV
 **Open in editor** in the library detail panel uses this same route. The library row dropdown **View** action uses `/library/{id}/content/edit?view=1`, which opens OnlyOffice in read-only mode.
 
 ## Notes
+- Library clicks open `/library/{document}/preview`. PDFs and images stream the original file from private storage inline, Word files open read-only in OnlyOffice when enabled, and text files fall back to original/extracted text. Missing files or unsupported types show a preview error instead of an empty page.
 
 - The editor theme follows the P-ARCHIVE user theme: light uses `theme-white`, dark uses `theme-night`.
 - The built-in **Chat** button is relabeled **Ask Lightning AI** via `docker/onlyoffice/locale-en.json`. Recreate the container after changing that file.
