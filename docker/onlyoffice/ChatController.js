@@ -106,6 +106,31 @@ define([
             }));
         },
 
+        _applyAiEdit: function(edit) {
+            try {
+                var settings = this._aiSettings() || {};
+                if (settings.canEdit === false) return false;
+                var editor = window.editor;
+                if (!editor || typeof editor.pluginMethod_SearchAndReplace !== 'function') return false;
+
+                var search = String(edit.searchString || '');
+                if (!search) return false;
+
+                // The server matched this phrase against the saved document.
+                // Do not pre-search here: OnlyOffice's search cursor would
+                // then be past the match when SearchAndReplace runs.
+                editor.pluginMethod_SearchAndReplace({
+                    searchString : search,
+                    replaceString: String(edit.replaceString || ''),
+                    matchCase    : edit.matchCase !== false
+                });
+                return true;
+            } catch (e) {
+                if (window.console && console.error) console.error('P-ARCHIVE AI edit failed', e);
+                return false;
+            }
+        },
+
         _askAi: function(text) {
             var settings = this._aiSettings();
             if (!settings || !settings.endpoint || !text) return;
@@ -125,6 +150,13 @@ define([
                 .then(function(data) {
                     if (!data || !data.answer) return;
 
+                    var answer = data.answer;
+                    if (data.edit) {
+                        if (!me._applyAiEdit(data.edit)) {
+                            answer += '<p class="mb-2">I could not apply that change in the open editor. Check that the exact text is still in the document and that editing is enabled.</p>';
+                        }
+                    }
+
                     var msgStore = me.getApplication().getCollection('Common.Collections.ChatMessages');
                     if (!msgStore) return;
 
@@ -132,7 +164,7 @@ define([
                         userid      : P3_AI_USER_ID,
                         username    : 'Lightning AI',
                         parsedName  : 'Lightning AI',
-                        message     : data.answer
+                        message     : answer
                     }));
                 })
                 .catch(function() {});

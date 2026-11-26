@@ -8,6 +8,7 @@ use App\Models\Document;
 use App\Models\MessageSource;
 use App\Models\User;
 use App\Services\Ai\AiProvider;
+use App\Services\DocumentEditService;
 use App\Services\DocumentRetrievalService;
 use App\Support\MarkdownLite;
 use Illuminate\Http\JsonResponse;
@@ -219,17 +220,46 @@ class ChatController extends Controller
      * Answer a question from the document index. Shared by the chat pages
      * and the inline "Ask Lightning" button on the document page.
      *
-     * @return array{content: string, chunks: list<array{chunk: \App\Models\DocumentChunk, document: Document, score: int, excerpt: string}>}
+     * @return array{content: string, chunks: list<array{chunk: \App\Models\DocumentChunk, document: Document, score: int, excerpt: string}>, edit: ?array}
      */
-    private function generateAnswer(User $user, string $searchQuestion, ?Document $document, string $question): array
-    {
+    private function generateAnswer(
+        User $user,
+        string $searchQuestion,
+        ?Document $document,
+        string $question,
+        bool $allowEdit = false
+    ): array {
         // Small talk carries no factual claims about documents, so it is
         // answered directly without touching the document index.
         if ($reply = $this->smallTalk($question)) {
-            return ['content' => $reply, 'chunks' => []];
+            return ['content' => $reply, 'chunks' => [], 'edit' => null];
         }
 
         $retrieval = app(DocumentRetrievalService::class);
+
+        // Only the signed in-editor endpoint may return an edit. A plain
+        // "change X to Y" there is an instruction, not a factual question.
+        if ($allowEdit && $document !== null) {
+            $plan = app(DocumentEditService::class)
+                ->plan($question, $retrieval->fullDocumentText($document));
+
+            if ($plan !== null) {
+                if (! $user->can('update', $document)) {
+                    return [
+                        'content' => 'You do not have permission to edit this document.',
+                        'chunks' => [],
+                        'edit' => null,
+                    ];
+                }
+
+                return [
+                    'content' => 'Done. I changed "' . $plan['searchString'] . '" to "'
+                        . $plan['replaceString'] . '" in ' . $plan['occurrences'] . ' place(s).',
+                    'chunks' => [],
+                    'edit' => $plan,
+                ];
+            }
+        }
         // In-editor and document-scoped chat must see the whole document, not
         // just the first five indexed chunks or keyword-matched excerpts.
         $result = $document !== null
@@ -242,7 +272,7 @@ class ChatController extends Controller
                 ? 'This document is still being processed and is not available for searching yet. Please try again after processing is complete.'
                 : DocumentRetrievalService::statusMessage($result['status']);
 
-            return ['content' => $message, 'chunks' => []];
+            return ['content' => $message, 'chunks' => [], 'edit' => null];
         }
 
         $ai = app(AiProvider::class);
@@ -273,7 +303,7 @@ class ChatController extends Controller
                 . "\n\n_Showing direct excerpts — the AI service is temporarily unavailable, so no generated summary is provided._";
         }
 
-        return ['content' => $content, 'chunks' => $result['chunks']];
+        return ['content' => $content, 'chunks' => $result['chunks'], 'edit' => null];
     }
 
     private function isBareRefusal(string $reply): bool
@@ -347,11 +377,15 @@ class ChatController extends Controller
      * Shared answer generation for trusted server-side callers such as the
      * signed OnlyOffice chat endpoint.
      *
-     * @return array{content: string, chunks: list<array<string, mixed>>}
+     * @return array{content: string, chunks: list<array<string, mixed>>, edit: ?array}
      */
-    public function answerForDocument(User $user, Document $document, string $question): array
-    {
-        return $this->generateAnswer($user, $question, $document, $question);
+    public function answerForDocument(
+        User $user,
+        Document $document,
+        string $question,
+        bool $allowEdit = false
+    ): array {
+        return $this->generateAnswer($user, $question, $document, $question, $allowEdit);
     }
 
     private function smallTalk(string $question): ?string

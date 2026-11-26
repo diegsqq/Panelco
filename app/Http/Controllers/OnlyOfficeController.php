@@ -99,9 +99,11 @@ class OnlyOfficeController extends Controller
                             'purpose' => 'ask',
                             'doc' => (int) $document->id,
                             'uid' => (int) $user->id,
+                            'view' => $readOnly,
                             'exp' => now()->addDay()->timestamp,
                         ], $secret),
                         'color' => '#00A868',
+                        'canEdit' => ! $readOnly,
                     ],
                 ],
                 'customization' => [
@@ -176,11 +178,13 @@ class OnlyOfficeController extends Controller
         $answer = app(ChatController::class)->answerForDocument(
             $user,
             $document,
-            trim($data['question'])
+            trim($data['question']),
+            ! (bool) ($payload['view'] ?? false)
         );
 
         return response()->json([
             'answer' => MarkdownLite::render($answer['content'])->toHtml(),
+            'edit' => $answer['edit'] ?? null,
         ])
             ->header('Access-Control-Allow-Origin', (string) config('onlyoffice.url'))
             ->header('Vary', 'Origin');

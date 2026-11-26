@@ -156,7 +156,7 @@ class DocumentRetrievalService
         return $this->visibleDocuments($user);
     }
 
-    private function fullDocumentText(Document $document): string
+    public function fullDocumentText(Document $document): string
     {
         // Edited content wins: OnlyOffice and the in-app editor both persist
         // the current document here, while chunks can lag behind a save.

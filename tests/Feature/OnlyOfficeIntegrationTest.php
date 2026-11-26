@@ -361,4 +361,75 @@ class OnlyOfficeIntegrationTest extends TestCase
             ->assertSee('closest relevant text', false)
             ->assertSee($marker, false);
     }
+
+    public function test_ai_chat_returns_an_exact_edit_for_a_change_command(): void
+    {
+        $this->configureOnlyOffice();
+        $document = $this->makeDocument();
+        $document->update([
+            'content' => '<p>PRACTICUM WEEKLY REPORT 1st Semester 2026- 2027</p>',
+        ]);
+
+        $token = Jwt::sign([
+            'purpose' => 'ask',
+            'doc' => $document->id,
+            'uid' => $document->uploaded_by,
+            'exp' => now()->addDay()->timestamp,
+        ], self::SECRET);
+
+        $this->post(route('onlyoffice.ask', $document) . '?token=' . urlencode($token), [
+            'question' => 'change practicum weekly report to 1',
+        ])
+            ->assertOk()
+            ->assertJsonPath('edit.searchString', '1st Semester 2026- 2027')
+            ->assertJsonPath('edit.replaceString', '1')
+            ->assertJsonPath('edit.matchCase', true)
+            ->assertSee('Done', false);
+    }
+
+    public function test_read_only_editor_token_does_not_allow_chat_edits(): void
+    {
+        $this->configureOnlyOffice();
+        $document = $this->makeDocument();
+        $document->update(['content' => '<p>PRACTICUM WEEKLY REPORT</p>']);
+
+        $token = Jwt::sign([
+            'purpose' => 'ask',
+            'doc' => $document->id,
+            'uid' => $document->uploaded_by,
+            'view' => true,
+            'exp' => now()->addDay()->timestamp,
+        ], self::SECRET);
+
+        $this->post(route('onlyoffice.ask', $document) . '?token=' . urlencode($token), [
+            'question' => 'change practicum weekly report to 1',
+        ])
+            ->assertOk()
+            ->assertJsonPath('edit', null);
+    }
+
+    public function test_ai_chat_does_not_edit_for_a_user_without_update_permission(): void
+    {
+        $this->configureOnlyOffice();
+        $document = $this->makeDocument();
+        $outsider = User::factory()->create(['role' => User::ROLE_EMPLOYEE]);
+        $document->update([
+            'access_level' => 'all_employees',
+            'content' => '<p>PRACTICUM WEEKLY REPORT</p>',
+        ]);
+
+        $token = Jwt::sign([
+            'purpose' => 'ask',
+            'doc' => $document->id,
+            'uid' => $outsider->id,
+            'exp' => now()->addDay()->timestamp,
+        ], self::SECRET);
+
+        $this->post(route('onlyoffice.ask', $document) . '?token=' . urlencode($token), [
+            'question' => 'change practicum weekly report to 1',
+        ])
+            ->assertOk()
+            ->assertJsonPath('edit', null)
+            ->assertSee('do not have permission', false);
+    }
 }

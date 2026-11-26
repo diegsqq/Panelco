@@ -63,6 +63,7 @@ This route opens OnlyOffice directly. Saves are converted back into the P-ARCHIV
 - Document-scoped questions use the whole current document text: edited `content` first, then `extracted_text`, then every indexed chunk. This is not limited to the first five chunks used by library-wide search.
 - Full-document context is capped by `SMARTDOCS_FULL_DOCUMENT_CHARS` (default `24000`) so it fits the configured AI model's context window.
 - If the document has no direct answer, Lightning AI says so and quotes the closest passages; it never returns the old bare refusal sentence.
+- Chat instructions such as `change practicum weekly report to 1` are applied as find-and-replace in the open editor. Text is matched against the document's own text, so casing is exact. When the target is followed by a qualifier like `1st Semester 2026- 2027` and the replacement is a number, the qualifier is replaced, leaving `PRACTICUM WEEKLY REPORT 1`. No AI key is needed for this. Edits are only offered to users who can update the document and never from a read-only (`?view=1`) editor.
 - The AI chat uses the signed `/onlyoffice/ask/{document}` endpoint. The token is document- and user-scoped; no browser session cookie is required across origins.
 - Document Server JS patches live in `docker/onlyoffice/` and are mounted read-only. Recreate the container after changing them.
 - Document editing needs no AI key. The Lightning AI chat uses the app's existing AI env settings.
