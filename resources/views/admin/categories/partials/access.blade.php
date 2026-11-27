@@ -29,8 +29,10 @@
     [data-theme="dark"] .cat-access-option small { color: #8fa59a; }
     .cat-access-people { font-size: .78rem; color: #5a9e7a; }
     [data-theme="dark"] .cat-access-people { color: #8fa59a; }
+    .cat-access-inline { flex: 1 1 auto; align-self: center; margin-bottom: 0; min-width: 200px; }
+    .cat-access-inline .cat-access-card { padding: .55rem .9rem; }
 </style>
-<div class="mb-3">
+<div class="{{ $wrapperClass ?? 'mb-3' }}">
     <div class="cat-access-card">
         <label class="cat-access-label" for="access_level">Access level <span class="text-muted fw-normal">Who can see this folder</span></label>
         <input type="hidden" id="accessLevelInput" name="access_level" value="{{ $selectedAccess }}">

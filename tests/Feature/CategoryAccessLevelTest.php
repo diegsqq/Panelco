@@ -16,13 +16,20 @@ class CategoryAccessLevelTest extends TestCase
         $user = User::factory()->create(['role' => User::ROLE_EMPLOYEE]);
         $other = User::factory()->create(['role' => User::ROLE_EMPLOYEE]);
 
-        $this->actingAs($user)->get(route('categories.create'))
+        $html = (string) $this->actingAs($user)->get(route('categories.create'))
             ->assertOk()
             ->assertSee('id="access_level"', false)
             ->assertSee('data-bs-target="#shareAccessModal"', false)
             ->assertSee('name="access_level" value="all_employees"', false)
             ->assertSee('id="sharedUserIds"', false)
-            ->assertSeeText($other->name);
+            ->assertSeeText($other->name)
+            ->getContent();
+
+        $buttonRow = strpos($html, 'class="d-flex gap-2"');
+        $access = strpos($html, 'class="cat-access-inline"');
+        $this->assertNotFalse($buttonRow);
+        $this->assertNotFalse($access);
+        $this->assertGreaterThan($buttonRow, $access);
     }
 
     public function test_store_persists_access_level_and_shared_users(): void

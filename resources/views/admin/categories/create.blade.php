@@ -20,7 +20,6 @@
         @endforeach
     </select>
 </div>
-@include('admin.categories.partials.access', ['selectedAccess' => 'all_employees', 'selectedUsers' => []])
 <div class="mb-3">
     <label class="form-label fw-semibold">Description</label>
     <textarea name="description" class="form-control" rows="3" placeholder="What kind of documents belong to this category?">{{ old('description') }}</textarea>
@@ -34,6 +33,7 @@
     <div class="form-text" id="aiKwMsg">Keywords match complete words or phrases in extracted text; review suggestions before saving.</div>
 </div>
 <div class="d-flex gap-2">
+@include('admin.categories.partials.access', ['selectedAccess' => 'all_employees', 'selectedUsers' => [], 'wrapperClass' => 'cat-access-inline'])
     <button class="btn px-4" style="background:#ffffff;color:#00A868;border:1px solid #00A868"><i class="bi bi-check-lg me-1"></i>Save</button>
     <a href="{{ route('documents.library') }}" class="btn btn-outline-secondary">Cancel</a>
 </div>
