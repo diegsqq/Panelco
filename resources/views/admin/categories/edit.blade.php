@@ -37,7 +37,7 @@
     <div class="form-text" id="aiKwMsg">Keywords match complete words or phrases in extracted text; review suggestions before saving.</div>
 </div>
 <div class="d-flex gap-2">
-    <button class="btn px-4" style="background:#ffffff;color:#00A868;border:1px solid #00A868"><i class="bi bi-check-lg me-1"></i>Save Changes</button>
+    <button class="btn px-4"><i class="bi bi-check-lg me-1"></i>Save Changes</button>
     <a href="{{ route('admin.categories.index') }}" class="btn btn-outline-secondary">Cancel</a>
 </div>
 </form>

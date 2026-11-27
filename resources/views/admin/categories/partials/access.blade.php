@@ -42,13 +42,19 @@
     [data-theme="dark"] .cat-access-help { color: #8fa59a; }
     .cat-access-actions-help { font-size: .7rem; color: #6c757d; padding: 0 1rem .35rem; line-height: 1.45; }
     [data-theme="dark"] .cat-access-actions-help { color: #8fa59a; }
-    .cat-access-inline { flex: 0 1 230px; align-self: center; margin-bottom: 0; min-width: 0; }
-    .cat-access-inline .cat-access-card { padding: .3rem .55rem; border-radius: .5rem; }
-    .cat-access-inline .cat-access-label { font-size: .68rem; gap: .25rem; margin-bottom: .15rem; }
+    .cat-access-inline { flex: 0 1 240px; align-self: center; margin: 0 auto 0 0; min-width: 0; }
+    .cat-access-inline .cat-access-card { display: flex; align-items: center; gap: .4rem; padding: .35rem .6rem; border-radius: .6rem; }
+    .cat-access-inline .cat-access-label { font-size: .68rem; gap: 0; margin: 0; white-space: nowrap; }
     .cat-access-inline .cat-access-label span.text-muted { display: none; }
-    .cat-access-inline .cat-access-btn { font-size: .78rem; }
+    .cat-access-inline .cat-access-btn { width: auto; font-size: .78rem; white-space: nowrap; }
     .cat-access-inline .cat-access-btn i.bi-chevron-down { font-size: .65rem; }
     .cat-access-inline .cat-access-hint { display: none; }
+    form > div.d-flex.gap-2 { align-items: center; justify-content: flex-end; flex-wrap: wrap; margin-top: .25rem; padding-top: 1rem; border-top: 1px solid #ebebeb; }
+    [data-theme="dark"] form > div.d-flex.gap-2 { border-color: #26362e; }
+    form > div.d-flex.gap-2 > button:not([type="button"]) { min-width: 110px; background: #00A868; border-color: #00A868; color: #fff; border-radius: .6rem; font-weight: 700; box-shadow: 0 2px 8px rgba(0,168,104,.18); }
+    form > div.d-flex.gap-2 > button:not([type="button"]):hover { background: #00743F; border-color: #00743F; color: #fff; }
+    form > div.d-flex.gap-2 > a.btn-outline-secondary { min-width: 110px; border-radius: .6rem; font-weight: 600; }
+    [data-theme="dark"] form > div.d-flex.gap-2 > a.btn-outline-secondary { border-color: #3a5a46; color: #c3d0c8; }
 </style>
 <div class="{{ $wrapperClass ?? 'mb-3' }}">
     <div class="cat-access-card">
