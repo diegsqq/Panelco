@@ -20,6 +20,10 @@
         @endforeach
     </select>
 </div>
+@include('admin.categories.partials.access', [
+    'selectedAccess' => old('access_level', $category->access_level ?? 'all_employees'),
+    'selectedUsers' => old('user_ids', $category->authorizedUsers()->pluck('users.id')->all()),
+])
 <div class="mb-3">
     <label class="form-label fw-semibold">Description</label>
     <textarea name="description" class="form-control" rows="3" placeholder="What kind of documents belong to this category?">{{ old('description', $category->description) }}</textarea>

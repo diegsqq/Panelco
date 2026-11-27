@@ -127,6 +127,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Document::class, 'document_user')->withTimestamps();
     }
 
+    public function authorizedCategories(): BelongsToMany
+    {
+        return $this->belongsToMany(DocumentCategory::class, 'category_user', 'user_id', 'category_id')->withTimestamps();
+    }
+
     public function conversations(): HasMany
     {
         return $this->hasMany(Conversation::class);

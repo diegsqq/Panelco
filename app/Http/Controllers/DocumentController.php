@@ -83,6 +83,8 @@ class DocumentController extends Controller
 
     public function folder(Request $request, DocumentCategory $category): View
     {
+        abort_unless($category->isReachableBy($request->user()), 403);
+
         $request->merge(['category_id' => $category->id]);
 
         return $this->renderLibrary($request);
@@ -109,7 +111,7 @@ class DocumentController extends Controller
         $uploaderIds = Document::query()->whereIn('id', $visibleIds)
             ->whereNotNull('uploaded_by')->distinct()->pluck('uploaded_by');
         $categories = DocumentCategory::whereIn('id', $categoryIds)->orderBy('name')->get();
-        $folders = DocumentCategory::orderBy('name')->get();
+        $folders = DocumentCategory::visibleTo($request->user())->orderBy('name')->get();
         $departments = Department::whereIn('id', $departmentIds)->orderBy('name')->get();
 
         // Accurate document count per department across ALL visible documents
@@ -294,7 +296,7 @@ class DocumentController extends Controller
 
     public function create(): View
     {
-        $categories = DocumentCategory::orderBy('name')->get();
+        $categories = DocumentCategory::visibleTo(auth()->user())->orderBy('name')->get();
         $users = User::where('id', '!=', auth()->id())->orderBy('name')->get();
 
         return view('documents.create', compact('categories', 'users'));
@@ -305,7 +307,7 @@ class DocumentController extends Controller
         $this->authorize('update', $document);
 
         $document->load(['category', 'department']);
-        $categories = DocumentCategory::orderBy('name')->get();
+        $categories = DocumentCategory::visibleTo(auth()->user())->orderBy('name')->get();
         $departments = Department::orderBy('name')->get();
 
         return view('documents.edit', compact('document', 'categories', 'departments'));
@@ -326,6 +328,11 @@ class DocumentController extends Controller
             'sender' => ['nullable', 'string', 'max:255'],
             'recipient' => ['nullable', 'string', 'max:255'],
         ]);
+
+        if (! empty($data['category_id'])) {
+            $category = DocumentCategory::findOrFail($data['category_id']);
+            abort_unless($category->isVisibleTo($request->user()), 403);
+        }
 
         // Department drives who can see the document — only managers/admins
         // may move it to another department.
@@ -750,6 +757,10 @@ class DocumentController extends Controller
 
         $title = app(UploadSuggester::class)->normalizeTitle(trim((string) $request->input('title', '')));
         $categoryId = $request->input('category_id') ?: null;
+        if ($categoryId !== null) {
+            $category = DocumentCategory::findOrFail($categoryId);
+            abort_unless($category->isVisibleTo($request->user()), 403);
+        }
         $documentDate = $request->input('document_date') ?: null;
         $fileLastModified = $request->input('file_last_modified');
 

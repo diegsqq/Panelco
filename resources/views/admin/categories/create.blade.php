@@ -20,6 +20,7 @@
         @endforeach
     </select>
 </div>
+@include('admin.categories.partials.access', ['selectedAccess' => 'all_employees', 'selectedUsers' => []])
 <div class="mb-3">
     <label class="form-label fw-semibold">Description</label>
     <textarea name="description" class="form-control" rows="3" placeholder="What kind of documents belong to this category?">{{ old('description') }}</textarea>

@@ -143,7 +143,7 @@ class HomeController extends Controller
         // employees can see organization-wide totals, not only their uploads.
         // Documents with neither a department nor a suggested one are left
         // out, so no "Unassigned" row appears.
-        $categories = DocumentCategory::orderBy('name')->get();
+        $categories = DocumentCategory::visibleTo($user)->orderBy('name')->get();
         $departmentDistribution = Document::query()
             ->where(function ($q) {
                 $q->whereNotNull('department_id')->orWhereNotNull('suggested_department_id');
