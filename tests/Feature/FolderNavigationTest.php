@@ -38,6 +38,27 @@ class FolderNavigationTest extends TestCase
         $this->assertSame(2, $response->viewData('documents')->total());
     }
 
+    public function test_library_folder_grid_lists_every_folder(): void
+    {
+        $user = User::factory()->create(['role' => User::ROLE_EMPLOYEE]);
+        $folders = collect();
+
+        foreach (range(1, 6) as $number) {
+            $folders->push(DocumentCategory::create(['name' => 'Folder '.$number]));
+        }
+
+        $this->createDocument($user, 'Grid document', ['category_id' => $folders->first()->id]);
+
+        $html = $this->actingAs($user)->get(route('documents.library'))
+            ->assertOk()
+            ->getContent();
+
+        $html = (string) $html;
+        foreach ($folders as $folder) {
+            $this->assertStringContainsString('href="'.route('folders.show', $folder).'"', $html);
+        }
+    }
+
     private function createDocument(User $uploader, string $title, array $attributes = []): Document
     {
         return Document::create(array_merge([

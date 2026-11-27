@@ -109,6 +109,7 @@ class DocumentController extends Controller
         $uploaderIds = Document::query()->whereIn('id', $visibleIds)
             ->whereNotNull('uploaded_by')->distinct()->pluck('uploaded_by');
         $categories = DocumentCategory::whereIn('id', $categoryIds)->orderBy('name')->get();
+        $folders = DocumentCategory::orderBy('name')->get();
         $departments = Department::whereIn('id', $departmentIds)->orderBy('name')->get();
 
         // Accurate document count per department across ALL visible documents
@@ -132,7 +133,7 @@ class DocumentController extends Controller
         $documents = $query->paginate(15)->appends($request->except(['page']));
 
         return view('documents.index', compact(
-            'documents', 'search', 'categories', 'departments', 'uploaders', 'validated', 'sort',
+            'documents', 'search', 'categories', 'folders', 'departments', 'uploaders', 'validated', 'sort',
             'deptDocCounts', 'catDocCounts'
         ));
     }

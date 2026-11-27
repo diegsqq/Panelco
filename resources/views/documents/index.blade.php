@@ -34,7 +34,7 @@
     /* ── Department cards ── */
     .lib-dept-section { background: #fff; border: 1px solid #ebebeb; border-radius: 1rem; padding: 1rem 1.25rem 1.1rem; }
     [data-theme="dark"] .lib-dept-section { background: #16211c; border-color: #26362e; }
-    .lib-dept-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: .75rem; }
+    .lib-dept-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: .75rem; max-height: 8.5rem; overflow-y: auto; padding-right: .2rem; scrollbar-width: thin; }
     @media (max-width: 991.98px) { .lib-dept-grid { grid-template-columns: repeat(3, 1fr); } }
     @media (max-width: 575.98px)  { .lib-dept-grid { grid-template-columns: 1fr 1fr; } }
     .lib-dept-card { background: #fff; border: 1px solid #ebebeb; border-radius: .85rem; padding: .4rem .6rem; display: flex; flex-direction: row; align-items: center; gap: .6rem; cursor: pointer; transition: border-color .15s ease, box-shadow .15s ease; text-decoration: none; }
@@ -221,8 +221,8 @@
                     <div class="lib-dept-meta">Create a category</div>
                 </div>
             </a>
-            @if($categories->isNotEmpty())
-            @foreach($categories->take(4) as $cat)
+            @if($folders->isNotEmpty())
+            @foreach($folders as $cat)
             @php
                 $catDocCount = (int) ($catDocCounts->get($cat->id, 0));
             @endphp
