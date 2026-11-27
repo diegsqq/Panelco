@@ -23,6 +23,11 @@ class CategoryAccessLevelTest extends TestCase
             ->assertSee('name="access_level" value="all_employees"', false)
             ->assertSee('id="sharedUserIds"', false)
             ->assertSeeText($other->name)
+            ->assertSeeText('General Access Options')
+            ->assertSeeText('Specific Employee Sharing')
+            ->assertSeeText('Action Buttons')
+            ->assertSeeText('Apply sharing: Saves your selected permission changes.')
+            ->assertSeeText('Cancel: Closes the window without saving any changes.')
             ->getContent();
 
         $buttonRow = strpos($html, 'class="d-flex gap-2"');

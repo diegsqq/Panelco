@@ -6,6 +6,11 @@
         'link' => 'Anyone with link',
         'all_employees' => 'All employees',
     ];
+    $accessDescriptions = [
+        'private' => 'Restricts the folder so that only your account can open it, unless you explicitly add people in the box below.',
+        'link' => "Makes the folder accessible to anyone who receives the direct URL, even if they aren't logged in or part of your organization.",
+        'all_employees' => "Grants access to everyone within your company or organization's system.",
+    ];
 @endphp
 <style>
     .cat-access-card { border: 1px solid #dfe8e9; border-radius: .85rem; padding: 1rem 1.25rem; background: #fff; }
@@ -29,6 +34,14 @@
     [data-theme="dark"] .cat-access-option small { color: #8fa59a; }
     .cat-access-people { font-size: .78rem; color: #5a9e7a; }
     [data-theme="dark"] .cat-access-people { color: #8fa59a; }
+    .cat-access-modal-heading { font-size: .78rem; font-weight: 800; color: #00743F; margin-bottom: .35rem; }
+    [data-theme="dark"] .cat-access-modal-heading { color: #7fe0ac; }
+    .cat-access-current { font-size: .64rem; font-weight: 700; color: #00743F; }
+    [data-theme="dark"] .cat-access-current { color: #7fe0ac; }
+    .cat-access-help { font-size: .72rem; color: #6c757d; line-height: 1.45; }
+    [data-theme="dark"] .cat-access-help { color: #8fa59a; }
+    .cat-access-actions-help { font-size: .7rem; color: #6c757d; padding: 0 1rem .35rem; line-height: 1.45; }
+    [data-theme="dark"] .cat-access-actions-help { color: #8fa59a; }
     .cat-access-inline { flex: 0 1 230px; align-self: center; margin-bottom: 0; min-width: 0; }
     .cat-access-inline .cat-access-card { padding: .3rem .55rem; border-radius: .5rem; }
     .cat-access-inline .cat-access-label { font-size: .68rem; gap: .25rem; margin-bottom: .15rem; }
@@ -49,25 +62,31 @@
     </div>
 </div>
 <div class="modal fade" id="shareAccessModal" tabindex="-1" aria-labelledby="shareAccessModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" style="max-width:480px">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:560px">
         <div class="modal-content p3-modal">
             <div class="modal-header border-0 pb-0">
                 <h5 class="modal-title fw-bold" id="shareAccessModalLabel"><i class="bi bi-share me-2" style="color:#00A868"></i>Share access</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body pt-2">
-                <p class="small text-muted mb-3">Choose who can open this folder.</p>
+            <div class="modal-body pt-2" style="max-height:65vh;overflow-y:auto">
+                <div class="cat-access-modal-heading">General Access Options</div>
+                <p class="cat-access-help mb-2">You can select one main privacy level from the three radio buttons:</p>
                 <div class="d-grid gap-2 mb-3">
                     @foreach($accessLabels as $value => $label)
                     <label class="cat-access-option">
                         <input type="radio" name="access_level_choice" value="{{ $value }}" @checked($selectedAccess === $value)>
                         <span>
-                            <strong class="d-block">{{ $label }}</strong>
-                            <small>{{ $label }}</small>
+                            <strong class="d-block">{{ $label }} <span class="cat-access-current" data-current-for="{{ $value }}" @if($selectedAccess !== $value) hidden @endif>(Currently Selected)</span></strong>
+                            <small>{{ $accessDescriptions[$value] }}</small>
                         </span>
                     </label>
                     @endforeach
                 </div>
+                <div class="cat-access-modal-heading">Specific Employee Sharing</div>
+                <ul class="cat-access-help mb-3 ps-3">
+                    <li><strong>Also share with specific employees (optional):</strong> This box lets you grant access to individual users (such as Admin, DEN-EARL DE DIOS, or JANINE BALAYAN), even if you keep the general setting on Only you.</li>
+                    <li><strong>Multi-select tip:</strong> As noted below the box, you can hold Ctrl (on Windows) or Cmd (on Mac) while clicking to highlight and select multiple names at once.</li>
+                </ul>
                 <label class="form-label small fw-semibold" for="sharedUserIds">Also share with specific employees <span class="text-muted fw-normal">(optional)</span></label>
                 <select id="sharedUserIds" name="user_ids[]" class="form-select form-select-sm" multiple size="5">
                     @foreach($users as $u)
@@ -75,6 +94,11 @@
                     @endforeach
                 </select>
                 <div class="cat-access-people mt-2">Hold Ctrl/Cmd to select multiple employees.</div>
+                <div class="cat-access-modal-heading mt-3 mb-1">Action Buttons</div>
+                <div class="cat-access-help">
+                    <div><strong>Apply sharing:</strong> Saves your selected permission changes.</div>
+                    <div><strong>Cancel:</strong> Closes the window without saving any changes.</div>
+                </div>
             </div>
             <div class="modal-footer border-0 pt-0">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -93,6 +117,18 @@
     var labels = @json($accessLabels);
     if (!input || !label || !hint || !modal || !apply) return;
 
+    function currentChoice() {
+        var checked = modal.querySelector('input[name="access_level_choice"]:checked');
+        return checked ? checked.value : 'all_employees';
+    }
+
+    function syncBadges() {
+        var value = currentChoice();
+        modal.querySelectorAll('[data-current-for]').forEach(function (badge) {
+            badge.hidden = badge.getAttribute('data-current-for') !== value;
+        });
+    }
+
     function sync(value) {
         input.value = value;
         label.textContent = labels[value] || labels.all_employees;
@@ -103,10 +139,13 @@
         modal.querySelectorAll('input[name="access_level_choice"]').forEach(function (radio) {
             radio.checked = radio.value === input.value;
         });
+        syncBadges();
+    });
+    modal.addEventListener('change', function (e) {
+        if (e.target && e.target.name === 'access_level_choice') syncBadges();
     });
     apply.addEventListener('click', function () {
-        var checked = modal.querySelector('input[name="access_level_choice"]:checked');
-        sync(checked ? checked.value : 'all_employees');
+        sync(currentChoice());
         var instance = bootstrap.Modal.getInstance(modal);
         if (instance) instance.hide();
     });
