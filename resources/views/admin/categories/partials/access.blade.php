@@ -29,8 +29,13 @@
     [data-theme="dark"] .cat-access-option small { color: #8fa59a; }
     .cat-access-people { font-size: .78rem; color: #5a9e7a; }
     [data-theme="dark"] .cat-access-people { color: #8fa59a; }
-    .cat-access-inline { flex: 1 1 auto; align-self: center; margin-bottom: 0; min-width: 200px; }
-    .cat-access-inline .cat-access-card { padding: .55rem .9rem; }
+    .cat-access-inline { flex: 0 1 230px; align-self: center; margin-bottom: 0; min-width: 0; }
+    .cat-access-inline .cat-access-card { padding: .3rem .55rem; border-radius: .5rem; }
+    .cat-access-inline .cat-access-label { font-size: .68rem; gap: .25rem; margin-bottom: .15rem; }
+    .cat-access-inline .cat-access-label span.text-muted { display: none; }
+    .cat-access-inline .cat-access-btn { font-size: .78rem; }
+    .cat-access-inline .cat-access-btn i.bi-chevron-down { font-size: .65rem; }
+    .cat-access-inline .cat-access-hint { display: none; }
 </style>
 <div class="{{ $wrapperClass ?? 'mb-3' }}">
     <div class="cat-access-card">
