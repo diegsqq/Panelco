@@ -32,12 +32,17 @@
     [data-theme="dark"] .lib-stat-lbl  { color: #8fa59a; }
 
     /* ── Department cards ── */
-    .lib-dept-section { background: #fff; border: 1px solid #ebebeb; border-radius: 1rem; padding: 1rem 1.25rem 1.1rem; }
+    .lib-dept-section { position: relative; background: #fff; border: 1px solid #ebebeb; border-radius: 1rem; padding: 1rem 1.25rem 1.1rem; }
     [data-theme="dark"] .lib-dept-section { background: #16211c; border-color: #26362e; }
-    .lib-dept-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: .75rem; max-height: 8.5rem; overflow-y: auto; padding-right: .2rem; scrollbar-width: thin; }
-    @media (max-width: 991.98px) { .lib-dept-grid { grid-template-columns: repeat(3, 1fr); } }
-    @media (max-width: 575.98px)  { .lib-dept-grid { grid-template-columns: 1fr 1fr; } }
-    .lib-dept-card { background: #fff; border: 1px solid #ebebeb; border-radius: .85rem; padding: .4rem .6rem; display: flex; flex-direction: row; align-items: center; gap: .6rem; cursor: pointer; transition: border-color .15s ease, box-shadow .15s ease; text-decoration: none; }
+    .lib-dept-grid { display: grid; grid-template-rows: auto; grid-auto-flow: column; grid-auto-columns: minmax(190px, 1fr); gap: .75rem; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; scroll-padding-inline: 2rem; padding: .1rem 2rem .25rem; scrollbar-width: none; }
+    .lib-dept-grid::-webkit-scrollbar { display: none; }
+    @media (max-width: 991.98px) { .lib-dept-grid { grid-auto-columns: minmax(170px, 1fr); } }
+    @media (max-width: 575.98px)  { .lib-dept-grid { grid-auto-columns: minmax(150px, 1fr); } }
+    .lib-dept-slider-btn { position: absolute; top: 64%; transform: translateY(-50%); z-index: 5; width: 30px; height: 30px; border-radius: 50%; border: 1px solid #d5e8db; background: #fff; color: #00743F; display: inline-flex; align-items: center; justify-content: center; font-size: .8rem; cursor: pointer; box-shadow: 0 2px 8px rgba(10,31,92,.10); transition: all .15s ease; }
+    .lib-dept-slider-btn:hover:not(:disabled) { background: #f0f9f3; border-color: #00A868; }
+    .lib-dept-slider-btn:disabled { opacity: .35; cursor: not-allowed; }
+    [data-theme="dark"] .lib-dept-slider-btn { background: #1d2b24; border-color: #2f6b4f; color: #7fe0ac; box-shadow: none; }
+    .lib-dept-card { scroll-snap-align: start; background: #fff; border: 1px solid #ebebeb; border-radius: .85rem; padding: .4rem .6rem; display: flex; flex-direction: row; align-items: center; gap: .6rem; cursor: pointer; transition: border-color .15s ease, box-shadow .15s ease; text-decoration: none; }
     .lib-dept-card:hover { border-color: #c5c5db; box-shadow: 0 4px 14px rgba(0,0,0,.07); }
     .lib-dept-card.active { border-color: #00A868; background: #f0f9f3; }
     [data-theme="dark"] .lib-dept-card { background: #1a2620; border-color: #26362e; }
@@ -213,6 +218,7 @@
             <span class="fw-bold" style="color:#1a1a2e;font-size:.8rem">Folders</span>
             <a href="{{ route('documents.library') }}" class="small fw-semibold text-decoration-none" style="color:#7b7fa8">View all categories →</a>
         </div>
+        <button type="button" class="lib-dept-slider-btn" data-target=".lib-dept-grid" data-dir="-1" aria-label="Scroll folders left" style="left:.35rem"><i class="bi bi-chevron-left"></i></button>
         <div class="lib-dept-grid">
             <a href="{{ route('categories.create') }}" class="lib-dept-card" style="border-style:dashed;border-color:#b7e0c8;background:#f6fbf7">
                 <div class="lib-dept-ico" style="background:#e6f3ea;color:#00A868"><i class="bi bi-plus-lg"></i></div>
@@ -238,6 +244,7 @@
             @endforeach
             @endif
         </div>
+        <button type="button" class="lib-dept-slider-btn" data-target=".lib-dept-grid" data-dir="1" aria-label="Scroll folders right" style="right:.35rem"><i class="bi bi-chevron-right"></i></button>
     </div>
 
     {{-- ── Table + detail panel ── --}}
@@ -572,6 +579,30 @@
         checkAll.addEventListener('change', function () {
             document.querySelectorAll('.lib-row-check').forEach(function (c) { c.checked = checkAll.checked; });
         });
+    }
+
+    /* ── Folder strip: one row, arrows scroll ── */
+    var folderStrip = document.querySelector('.lib-dept-grid');
+    var folderBtns = document.querySelectorAll('.lib-dept-slider-btn');
+    function updateFolderButtons() {
+        if (!folderStrip) return;
+        var atStart = folderStrip.scrollLeft <= 1;
+        var atEnd = folderStrip.scrollLeft + folderStrip.clientWidth >= folderStrip.scrollWidth - 4;
+        folderBtns.forEach(function (btn) {
+            btn.disabled = btn.getAttribute('data-dir') === '-1' ? atStart : atEnd;
+        });
+    }
+    folderBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            if (!folderStrip) return;
+            var dir = parseInt(btn.getAttribute('data-dir'), 10);
+            folderStrip.scrollBy({ left: dir * folderStrip.clientWidth * .8, behavior: 'smooth' });
+        });
+    });
+    if (folderStrip) {
+        folderStrip.addEventListener('scroll', updateFolderButtons, { passive: true });
+        window.addEventListener('resize', updateFolderButtons);
+        updateFolderButtons();
     }
 })();
 </script>

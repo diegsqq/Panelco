@@ -57,6 +57,11 @@ class FolderNavigationTest extends TestCase
         foreach ($folders as $folder) {
             $this->assertStringContainsString('href="'.route('folders.show', $folder).'"', $html);
         }
+
+        $this->assertStringContainsString('grid-auto-flow: column', $html);
+        $this->assertStringContainsString('overflow-y: hidden', $html);
+        $this->assertStringContainsString('class="lib-dept-slider-btn" data-target=".lib-dept-grid" data-dir="-1"', $html);
+        $this->assertStringContainsString('class="lib-dept-slider-btn" data-target=".lib-dept-grid" data-dir="1"', $html);
     }
 
     private function createDocument(User $uploader, string $title, array $attributes = []): Document
